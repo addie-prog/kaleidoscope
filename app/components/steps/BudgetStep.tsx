@@ -259,7 +259,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                         Responsible Tech Budget Evaluator
                     </h1>
                     <p className="text-sm sm:text-lg text-[#6B7280]">
-                        Optimize your spending to maximize positive impact across privacy, fairness, and sustainability.
+                        Optimize2 your spending to maximize positive impact across privacy, fairness, and sustainability.
                     </p>
                 </div>
 
