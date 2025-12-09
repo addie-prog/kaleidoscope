@@ -151,9 +151,6 @@ const calculateDollarAmountL = (
   const remainingPercentage = calculateRemaining();
   const remainingDollars = calculateDollarAmount(remainingPercentage);
 
-  useEffect(()=>{
-    console.log("princi", principles);
-  },[principles])
   return (
     <>
       {/* Main Content */}
@@ -309,7 +306,9 @@ const calculateDollarAmountL = (
                           <div className="flex flex-col gap-4">
                             <div className="flex sm:flex-row flex-col justify-between sm:items-center items-start">
                               <h4 className="text-sm sm:text-base font-medium text-gray-900">
-                                Allocate within {principle.name} (must total {principle.percentage}%)
+                                Allocate within {principle.name} (must total ${principle.budget.toLocaleString("en-US", {
+    maximumFractionDigits: 1,
+  })})
                               </h4>
                               <span className="sm:text-sm text-xs text-gray-500">
                                 Remaining: {calculateRemainingL(principle.id)}% (${calculateDollarAmountL(calculateRemainingL(principle.id),principle.budget)}) 
