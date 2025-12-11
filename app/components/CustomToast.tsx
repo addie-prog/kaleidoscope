@@ -27,7 +27,7 @@ const ToastModal = ({ message, open, onClose }: ToastModalProps) => {
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className="bg-[#EF4444] text-white p-4 rounded-lg shadow-lg min-w-[280px]"
+          className="bg-[#EF4444] text-white p-5 rounded-lg shadow-lg min-w-[280px]"
         >
           <div className="flex items-start gap-[7px]">
             <Image
