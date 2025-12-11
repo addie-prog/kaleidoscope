@@ -90,10 +90,13 @@ export default function AllocatePage({ onNext, selectedValues, Principles }: pro
   const getPrincipalDollarAmount = (principleId: string) => {
     const principle = principles.find((p) => p.id === principleId);
     if (!principle) return '0';
-
     const amount = (principle.percentage / 100 * Number(totalBudget.replace(/,/g, ""))).toLocaleString("en-US", { maximumFractionDigits: 1 });
+    return amount;
+  };
 
-
+    const getLayerDollarAmount = (layer: any,principleId: string) => {
+    if (!layer) return '0';
+    const amount = (layer.percentage / 100 * Number(principles.find((p) => p.id === principleId)?.budget)).toLocaleString("en-US", { maximumFractionDigits: 1 });
     return amount;
   };
 
@@ -193,6 +196,9 @@ export default function AllocatePage({ onNext, selectedValues, Principles }: pro
       <path fillRule="evenodd" clipRule="evenodd" d="M19 9.5C19 10.7476 18.7543 11.9829 18.2769 13.1355C17.7994 14.2881 17.0997 15.3354 16.2175 16.2175C15.3354 17.0997 14.2881 17.7994 13.1355 18.2769C11.9829 18.7543 10.7476 19 9.5 19C8.25244 19 7.0171 18.7543 5.86451 18.2769C4.71191 17.7994 3.66464 17.0997 2.78249 16.2175C1.90033 15.3354 1.20056 14.2881 0.723145 13.1355C0.245725 11.9829 -1.85901e-08 10.7476 0 9.5C3.75443e-08 6.98044 1.00089 4.56408 2.78249 2.78249C4.56408 1.00089 6.98044 0 9.5 0C12.0196 0 14.4359 1.00089 16.2175 2.78249C17.9991 4.56408 19 6.98044 19 9.5ZM16.9643 9.5C16.9643 11.4797 16.1779 13.3782 14.778 14.778C13.3782 16.1779 11.4797 16.9643 9.5 16.9643C7.52035 16.9643 5.62178 16.1779 4.22195 14.778C2.82213 13.3782 2.03571 11.4797 2.03571 9.5C2.03571 7.52035 2.82213 5.62178 4.22195 4.22195C5.62178 2.82213 7.52035 2.03571 9.5 2.03571C11.4797 2.03571 13.3782 2.82213 14.778 4.22195C16.1779 5.62178 16.9643 7.52035 16.9643 9.5Z" fill="#EF4444" />
     </svg>
   }
+
+
+
 
   return (
     <>
@@ -433,9 +439,21 @@ export default function AllocatePage({ onNext, selectedValues, Principles }: pro
                                         {layer.name}
                                       </h5>
                                     </div>
-                                    <span className="text-xs sm:text-sm font-medium text-gray-900">
+
+                                    <div className="flex items-end gap-2">
+                                      <div className="text-xs sm:text-sm font-medium text-gray-900">
+                                        {layer.percentage}%
+                                      </div>
+                                      {layer.checked && (
+                                        <div className="text-xs sm:text-sm font-medium text-[#6B7280]">
+                                          ${getLayerDollarAmount(layer, principle.id)}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* <span className="text-xs sm:text-sm font-medium text-gray-900">
                                       {layer.percentage}%
-                                    </span>
+                                    </span> */}
                                   </div>
 
                                   {/* Layer Slider */}
@@ -476,6 +494,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles }: pro
 
 
           </div>
+         
 
           {/* Generate Report Button */}
           <button onClick={() => {

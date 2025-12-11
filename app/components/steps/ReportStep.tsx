@@ -1,17 +1,20 @@
 'use client';
 
 import Image from "next/image";
+import { useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 
-type props = {
-  onNext: (value: number) => void;
-}
+export default function ReportPage() {
+  const contentRef = useRef<HTMLDivElement>(null);
 
+  const reactToPrintFn = useReactToPrint({ contentRef });
 
-export default function ReportPage({ onNext }: props) {
   return (
-    <>
+    <div> 
+      {/* <button onClick={reactToPrintFn}>Download PDF</button> */}
       {/* Main Content */}
-      <main className="mx-auto max-w-4xl px-4  py-6 sm:py-8 lg:py-12">
+      <div ref={contentRef}>
+      <main  className="mx-auto max-w-4xl px-4  py-6 sm:py-8 lg:py-12">
         {/* Report Header Card */}
         <div
           className="mb-6 px-4 sm:px-15 sm:py-9 py-6 rounded-lg bg-white"
@@ -442,12 +445,12 @@ export default function ReportPage({ onNext }: props) {
       {/* Footer */}
       <footer className="max-w-4xl mx-auto px-4 sm:px-0 border-t-2 border-gray-200 py-4 ">
 
-        <div className="flex items-center justify-between text-[8px] font-medium text-gray-400">
+        <div className="flex items-center px-4 justify-between text-[8px] font-medium text-gray-400">
           <span className="text-sm">The Kaleidoscope Project</span>
           <span className="text-sm">January 15, 2025</span>
         </div>
 
-      </footer>
-    </>
+      </footer></div>
+    </div>
   );
 }
