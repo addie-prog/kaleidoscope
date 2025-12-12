@@ -10,6 +10,7 @@ export default function BudgetTool() {
   const [step, setStep] = useState<Number>(1);
   const [selectedValues, setSelectedValues] = useState(1);
   const [principles, setPrinciples] = useState([]);
+  const [reportData, setReportData] = useState([]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -36,10 +37,11 @@ export default function BudgetTool() {
           selectedValues={selectedValues}
           onNext={(value: number) => setStep(value)}
           Principles={principles}
+          reportData={(value: any)=>setReportData(value)}
         />
       )}
 
-      {step === 3 && <ReportStep  />}
+      {step === 3 && <ReportStep  reportData={reportData} selectedValues={selectedValues}/>}
     </div>
   );
 }

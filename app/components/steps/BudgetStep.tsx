@@ -226,6 +226,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                 layersVisible: false,
                 layers: prin?.subPrinciples.map((sp: any) => ({
                     id: sp.executionLayerId,
+                    budget: 0,
                     name: sp.displayName,
                     description: sp.description,
                     percentage: 0,
@@ -335,7 +336,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                                         setSelectedCategories([category.id]);
                                         selectedValues({
                                             budget: budget,
-                                            tech: category.id
+                                            tech: category.name,
+                                            stage: showStage?.toUpperCase()
                                         })
                                     }}
                                     className={`${selectedCategories.includes(category.id) ? "bg-[#3B82F6]" : "bg-white"} relative p-4 sm:p-5 rounded-md border-2 transition-all text-left group hover:bg-[#3B82F6] transition-colors duration-600 cursor-pointer border-gray-100`

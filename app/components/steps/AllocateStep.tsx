@@ -6,7 +6,8 @@ import ToastModal from '../CustomToast';
 type props = {
   onNext: (value: number) => void;
   selectedValues: any,
-  Principles: PrincipleProps[]
+  Principles: PrincipleProps[],
+  reportData: (value: Array<any>) => void
 }
 
 type PrincipleProps = {
@@ -22,11 +23,13 @@ type PrincipleProps = {
   layers: any[];
 }
 
-export default function AllocatePage({ onNext, selectedValues, Principles }: props) {
+export default function AllocatePage({ onNext, selectedValues, Principles, reportData }: props) {
   const totalBudget = selectedValues.budget;
 
   const [principles, setPrinciples] = useState<PrincipleProps[]>(Principles);
-  const [showToast, setShowToast] = useState(false);
+  const [showToast, setShowToast] = useState<boolean>(false);
+  const [loader, setLoader] = useState<boolean>(false);
+
   const [error, setError] = useState("");
 
   const togglePrincipleChecked = (principleId: string) => {
@@ -94,22 +97,41 @@ export default function AllocatePage({ onNext, selectedValues, Principles }: pro
     return amount;
   };
 
-    const getLayerDollarAmount = (layer: any,principleId: string) => {
+  const getLayerDollarAmount = (layer: any, principleId: string) => {
     if (!layer) return '0';
     const amount = (layer.percentage / 100 * Number(principles.find((p) => p.id === principleId)?.budget)).toLocaleString("en-US", { maximumFractionDigits: 1 });
     return amount;
   };
 
+
   useEffect(() => {
+    const total = Number(totalBudget.replace(/,/g, ""));
+
     setPrinciples((prev) =>
-      prev.map((p) => ({
-        ...p,
-        budget:
-          (p.percentage / 100) *
-          Number(totalBudget.replace(/,/g, "")),
-      }))
+      prev.map((p) => {
+        const principleBudget = (p.percentage / 100) * total;
+
+        const updatedLayers = p.layers?.map((l: any) => ({
+          ...l,
+          budget: Math.round((l.percentage / 100) * principleBudget),
+        }));
+
+        return {
+          ...p,
+          budget: principleBudget,
+          layers: updatedLayers,
+        };
+      })
     );
-  }, [totalBudget, principles.map(p => p.percentage).join()]);
+  }, [
+    totalBudget,
+    principles.map((p) => p.percentage).join(),
+    principles.map((p) =>
+      p.layers?.map((l) => l.percentage).join()
+    ).join(),
+  ]);
+
+
 
   const calculateRemaining = () => {
 
@@ -198,6 +220,50 @@ export default function AllocatePage({ onNext, selectedValues, Principles }: pro
   }
 
 
+  const generateReport = async () => {
+    setLoader(true);
+    const res = await fetch("/api/generate-report");
+    const data = await res.json();
+
+    setLoader(false);
+
+    const newReportData: any[] = [];
+
+    const items = data.records;
+    
+    principles.map((p) => {
+    p.layers.map((layer) => {
+      if (layer.checked) {
+        const layerBudget = Number(layer.budget || 0);
+        
+        const matching = items?.filter((item: any) => {
+        const fields = item.fields;
+        return (
+          Number(fields["Cost Min"]) <= layerBudget &&
+          Number(fields["Cost Max"]) >= layerBudget &&
+          String(layer.id).trim() === String(fields["Execution Layer"]).trim()
+        );
+      });
+
+        
+        newReportData.push({
+          principleId: p.id,
+          principlePercentage: p.percentage,
+          principleBudget: p.budget,
+          principleName: p.name,
+          principleColor: p.color,
+          principleDes: p.description,
+          layerId: layer.id,
+          layerBudget,
+          items: matching ? matching[0]?.fields : [],
+        });
+       
+      }
+    });
+  });
+    reportData(newReportData);
+    onNext(3);
+  }
 
 
   return (
@@ -494,10 +560,11 @@ export default function AllocatePage({ onNext, selectedValues, Principles }: pro
 
 
           </div>
-         
+
 
           {/* Generate Report Button */}
           <button onClick={() => {
+            if(!loader){
             const principlesTotal = getTotalPrinciplesPercentage(principles);
             const layersValid = areAllLayersValid(principles, Number(totalBudget.replace(/,/g, "")));
 
@@ -517,12 +584,12 @@ export default function AllocatePage({ onNext, selectedValues, Principles }: pro
               setShowToast(true);
               return;
             }
-            
-            onNext(3);
+            generateReport();
+          }
           }
           } className="cursor-pointer w-full px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6] text-center">
             <span className="text-base font-semibold text-white">
-              Generate Report
+              {loader ? "Processing..." : "Generate Report"}
             </span>
           </button>
         </div>
