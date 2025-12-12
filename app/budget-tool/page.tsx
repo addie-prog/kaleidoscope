@@ -39,7 +39,7 @@ export default function BudgetTool() {
         />
       )}
 
-      {step === 3 && <ReportStep onNext={(value: number) => setStep(value)} />}
+      {step === 3 && <ReportStep  />}
     </div>
   );
 }
