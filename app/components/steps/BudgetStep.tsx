@@ -193,7 +193,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         const numeric = value.replace(/\D/g, "");
         // add commas
 
-        const matched = budgetTier.find((item: any) => {
+        const matched = budgetTier?.find((item: any) => {
             const min = item.fields["Budget Min"];
             const max = item.fields["Budget Max"];
             const updatedBudgetTier = budgetTier.map((item: any) => {
@@ -274,7 +274,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             )?.fields["Tier ID"] ?? null,
             principles: allValues?.principles?.length > 0 ? allValues?.principles : [],
             notes: allValues?.notes
-        });
+        }); 
     }
 
 
@@ -360,7 +360,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                 <input
                                     type="text"
                                     id="budget"
-                                    value={formValues?.budget  ? formValues.budget : ""}
+                                    value={formValues?.budget  ? formValues.budget : ""} 
                                     onChange={(e) => {
                                         const formatted = formatNumber(e.target.value);
                                         setFormValues({...formValues,["budget"]: formatted, ["tier"]: ""})
