@@ -14,10 +14,15 @@ type PrincipleProps = {
     layers: any[];
 }
 
+type objectType = {
+    [key: string | number]: any
+}
+
 type props = {
     onNext: (value: number) => void;
     selectedValues: (value: any) => void;
     Principles: (value: PrincipleProps) => void;
+    allValues: objectType;
 }
 
 type TierObject = {
@@ -32,17 +37,18 @@ type TierObject = {
     };
 };
 
-export default function BudgetTool({ onNext, selectedValues, Principles }: props) {
-    const [budget, setBudget] = useState('');
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+export default function BudgetTool({ onNext, selectedValues, Principles, allValues }: props) {
     const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
-    const [showStage, setShowStage] = useState<string>("");
+    const [showStage, setShowStage] = useState<string>(allValues?.stage ?? "");
     const [loader, setLoader] = useState<boolean>(false);
-
+    const [formValues, setFormValues] = useState<objectType>(allValues ? {...allValues, ["tier"]: allValues?.tier}: {});
+   
     const categories = [
         {
             id: 'ai-ml',
+            tag: "ai_ml",
             name: 'AI/ML Models',
             icon: (
                 <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -50,8 +56,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                         <path d="M35.0007 44.3333C37.8007 35.7513 40.8947 32.655 49.0007 30.3333C40.8947 28.0116 37.8007 24.9153 35.0007 16.3333C32.2007 24.9153 29.1067 28.0116 21.0007 30.3333C29.1067 32.655 32.2007 35.7513 35.0007 44.3333ZM16.334 23.3333C17.734 19.04 19.281 17.493 23.334 16.3333C19.281 15.1736 17.734 13.6266 16.334 9.33331C14.934 13.6266 13.387 15.1736 9.33398 16.3333C13.387 17.493 14.934 19.04 16.334 23.3333ZM19.834 46.6666C20.534 44.52 21.3063 43.7476 23.334 43.1666C21.3063 42.5856 20.534 41.8133 19.834 39.6666C19.134 41.8133 18.3617 42.5856 16.334 43.1666C18.3617 43.7476 19.134 44.52 19.834 46.6666Z" className="stroke-[#3B82F6] group-hover:stroke-white" strokeWidth="2" strokeLinejoin="round" />
                     </mask>
                     <g mask="url(#mask0_328_141)">
-                        <rect x="-29.166" y="-28" width="116.667" height="116.667" className={`${selectedCategories.includes('ai-ml') ? "fill-white" : "fill-[#6B7280]"} group-hover:fill-white`} />
-                        <rect x="7" y="7" width="18.6667" height="18.6667" className={`${selectedCategories.includes('ai-ml') ? "fill-none" : "fill-[#3B82F6]"} group-hover:fill-none`} />
+                        <rect x="-29.166" y="-28" width="116.667" height="116.667" className={`${formValues?.category == 'ai-ml' ? "fill-white" : "fill-[#6B7280]"} group-hover:fill-white`} />
+                        <rect x="7" y="7" width="18.6667" height="18.6667" className={`${formValues?.category == 'ai-ml' ? "fill-none" : "fill-[#3B82F6]"} group-hover:fill-none`} />
                     </g>
                 </svg>
             ),
@@ -64,7 +70,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                 <>
 
 
-                    <svg className={`${selectedCategories.includes('chatbot') ? "hidden" : "block"}  group-hover:hidden transition-colors duration-500`} width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg className={`${formValues?.category == 'chatbot' ? "hidden" : "block"}  group-hover:hidden transition-colors duration-500`} width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M44.3327 37.3333H38.441C38.0932 37.3336 37.7499 37.4125 37.4368 37.564C37.1236 37.7155 36.8488 37.9357 36.6327 38.2083L29.8077 46.725C29.5891 46.9984 29.3118 47.219 28.9963 47.3707C28.6809 47.5223 28.3354 47.6011 27.9854 47.6011C27.6353 47.6011 27.2898 47.5223 26.9744 47.3707C26.6589 47.219 26.3816 46.9984 26.163 46.725L19.338 38.2083C19.1217 37.9354 18.8464 37.715 18.5329 37.5635C18.2193 37.4119 17.8756 37.3333 17.5274 37.3333H11.666C7.78802 37.3333 4.66602 34.2113 4.66602 30.3333V14C4.66602 10.122 7.78802 7 11.666 7H44.3327C48.213 7 51.3327 10.122 51.3327 14V30.3333C51.3327 34.2113 48.213 37.3333 44.3327 37.3333Z" stroke="#6B7280" strokeWidth="2.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
                         <mask id="mask0_328_95" style={{ maskType: "alpha" }} maskUnits="userSpaceOnUse" x="14" y="13" width="28" height="19">
                             <path d="M19.6699 23.996L20.5472 20.4773C20.6639 20.006 21.3359 20.006 21.4525 20.4773L22.3322 23.996C22.3528 24.0777 22.3951 24.1523 22.4547 24.2118C22.5143 24.2714 22.5888 24.3137 22.6705 24.3343L26.1892 25.214C26.6605 25.3307 26.6605 26.0027 26.1892 26.1193L22.6705 26.999C22.5888 27.0196 22.5143 27.0619 22.4547 27.1215C22.3951 27.1811 22.3528 27.2557 22.3322 27.3373L21.4525 30.856C21.3359 31.3273 20.6639 31.3273 20.5472 30.856L19.6675 27.3373C19.6469 27.2557 19.6046 27.1811 19.545 27.1215C19.4855 27.0619 19.4109 27.0196 19.3292 26.999L15.8105 26.1193C15.3392 26.0027 15.3392 25.3307 15.8105 25.214L19.3292 24.3343C19.4109 24.3137 19.4855 24.2714 19.545 24.2118C19.6046 24.1523 19.6469 24.0777 19.6675 23.996M35.2332 17.7333L36.1665 14L37.0999 17.7333L40.8332 18.6667L37.0999 19.6L36.1665 23.3333L35.2332 19.6L31.4999 18.6667L35.2332 17.7333Z" stroke="#6B7280" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
@@ -76,7 +82,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                     </svg>
 
 
-                    <svg className={`${selectedCategories.includes('chatbot') ? "block" : "hidden"}  group-hover:block transition-colors duration-500`} width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg className={`${formValues?.category=='chatbot' ? "block" : "hidden"}  group-hover:block transition-colors duration-500`} width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M44.3333 37.3333H38.4416C38.0938 37.3336 37.7505 37.4125 37.4374 37.564C37.1242 37.7155 36.8494 37.9357 36.6333 38.2083L29.8083 46.725C29.5897 46.9984 29.3124 47.219 28.997 47.3707C28.6815 47.5223 28.336 47.6011 27.986 47.6011C27.6359 47.6011 27.2904 47.5223 26.975 47.3707C26.6595 47.219 26.3822 46.9984 26.1636 46.725L19.3386 38.2083C19.1223 37.9354 18.8471 37.715 18.5335 37.5635C18.22 37.4119 17.8762 37.3333 17.528 37.3333H11.6666C7.78863 37.3333 4.66663 34.2113 4.66663 30.3333V14C4.66663 10.122 7.78863 7 11.6666 7H44.3333C48.2136 7 51.3333 10.122 51.3333 14V30.3333C51.3333 34.2113 48.2136 37.3333 44.3333 37.3333Z" stroke="white" strokeWidth="2.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
                         <mask id="mask0_115_693" style={{ maskType: "alpha" }} maskUnits="userSpaceOnUse" x="14" y="13" width="28" height="19">
                             <path d="M19.67 23.996L20.5473 20.4773C20.664 20.006 21.336 20.006 21.4527 20.4773L22.3323 23.996C22.3529 24.0777 22.3953 24.1523 22.4548 24.2118C22.5144 24.2714 22.589 24.3137 22.6707 24.3343L26.1893 25.214C26.6607 25.3307 26.6607 26.0027 26.1893 26.1193L22.6707 26.999C22.589 27.0196 22.5144 27.0619 22.4548 27.1215C22.3953 27.1811 22.3529 27.2557 22.3323 27.3373L21.4527 30.856C21.336 31.3273 20.664 31.3273 20.5473 30.856L19.6677 27.3373C19.647 27.2557 19.6047 27.1811 19.5451 27.1215C19.4856 27.0619 19.411 27.0196 19.3293 26.999L15.8107 26.1193C15.3393 26.0027 15.3393 25.3307 15.8107 25.214L19.3293 24.3343C19.411 24.3137 19.4856 24.2714 19.5451 24.2118C19.6047 24.1523 19.647 24.0777 19.6677 23.996M35.2333 17.7333L36.1667 14L37.1 17.7333L40.8333 18.6667L37.1 19.6L36.1667 23.3333L35.2333 19.6L31.5 18.6667L35.2333 17.7333Z" stroke="#6B7280" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
@@ -98,21 +104,21 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                 <svg className="w-14 h-14" viewBox="0 0 56 56" fill="none">
                     <path
                         d="M32.7734 6.59162C19.9708 -0.784488 3.98707 8.46368 4.00001 23.2375C4.01079 35.6625 15.6465 44.8029 27.7201 41.8718M5.07192 29.6085H25.8696M5.07192 16.8146H25.8696"
-                        className={`${selectedCategories.includes('social') ? "stroke-white" : "stroke-[#6B7280]"}  group-hover:stroke-white`}
+                        className={`${formValues?.category=='social' ? "stroke-white" : "stroke-[#6B7280]"}  group-hover:stroke-white`}
                         strokeWidth="2.5"
                         strokeLinecap="round"
                         fill="none"
                     />
                     <path
                         d="M19.0289 4.46942C15.583 16.8961 16.0903 30.0873 20.4804 42.2127M27.3087 4.46942C28.0183 7.01871 28.5639 9.61113 28.9414 12.2294M51.9583 52H4.51172M32.7653 51.9979H51.9605V21.8248C51.9498 21.5508 51.8319 21.2919 51.6323 21.104C51.4326 20.916 51.1671 20.8139 50.8929 20.8198H33.8329C33.5589 20.8139 33.2937 20.9161 33.0943 21.1041C32.895 21.2921 32.7776 21.551 32.7675 21.8248L32.7653 51.9979Z"
-                        className={`${selectedCategories.includes('social') ? "stroke-white" : "stroke-[#6B7280]"} group-hover:stroke-white`}
+                        className={`${formValues?.category=='social' ? "stroke-white" : "stroke-[#6B7280]"} group-hover:stroke-white`}
                         strokeWidth="2.5"
                         strokeLinecap="round"
                         fill="none"
                     />
                     <path
                         d="M42.363 13.6162V5.93811M45.5615 28.2023H39.1624M45.5615 35.9537H39.1624M45.5615 43.7288H39.1624M37.5664 14.9339C37.6062 14.5481 37.7966 14.1936 38.0962 13.9473C38.3958 13.701 38.7805 13.5828 39.1667 13.6183H45.5637C45.9496 13.5834 46.3337 13.7018 46.6328 13.9481C46.9319 14.1943 47.122 14.5485 47.1618 14.9339V20.8197H37.5664V14.9339Z"
-                        className={`${selectedCategories.includes('social') ? "stroke-white" : "stroke-[#6B7280]"} group-hover:stroke-white`}
+                        className={`${formValues?.category == 'social' ? "stroke-white" : "stroke-[#6B7280]"} group-hover:stroke-white`}
                         strokeWidth="2.5"
                         strokeLinecap="round"
                         fill="none"
@@ -130,8 +136,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                         <path d="M36.75 35C36.2859 35 35.8408 35.1844 35.5126 35.5126C35.1844 35.8407 35 36.2859 35 36.75C35 37.2141 35.1844 37.6593 35.5126 37.9874C35.8408 38.3156 36.2859 38.5 36.75 38.5H43.75C44.2141 38.5 44.6592 38.3156 44.9874 37.9874C45.3156 37.6593 45.5 37.2141 45.5 36.75C45.5 36.2859 45.3156 35.8407 44.9874 35.5126C44.6592 35.1844 44.2141 35 43.75 35H36.75ZM3.5 19.25C3.5 16.9294 4.42187 14.7038 6.06282 13.0628C7.70376 11.4219 9.92936 10.5 12.25 10.5H43.75C46.0706 10.5 48.2962 11.4219 49.9372 13.0628C51.5781 14.7038 52.5 16.9294 52.5 19.25V36.75C52.5 39.0706 51.5781 41.2962 49.9372 42.9372C48.2962 44.5781 46.0706 45.5 43.75 45.5H12.25C9.92936 45.5 7.70376 44.5781 6.06282 42.9372C4.42187 41.2962 3.5 39.0706 3.5 36.75V19.25ZM49 21V19.25C49 17.8576 48.4469 16.5223 47.4623 15.5377C46.4777 14.5531 45.1424 14 43.75 14H12.25C10.8576 14 9.52226 14.5531 8.53769 15.5377C7.55312 16.5223 7 17.8576 7 19.25V21H49ZM7 24.5V36.75C7 38.1424 7.55312 39.4777 8.53769 40.4623C9.52226 41.4469 10.8576 42 12.25 42H43.75C45.1424 42 46.4777 41.4469 47.4623 40.4623C48.4469 39.4777 49 38.1424 49 36.75V24.5H7Z" className="fill-[#3B82F6] group-hover:fill-white" />
                     </mask>
                     <g mask="url(#mask0_328_245)">
-                        <rect x="-40.834" y="-36.1667" width="116.667" height="116.667" className={`${selectedCategories.includes('fintech') ? "fill-white" : "fill-[#6B7280]"} group-hover:fill-white`} />
-                        <rect x="33.834" y="33.8333" width="12.8333" height="5.83333" className={`${selectedCategories.includes('fintech') ? "fill-none" : "fill-[#10B981]"} group-hover:fill-none`} />
+                        <rect x="-40.834" y="-36.1667" width="116.667" height="116.667" className={`${formValues?.category == 'fintech' ? "fill-white" : "fill-[#6B7280]"} group-hover:fill-white`} />
+                        <rect x="33.834" y="33.8333" width="12.8333" height="5.83333" className={`${formValues?.category =='fintech' ? "fill-none" : "fill-[#10B981]"} group-hover:fill-none`} />
                     </g>
                 </svg>
             ),
@@ -142,7 +148,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
             name: 'Health Tech',
             icon: (
                 <>
-                    <svg className={`${selectedCategories.includes('health') ? "hidden" : "block"} w-14 h-14   group-hover:hidden text-[#6B7280] transition-colors duration-500`} viewBox="0 0 56 56" fill="none">
+                    <svg className={`${formValues?.category == 'health' ? "hidden" : "block"} w-14 h-14   group-hover:hidden text-[#6B7280] transition-colors duration-500`} viewBox="0 0 56 56" fill="none">
                         <path
                             d="M43.1654 21H38.4987M38.4987 21H33.832M38.4987 21V16.3333M38.4987 21V25.6666"
                             className="stroke-[#F59E0B] transition-colors duration-500 group-hover:stroke-white"
@@ -154,7 +160,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                             fill="#6B7280"
                         />
                     </svg>
-                    <svg className={`${selectedCategories.includes('health') ? "block" : "hidden"}  group-hover:block transition-colors duration-500`} width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg className={`${formValues?.category == 'health' ? "block" : "hidden"}  group-hover:block transition-colors duration-500`} width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M43.1668 21H38.5002M38.5002 21H33.8335M38.5002 21V16.3333M38.5002 21V25.6667" stroke="white" strokeWidth="3" strokeLinecap="round" />
                         <path d="M28.0001 13.006L26.7214 14.2007C26.8851 14.3759 27.0831 14.5156 27.3031 14.6111C27.523 14.7066 27.7603 14.7559 28.0001 14.7559C28.2399 14.7559 28.4771 14.7066 28.6971 14.6111C28.917 14.5156 29.115 14.3759 29.2788 14.2007L28.0001 13.006ZM6.18808 31.9247C6.30353 32.1281 6.45859 32.3063 6.64409 32.4488C6.82959 32.5913 7.04177 32.6951 7.26809 32.7542C7.49442 32.8133 7.73028 32.8264 7.96175 32.7927C8.19323 32.7591 8.4156 32.6794 8.61575 32.5583C8.81589 32.4373 8.98973 32.2773 9.12701 32.0879C9.26428 31.8985 9.36219 31.6836 9.41495 31.4557C9.46772 31.2278 9.47427 30.9917 9.43421 30.7612C9.39416 30.5308 9.30831 30.3107 9.18175 30.114L6.18808 31.9247ZM15.2531 37.7323C15.095 37.559 14.9036 37.4192 14.6904 37.3213C14.4771 37.2234 14.2464 37.1694 14.0119 37.1624C13.7773 37.1555 13.5438 37.1958 13.3252 37.2809C13.1065 37.366 12.9072 37.4943 12.7392 37.658C12.5711 37.8217 12.4376 38.0175 12.3467 38.2338C12.2559 38.4502 12.2094 38.6825 12.2101 38.9172C12.2109 39.1518 12.2588 39.3839 12.351 39.5996C12.4433 39.8154 12.578 40.0104 12.7471 40.173L15.2531 37.7323ZM6.41675 21.742C6.41675 14.9637 9.37542 10.7753 13.0341 9.34033C16.6857 7.91 21.7934 8.932 26.7214 14.2007L29.2788 11.8113C23.7068 5.852 17.1477 3.97133 11.7577 6.08066C6.37475 8.19 2.91675 13.9813 2.91675 21.742H6.41675ZM36.1901 46.5733C39.6738 43.7477 43.8457 39.9607 47.1637 35.7303C50.4468 31.5443 53.0834 26.6793 53.0834 21.7373H49.5834C49.5834 25.4987 47.5301 29.5867 44.4081 33.5697C41.3187 37.5107 37.3708 41.111 33.9874 43.855L36.1901 46.5733ZM53.0834 21.7373C53.0834 13.979 49.6254 8.18766 44.2401 6.08066C38.8501 3.969 32.2934 5.84733 26.7214 11.809L29.2788 14.2007C34.2068 8.932 39.3144 7.90766 42.9661 9.338C46.6247 10.7707 49.5834 14.9613 49.5834 21.7373H53.0834ZM19.8101 46.5757C22.7734 48.9837 24.8314 50.75 28.0001 50.75V47.25C26.3131 47.25 25.2631 46.494 22.0127 43.8573L19.8101 46.5757ZM33.9874 43.855C30.7371 46.4917 29.6871 47.25 28.0001 47.25V50.75C31.1688 50.75 33.2291 48.9837 36.1924 46.5757L33.9874 43.855ZM9.18408 30.114C7.43642 27.23 6.41675 24.395 6.41675 21.742H2.91675C2.91675 25.27 4.26075 28.742 6.18808 31.9247L9.18408 30.114ZM22.0127 43.8573C19.6439 41.947 17.387 39.902 15.2531 37.7323L12.7471 40.173C14.974 42.4429 17.3339 44.5807 19.8101 46.5757L22.0127 43.8573Z" fill="white" />
                     </svg>
@@ -167,12 +173,12 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
             name: 'Other / General',
             icon: (
                 <>
-                    <svg className={`${selectedCategories.includes('other') ? "hidden" : "block"} w-14 h-14 group-hover:hidden`} viewBox="0 0 56 56" fill="none">
+                    <svg className={`${formValues?.category == 'other' ? "hidden" : "block"} w-14 h-14 group-hover:hidden`} viewBox="0 0 56 56" fill="none">
                         <circle cx="14" cy="28" r="3.5" fill="#6B7280" />
                         <circle cx="28" cy="28" r="3.5" fill="#6B7280" />
                         <circle cx="42" cy="28" r="3.5" fill="#8B5CF6" />
                     </svg>
-                    <svg className={`${selectedCategories.includes('other') ? "block" : "hidden"}  group-hover:block`} width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg className={`${formValues?.category == 'other' ? "block" : "hidden"}  group-hover:block`} width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M14 24.5C13.0717 24.5 12.1815 24.8687 11.5251 25.5251C10.8687 26.1815 10.5 27.0717 10.5 28C10.5 28.9283 10.8687 29.8185 11.5251 30.4749C12.1815 31.1313 13.0717 31.5 14 31.5C14.9283 31.5 15.8185 31.1313 16.4749 30.4749C17.1313 29.8185 17.5 28.9283 17.5 28C17.5 27.0717 17.1313 26.1815 16.4749 25.5251C15.8185 24.8687 14.9283 24.5 14 24.5ZM24.5 28C24.5 27.0717 24.8687 26.1815 25.5251 25.5251C26.1815 24.8687 27.0717 24.5 28 24.5C28.9283 24.5 29.8185 24.8687 30.4749 25.5251C31.1313 26.1815 31.5 27.0717 31.5 28C31.5 28.9283 31.1313 29.8185 30.4749 30.4749C29.8185 31.1313 28.9283 31.5 28 31.5C27.0717 31.5 26.1815 31.1313 25.5251 30.4749C24.8687 29.8185 24.5 28.9283 24.5 28ZM38.5 28C38.5 27.0717 38.8687 26.1815 39.5251 25.5251C40.1815 24.8687 41.0717 24.5 42 24.5C42.9283 24.5 43.8185 24.8687 44.4749 25.5251C45.1312 26.1815 45.5 27.0717 45.5 28C45.5 28.9283 45.1312 29.8185 44.4749 30.4749C43.8185 31.1313 42.9283 31.5 42 31.5C41.0717 31.5 40.1815 31.1313 39.5251 30.4749C38.8687 29.8185 38.5 28.9283 38.5 28Z" fill="white" />
                         <path d="M38.5 28C38.5 27.0717 38.8688 26.1815 39.5251 25.5251C40.1815 24.8687 41.0717 24.5 42 24.5C42.9283 24.5 43.8185 24.8687 44.4749 25.5251C45.1312 26.1815 45.5 27.0717 45.5 28C45.5 28.9283 45.1312 29.8185 44.4749 30.4749C43.8185 31.1313 42.9283 31.5 42 31.5C41.0717 31.5 40.1815 31.1313 39.5251 30.4749C38.8688 29.8185 38.5 28.9283 38.5 28Z" fill="white" />
                     </svg>
@@ -190,6 +196,21 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
         const matched = budgetTier.find((item: any) => {
             const min = item.fields["Budget Min"];
             const max = item.fields["Budget Max"];
+            const updatedBudgetTier = budgetTier.map((item: any) => {
+                const min = Number(item.fields["Budget Min"]);
+                const max = Number(item.fields["Budget Max"]);
+                const value = Number(numeric);
+
+                return {
+                    ...item,
+                    fields: {
+                        ...item.fields,
+                        checked: value >= min && value <= max,
+                    },
+                };
+            });
+            setBudgetTier(updatedBudgetTier);
+
             return Number(numeric) >= min && Number(numeric) <= max;
         });
         if (Number(numeric) > 0 && matched) {
@@ -204,36 +225,56 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
     const getBudgetTier = async () => {
         const res = await fetch("/api/budget-tier");
         const data = await res.json();
+
         setBudgetTier(data.records);
 
     }
 
     const getPrinciples = async () => {
-        setLoader(true);
-        const res = await fetch("/api/principles");
-        const data = await res.json();
-        setLoader(false);
-        Principles(
-            data?.records?.map((prin: any) => ({
-                id: prin.fields["Principle ID"],
-                name: prin.fields["Display Name"],
-                description: prin.fields["Description"],
-                color: prin.fields["Color"],
-                bgcolor: "#FFFDFD",
-                percentage: 0,
-                budget: 0,
-                checked: false,
-                layersVisible: false,
-                layers: prin?.subPrinciples.map((sp: any) => ({
-                    id: sp.executionLayerId,
-                    budget: 0,
-                    name: sp.displayName,
-                    description: sp.description,
+      
+        if((typeof allValues?.principles =="undefined" && !allValues?.principles) || allValues?.principles?.length == 0){
+            setLoader(true);
+            const res = await fetch("/api/principles");
+            const data = await res.json();
+            setLoader(false);
+            Principles(
+                data?.records?.map((prin: any) => ({
+                    id: prin.fields["Principle ID"],
+                    name: prin.fields["Display Name"],
+                    description: prin.fields["Description"],
+                    color: prin.fields["Color"],
+                    bgcolor: "#FFFDFD",
                     percentage: 0,
-                    checked: false
+                    budget: 0,
+                    checked: false,
+                    layersVisible: false,
+                    layers: prin?.subPrinciples.map((sp: any) => ({
+                        id: sp.executionLayerId,
+                        budget: 0,
+                        name: sp.displayName,
+                        description: sp.description,
+                        percentage: 0,
+                        checked: false
+                    }))
                 }))
-            }))
-        );
+            );
+        }else{
+            Principles(allValues?.principles);
+        }
+       
+
+        selectedValues({
+            budget: formValues?.budget,
+            categoryName: formValues?.categoryName,
+            projectName: formValues?.projectName,
+            stage: showStage?.toUpperCase(),
+            category: formValues?.category ? formValues?.category : "",
+            tier: formValues?.tier ? formValues.tier : budgetTier.find(
+                (item: any) => item.fields.checked === true
+            )?.fields["Tier ID"] ?? null,
+            principles: allValues?.principles?.length > 0 ? allValues?.principles : [],
+            notes: allValues?.notes
+        });
     }
 
 
@@ -269,6 +310,37 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
 
                 {/* Form Container */}
                 <div className="flex flex-col gap-6 sm:gap-7">
+                    {/* Project Name */}
+                    <div
+                        className="p-6 sm:p-8 rounded-xl bg-gray-50"
+                        style={{
+                            border: '2.5px solid transparent',
+                            backgroundImage: 'linear-gradient(#FFFFFF, #FFFFFF), linear-gradient(135deg, #8B5CF5 0%, #EF4444 50%, #05B5D4 75%, #0C9668 87.5%, #D68908 93.75%, #3B81F5 100%)',
+                            backgroundOrigin: 'border-box',
+                            backgroundClip: 'padding-box, border-box',
+                        }}
+                    >
+                        <div className="flex flex-col gap-5">
+                            <label htmlFor="budget" className="sm:text-base text-sm font-semibold text-[#323152]">
+                                Project Name
+                            </label>
+                            <div className="flex items-center gap-1.5 px-5 py-3.5 rounded-md border border-gray-100 bg-white">
+                                    <input
+                                    type="text"
+                                    id="projectName"
+                                    value={formValues?.projectName ?? ""}
+                                    onChange={(e) => {
+                                        setFormValues({...formValues,["projectName"]: e.target.value.trim()});
+                                    }}
+                                    className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
+                                    placeholder="Enter project name"
+                                />
+                               
+                            </div>
+                        
+                        </div>
+                    </div>
+
                     {/* Budget Input Card */}
                     <div
                         className="p-6 sm:p-8 rounded-xl bg-gray-50"
@@ -288,16 +360,11 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                                 <input
                                     type="text"
                                     id="budget"
-                                    value={budget}
+                                    value={formValues?.budget  ? formValues.budget : ""}
                                     onChange={(e) => {
                                         const formatted = formatNumber(e.target.value);
-                                        setBudget(formatted);
-                                        selectedValues({
-                                            budget: formatted,
-                                            tech: selectedCategories[0]
-                                        });
+                                        setFormValues({...formValues,["budget"]: formatted, ["tier"]: ""})
                                     }}
-                                    // onChange={(e) => setBudget(e.target.value)}
                                     className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
                                     placeholder="50,000"
                                 />
@@ -313,6 +380,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                         </div>
                     </div>
 
+                    
                     {/* Tech Categories Card */}
                     <div
                         className="p-6 sm:p-8 rounded-xl bg-gray-50 relative"
@@ -333,14 +401,9 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                                 <div
                                     key={category.id}
                                     onClick={() => {
-                                        setSelectedCategories([category.id]);
-                                        selectedValues({
-                                            budget: budget,
-                                            tech: category.name,
-                                            stage: showStage?.toUpperCase()
-                                        })
+                                       setFormValues({...formValues, ['category']: category.id, ['categoryName']: category.name})
                                     }}
-                                    className={`${selectedCategories.includes(category.id) ? "bg-[#3B82F6]" : "bg-white"} relative p-4 sm:p-5 rounded-md border-2 transition-all text-left group hover:bg-[#3B82F6] transition-colors duration-600 cursor-pointer border-gray-100`
+                                    className={`${formValues?.category == category.id ? "bg-[#3B82F6]" : "bg-white"} relative p-4 sm:p-5 rounded-md border-2 transition-all text-left group hover:bg-[#3B82F6] transition-colors duration-600 cursor-pointer border-gray-100`
                                     }
                                 >
                                     <div className="flex flex-col gap-3.5 sm:gap-4 relative">
@@ -354,7 +417,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
                                                 onMouseLeave={() => setHoveredTooltip(null)}
                                                 aria-label="More information"
                                             >
-                                                <svg className={`${selectedCategories.includes(category.id) ? "text-white" : ""} transition-colors duration-500 group-hover:text-white w-3.5 h-3.5`} viewBox="0 0 14 14" fill="none">
+                                                <svg className={`${formValues?.category == category.id ? "text-white" : ""} transition-colors duration-500 group-hover:text-white w-3.5 h-3.5`} viewBox="0 0 14 14" fill="none">
                                                     <path
                                                         fillRule="evenodd"
                                                         clipRule="evenodd"
@@ -377,7 +440,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
 
 
 
-                                        <div className={`${selectedCategories.includes(category.id) ? "text-white" : "text-[#6B7280]"} group-hover:text-white sm:text-left text-center text-sm font-medium`}>{category.name}</div>
+                                        <div className={`${formValues?.category == category.id ? "text-white" : "text-[#6B7280]"} group-hover:text-white sm:text-left text-center text-sm font-medium`}>{category.name}</div>
 
                                         {hoveredTooltip === category.id && (
                                             <div className="absolute sm:-right-7 -right-5 sm:top-6 top-8 mt-0 w-72 sm:w-80 z-50 opacity-0 animate-fadeIn pointer-events-none">
@@ -419,11 +482,10 @@ export default function BudgetTool({ onNext, selectedValues, Principles }: props
 
                     {/* Continue Button */}
                     <button onClick={() => {
-                        (budget && selectedCategories.length > 0 && !loader) ?
+                        (formValues?.budget && formValues?.category && !loader) ?
                             getPrinciples() : "";
-                        // budget && selectedCategories.length > 0 ? onNext(2) : ""
                     }
-                    } className={`${(budget && selectedCategories.length > 0) && !loader ? "cursor-pointer" : "cursor-not-allowed"} flex items-center justify-center gap-2.5 px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6]`}>
+                    } className={`${(formValues?.budget && formValues?.category) && !loader ? "cursor-pointer" : "cursor-not-allowed"} flex items-center justify-center gap-2.5 px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6]`}>
                         {!loader ? <>
                             <span className="text-base font-semibold text-white">Continue</span>
                             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">

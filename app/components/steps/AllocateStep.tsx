@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import ToastModal from '../CustomToast';
+import Image from 'next/image';
 
 type props = {
   onNext: (value: number) => void;
   selectedValues: any,
   Principles: PrincipleProps[],
   reportData: (value: Array<any>) => void
+  userNotes: (value: string) => void
+  updatedPrinciples: (value: Array<any>) => void
 }
 
 type PrincipleProps = {
@@ -23,12 +26,13 @@ type PrincipleProps = {
   layers: any[];
 }
 
-export default function AllocatePage({ onNext, selectedValues, Principles, reportData }: props) {
+export default function AllocatePage({ onNext, selectedValues, Principles, reportData, userNotes, updatedPrinciples }: props) {
   const totalBudget = selectedValues.budget;
 
-  const [principles, setPrinciples] = useState<PrincipleProps[]>(Principles);
+  const [principles, setPrinciples] = useState<PrincipleProps[]>(selectedValues?.principles?.length > 0 ? selectedValues?.principles : Principles);
   const [showToast, setShowToast] = useState<boolean>(false);
   const [loader, setLoader] = useState<boolean>(false);
+  // const [notes, setNotes] = useState<string>(selectedValues?.notes ? selectedValues?.notes : "");
 
   const [error, setError] = useState("");
 
@@ -91,7 +95,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   };
 
   const getPrincipalDollarAmount = (principleId: string) => {
-    const principle = principles.find((p) => p.id === principleId);
+    const principle = principles?.find((p) => p.id === principleId);
     if (!principle) return '0';
     const amount = (principle.percentage / 100 * Number(totalBudget.replace(/,/g, ""))).toLocaleString("en-US", { maximumFractionDigits: 1 });
     return amount;
@@ -99,7 +103,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
   const getLayerDollarAmount = (layer: any, principleId: string) => {
     if (!layer) return '0';
-    const amount = (layer.percentage / 100 * Number(principles.find((p) => p.id === principleId)?.budget)).toLocaleString("en-US", { maximumFractionDigits: 1 });
+    const amount = (layer.percentage / 100 * Number(principles?.find((p) => p.id === principleId)?.budget)).toLocaleString("en-US", { maximumFractionDigits: 1 });
     return amount;
   };
 
@@ -125,8 +129,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     );
   }, [
     totalBudget,
-    principles.map((p) => p.percentage).join(),
-    principles.map((p) =>
+    principles?.map((p) => p.percentage).join(),
+    principles?.map((p) =>
       p.layers?.map((l) => l.percentage).join()
     ).join(),
   ]);
@@ -135,14 +139,13 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
   const calculateRemaining = () => {
 
-    const totalAllocated = principles.reduce((sum, p) => sum + p.percentage, 0);
+    const totalAllocated = principles?.reduce((sum, p) => sum + p.percentage, 0);
     let allocated = 100 - totalAllocated;
     if (allocated < 0) {
       allocated = totalAllocated;
     }
     return allocated;
   };
-
 
 
   const calculateDollarAmount = (percentage: number) => {
@@ -166,14 +169,15 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     return remaining;
   };
   const getTotalPrinciplesPercentage = (principles: any[]) => {
-    const percentage = principles.reduce((sum, p) => sum + p.percentage, 0);
+    const percentage = principles?.reduce((sum, p) => sum + p.percentage, 0);
 
     return percentage;
 
   };
 
+
   const areAllLayersValid = (principles: any[], totalBudget: number) => {
-    return principles.every((p) => {
+    return principles?.every((p) => {
 
       const shouldValidateLayers =
         p.budget === totalBudget || p.percentage > 0;
@@ -226,25 +230,30 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     const data = await res.json();
 
     setLoader(false);
-
+    const normalize = (val: any) => String(val).trim().toUpperCase();
     const newReportData: any[] = [];
 
     const items = data.records;
-    
-    principles.map((p) => {
-    p.layers.map((layer) => {
-      if (layer.checked) {
-        const layerBudget = Number(layer.budget || 0);
-        
-        const matching = items?.filter((item: any) => {
-        const fields = item.fields;
-        return (
-          Number(fields["Cost Min"]) <= layerBudget &&
-          Number(fields["Cost Max"]) >= layerBudget &&
-          String(layer.id).trim() === String(fields["Execution Layer"]).trim()
-        );
-      });
 
+    principles?.map((p) => {
+      p.layers.filter((lf) => lf.checked === true).map((layer) => {
+
+        const layerBudget = Number(layer.budget || 0);
+        const matching = items?.filter((item: any) => {
+          const fields = item.fields;
+
+          return (
+            normalize(fields["Execution Layer"]) === normalize(layer.id) &&
+            Number(fields["Cost Min"]) <= layerBudget &&
+            Number(fields["Cost Max"]) >= layerBudget &&
+            fields["Budget Tier"] === selectedValues.tier &&
+            fields["Status"] == "Active"
+          );
+        }).sort((a: any, b: any) => {
+          const pa = a.fields.Priority ?? Infinity;
+          const pb = b.fields.Priority ?? Infinity;
+          return Number(pa) - Number(pb);
+        }) ?? [];
         
         newReportData.push({
           principleId: p.id,
@@ -257,19 +266,24 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           layerBudget,
           items: matching ? matching[0]?.fields : [],
         });
-       
-      }
+      });
     });
-  });
+    userNotes(selectedValues?.notes);
     reportData(newReportData);
     onNext(3);
   }
 
+  useEffect(()=>{
+    updatedPrinciples(principles);
+  },[principles])
 
   return (
     <>
       {/* Main Content */}
       <main className="mx-auto max-w-4xl px-4 lg:px-8 py-8 sm:py-12 lg:py-16">
+        <div className='w-fit flex gap-1 cursor-pointer' onClick={() => onNext(1)}>
+          <Image src="/arrow-left.svg" width={18} height={18} alt='icon' />Back
+        </div>
         {/* Title Section */}
         <ToastModal
           open={showToast}
@@ -324,7 +338,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
           <div className="flex flex-col gap-6 sm:gap-7">
             {/* Principles Cards */}
-            {principles.map((principle) => (
+            {principles?.map((principle) => (
               <div
                 key={principle.id}
                 className={`p-6 sm:p-8 rounded-lg border-l-4 
@@ -557,35 +571,48 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                 </div>
               </div>
             ))}
+            <div className="flex flex-col gap-4 rounded-xl border border-gray-200 p-6 sm:p-8 bg-[#FAFAFA]">
+              <h1 className="font-inter text-lg font-semibold leading-6 text-gray-900">
+                Project Notes / Context
+              </h1>
 
+              <div className="relative w-full">
+                <textarea
+                  value={selectedValues?.notes}
+                  onChange={(e) => {userNotes(e.target.value.trim() ?? "")}}
+                  placeholder="Use this space to record any critical context, rationale, etc."
+                  className="h-32 w-full resize-none bg-white rounded-md border border-gray-200/50 px-5 py-5 font-inter text-sm tracking-tight text-gray-900 placeholder:text-gray-500/80 focus:border-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                />
+              </div>
+            </div>
 
           </div>
 
 
           {/* Generate Report Button */}
           <button onClick={() => {
-            if(!loader){
-            const principlesTotal = getTotalPrinciplesPercentage(principles);
-            const layersValid = areAllLayersValid(principles, Number(totalBudget.replace(/,/g, "")));
+            if (!loader) {
+              const principlesTotal = getTotalPrinciplesPercentage(principles);
+              const layersValid = areAllLayersValid(principles, Number(totalBudget.replace(/,/g, "")));
 
-            if (principlesTotal > 100 || (principlesTotal < 100 && principlesTotal > 0)) {
-              setError(`Total must equal 100% (Allocated: ${principlesTotal}%)`);
-              setShowToast(true);
-              return;
-            }
+              if (principlesTotal > 100 || (principlesTotal < 100 && principlesTotal > 0)) {
+                setError(`Total must equal 100% (Allocated: ${principlesTotal}%)`);
+                setShowToast(true);
+                return;
+              }
 
-            else if (principlesTotal === 100 && !layersValid) {
-              setError("Please ensure execution layers total exactly 100%");
-              setShowToast(true);
-              return;
+              else if (principlesTotal === 100 && !layersValid) {
+                setError("Please ensure execution layers total exactly 100%");
+                setShowToast(true);
+                return;
+              }
+              else if (principlesTotal === 0) {
+                setError("Please ensure that you are allocating your exact budget!");
+                setShowToast(true);
+                return;
+              }
+              generateReport();
             }
-            else if (principlesTotal === 0) {
-              setError("Please allocate budget to generate report");
-              setShowToast(true);
-              return;
-            }
-            generateReport();
-          }
           }
           } className="cursor-pointer w-full px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6] text-center">
             <span className="text-base font-semibold text-white">

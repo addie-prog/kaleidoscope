@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BudgetStep from "@/app/components/steps/BudgetStep";
 import AllocateStep from "@/app/components/steps/AllocateStep";
 import ReportStep from "@/app/components/steps/ReportStep";
@@ -8,7 +8,7 @@ import Image from "next/image";
 
 export default function BudgetTool() {
   const [step, setStep] = useState<Number>(1);
-  const [selectedValues, setSelectedValues] = useState(1);
+  const [selectedValues, setSelectedValues] = useState({});
   const [principles, setPrinciples] = useState([]);
   const [reportData, setReportData] = useState([]);
 
@@ -30,18 +30,20 @@ export default function BudgetTool() {
           </div>
         </div>
       </header>
-      {step === 1 && <BudgetStep Principles={(val:any)=>{setPrinciples(val), setStep(2)}} onNext={(value: number) => setStep(value)} selectedValues={(value)=>setSelectedValues(value)} />}
+      {step === 1 && <BudgetStep Principles={(val:any)=>{setPrinciples(val), setStep(2)}} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value)=>setSelectedValues(value)} />}
 
       {step === 2 && (
         <AllocateStep
+          updatedPrinciples={(val: any)=>setSelectedValues({...selectedValues,['principles']: val})}
+          userNotes={(val: any)=>setSelectedValues({...selectedValues,["notes"]:val})}
           selectedValues={selectedValues}
           onNext={(value: number) => setStep(value)}
           Principles={principles}
-          reportData={(value: any)=>setReportData(value)}
+          reportData={(value: any)=>{setReportData(value)}}
         />
       )}
 
-      {step === 3 && <ReportStep  reportData={reportData} selectedValues={selectedValues}/>}
+      {step === 3 && <ReportStep onBack={(value: number) => setStep(value)} reportData={reportData} selectedValues={selectedValues}/>}
     </div>
   );
 }

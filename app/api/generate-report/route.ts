@@ -1,34 +1,24 @@
+import fs from "fs/promises";
+import path from "path";
+
 export async function GET() {
   try {
-    const token = process.env.AIRTABLE_TOKEN!;
-    const APIDomain = process.env.AIRTABLE_DOMAIN!;
-    const appID = process.env.AIRTABLE_APPID!;
+    const filePath = path.join(
+      process.cwd(),
+      "app",
+      "data",
+      "items.json"
+    );
 
-    const baseUrl = `${APIDomain}/v0/${appID}/items?pageSize=3`;
+    const file = await fs.readFile(filePath, "utf-8");
+    const records = JSON.parse(file);
 
-    let allRecords: any[] = [];
-    let offset: string | undefined = undefined;
-
-    do {
-      const url = new URL(baseUrl);
-      if (offset) url.searchParams.set("offset", offset);
-
-      const res = await fetch(url.toString(), {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-
-      allRecords.push(...data.records);
-
-      offset = data.offset; // if undefined → last page
-    } while (offset);
-
-    return Response.json({ records: allRecords });
+    return Response.json({ records });
 
   } catch (error: any) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json(
+      { error: "Failed to read items.json" },
+      { status: 500 }
+    );
   }
 }

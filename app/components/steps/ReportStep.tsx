@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 
-export default function ReportPage({ reportData, selectedValues }: { reportData: Array<any>, selectedValues: any }) {
+export default function ReportPage({ reportData, selectedValues, onBack }: { reportData: Array<any>, selectedValues: any, onBack: (value: number) => void }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const today = new Date();
   const uniqueByPrinciple = reportData.filter(
@@ -19,12 +19,28 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
   
   const reactToPrintFn = useReactToPrint({ contentRef });
 
+  const groupedByPrinciple = uniqueByPrinciple.map((principle) => {
+  const principleItems = reportData.filter(
+    (rd) => rd.principleId === principle.principleId
+  );
+
+  return {
+    ...principle,
+    items: principleItems.flatMap((p) => p.items ?? []),
+  };
+});
+
   return (
     <div>
       {/* <button onClick={reactToPrintFn}>Download PDF</button> */}
       {/* Main Content */}
       <div ref={contentRef}>
         <main className="mx-auto max-w-4xl px-4  py-6 sm:py-8 lg:py-12">
+
+           <div className='w-fit flex gap-1 cursor-pointer mb-[15px]' onClick={()=>onBack(2)}>
+                  <Image src="/arrow-left.svg" width={18} height={18} alt='icon'/>Back
+                  </div>
+
           {/* Report Header Card */}
           <div
             className="mb-6 px-4 sm:px-15 sm:py-9 py-6 rounded-lg bg-white"
@@ -47,7 +63,7 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
                 </div>
                 <div className="flex flex-col items-center gap-2 sm:w-[30%]">
                   <div className="sm:text-[15px] text-[12px] font-medium text-[#6B7280] text-center w-full">Tech Type</div>
-                  <div className="sm:text-[17px] text-[12px] font-bold text-[#111827] text-center">{selectedValues?.tech}</div>
+                  <div className="sm:text-[17px] text-[12px] font-bold text-[#111827] text-center">{selectedValues?.categoryName}</div>
                 </div>
                 <div className="flex flex-col items-center gap-2 sm:w-[30%]">
                   <div className="sm:text-[15px] text-[12px] font-medium text-[#6B7280] text-center">Generated</div>
@@ -93,8 +109,10 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
 
           {/* Tasks Container */}
           <div className="flex flex-col gap-10">
-            {uniqueByPrinciple?.map((principle, index) =>
-              <div key={index} className="max-w-4xl px-5 py-6 sm:py-8 lg:py-12 rounded-md border-2 border-[#E5E7EB]">
+            {groupedByPrinciple?.map((principle, index) =>
+             {
+              
+              return <div key={index} className="max-w-4xl px-5 py-6 sm:py-8 lg:py-12 rounded-md border-2 border-[#E5E7EB]">
                 {/* Section Header */}
                 <div className="mb-8 flex gap-2 items-center">
                   <div className={`flex h-2 w-2 flex-shrink-0 rounded-full bg-[#${principle.principleColor}]`} style={{ background: principle.principleColor }}></div>
@@ -105,20 +123,21 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
                 </div>
 
                 {/* Task Container */}
-                {reportData?.map((data, ind) => {
-                  
-                  return typeof data?.items != "undefined" && principle.layerId == data.layerId ? <div key={ind} className="border-l-2 border-[#E5E7EB] bg-white px-4 sm:px-6 mb-8">
+                {principle?.items?.map((item: any, ind: number) => {
+                 
+                  return typeof item != "undefined" ? 
+                  <div key={ind} className="border-l-2 border-[#E5E7EB] bg-white px-4 sm:px-6 mb-8">
                     {/* Task 1: Document dataset representation gaps */}
                     <div className="flex flex-col gap-8">
                       <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div className="flex items-center gap-3">
                           { 
-                          (data?.items['Category'] == "skip"
+                          (item['Category'] == "skip"
                             ?
                             <div className="inline-flex items-center px-3 py-2 rounded-full bg-[#EF4444]">
                               <span className="text-[10px] font-semibold text-white leading-[normal]">SKIP FOR NOW</span>
                             </div> :
-                            data?.items['Category'] == "must_have" ?
+                            item['Category'] == "must_have" ?
                               <div className="inline-flex items-center px-3 py-2 rounded-full bg-[#10B981]">
                                 <span className="text-[10px] font-semibold text-white leading-[normal]">MUST HAVE</span>
                               </div>
@@ -134,14 +153,14 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
                               <circle cx="5" cy="5" r="4.167" stroke="#6B7280" strokeWidth="0.833" />
                               <path d="M5 2.5V5L6.667 5.833" stroke="#6B7280" strokeWidth="0.833" strokeLinecap="round" />
                             </svg>
-                            <span className="text-xs font-medium text-[#6B7280]">{data?.items["Time Weeks"]} week</span>
+                            <span className="text-xs font-medium text-[#6B7280]">{item["Time Weeks"]} week</span>
                           </div>
                         </div>
-                        <div className="text-sm font-semibold" style={{ color: data.principleColor }}>{data?.items["Cost Display"]}</div>
+                        <div className="text-sm font-semibold" style={{ color: principle.principleColor }}>{item["Cost Display"]}</div>
                       </div>
 
                       <h4 className="text-[15px] sm:text-[20px] font-semibold text-[#111827] leading-tight">
-                        {data?.items["Item Name"]}
+                        {item["Item Name"]}
                       </h4>
 
                       <div className="flex items-start gap-1.5">
@@ -149,7 +168,7 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
                         <div className="flex flex-col gap-3.5 w-full">
                           <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">Why This Matters:</div>
                           <p className="text-xs sm:text-sm font-medium text-[#6B7280] leading-relaxed">
-                            {data?.items["Why This Matters"]}
+                            {item["Why This Matters"]}
                           </p>
                         </div>
                       </div>
@@ -159,9 +178,9 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
                         <div className="flex flex-col gap-3.5 w-full">
                           <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">What To Look For:</div>
                           <div className="flex flex-col gap-3">
-                            {data?.items["What To Look For"].split("\\n").map((line: string) => line.replace("• ", "")).map((line: any, idx: number) => (
+                            {item["What To Look For"].split("\\n").map((line: string) => line.replace("• ", "")).map((line: any, idx: number) => (
                               <div key={idx} className="flex items-center gap-1.5">
-                                <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: data.principleColor }}></div>
+                                <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: principle.principleColor }}></div>
                                 <p className="text-xs sm:text-sm font-medium text-[#6B7280]">
                                   {line}
                                 </p>
@@ -177,9 +196,9 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
                           <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">Due Diligence Questions</div>
                           <div className="flex flex-col gap-3">
 
-                            {data?.items["Due Diligence Questions"].split("\\n").map((line: string) => line.replace("• ", "")).map((line2: any, idx2: number) => (
+                            {item["Due Diligence Questions"].split("\\n").map((line: string) => line.replace("• ", "")).map((line2: any, idx2: number) => (
                               <div key={idx2} className="flex items-center gap-1.5">
-                                <div className="text-sm font-bold" style={{ color: data.principleColor }}>{idx2 + 1}.</div>
+                                <div className="text-sm font-bold" style={{ color: principle.principleColor }}>{idx2 + 1}.</div>
                                 <p className="text-xs sm:text-sm font-medium text-[#6B7280]">
                                   {line2}
                                 </p>
@@ -191,13 +210,13 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        {data?.items["Red Flags"] ?
+                        {item["Red Flags"] ?
                           <div className="p-6 rounded-md border border-[#EF4444] bg-[#FDF4F4]">
                             <div className="flex flex-col gap-2">
                               <div className="sm:text-sm text-xs font-semibold text-[#EF4444]">Red Flags</div>
                               <div className="flex flex-col sm:gap-3 gap-2">
 
-                                {data?.items["Red Flags"].split("\\n").map((line: string) => line.replace("• ", "")).map((flag1: any, idx3: number) => (
+                                {item["Red Flags"].split("\\n").map((line: string) => line.replace("• ", "")).map((flag1: any, idx3: number) => (
                                   <div key={idx3} className="flex items-center gap-2">
                                     <Image src="/cross.svg" width={9} height={9} alt="Icon" />
                                     <p className="sm:text-sm text-xs font-medium text-[#EF4444]">
@@ -210,13 +229,13 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
                             </div>
                           </div> : ""}
 
-                        {data?.items["Green Flags"] ?
+                        {item["Green Flags"] ?
                           <div className="p-6 rounded-md border border-[#10B981] bg-[#F4FBF7]">
                             <div className="flex flex-col gap-2">
                               <div className="sm:text-sm text-xs font-semibold text-[#10B981]">Green Flags</div>
                               <div className="flex flex-col sm:gap-3 gap-2">
 
-                                {data?.items["Green Flags"].split("\\n").map((line: string) => line.replace("• ", "")).map((flag2: any, idx4: number) => (
+                                {item["Green Flags"].split("\\n").map((line: string) => line.replace("• ", "")).map((flag2: any, idx4: number) => (
                                   <div key={idx4} className="flex items-center gap-2">
                                     <Image src="/tick.svg" width={9} height={9} alt="Icon" />
                                     <p className="sm:text-sm text-xs font-medium text-[#10B981]">
@@ -230,11 +249,11 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
                             </div>
                           </div> : ""}
                       </div>
-                      {data?.items["Investment Recommendation"] ?
+                      {item["Investment Recommendation"] ?
                         <div className="p-3 rounded bg-purple-100">
                           <p className="sm:text-sm text-xs text-[#111827] leading-relaxed">
                             <span className="font-bold text-[#8B5CF6]">Recommendation:</span>{' '}
-                            {data?.items["Investment Recommendation"]}                </p>
+                            {item["Investment Recommendation"]}                </p>
                         </div> : ""}
                     </div>
                   </div> : ""
@@ -465,7 +484,7 @@ export default function ReportPage({ reportData, selectedValues }: { reportData:
             </div>
 
           </div> */}
-              </div>
+              </div>}
             )}
           </div>
         </main>
