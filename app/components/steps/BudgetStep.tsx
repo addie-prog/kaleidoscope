@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import ToastModal from '../CustomToast';
+import { useSearchParams } from 'next/navigation';
 
 type PrincipleProps = {
     id: string;
@@ -47,7 +48,9 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     const [formValues, setFormValues] = useState<objectType>(allValues ? {...allValues, ["tier"]: allValues?.tier}: {});
     const [error, setError] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
-
+    const searchParams = useSearchParams();
+     const utm_source = searchParams.get("utm_source");
+   
     const categories = [
         {
             id: 'ai-ml',
@@ -191,6 +194,80 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         },
     ];
 
+    useEffect(()=>{
+        if(!localStorage.getItem("kaleido_sessionId")){
+           localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
+           storeSession();  
+          }
+    },[]);
+
+    const storeSession = async () => {
+
+            const res = await fetch("/api/user-session/store-session",{
+                method: 'POST',
+                headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sessionId: localStorage.getItem("kaleido_sessionId"), 
+                    recordId: localStorage.getItem("sessionId") ?? "",
+                    userType: 'Anonymous Guest',
+                    DateJoined: new Date().toISOString().split("T")[0],
+                    UTCSource: utm_source,
+                    Email: formValues?.email,
+                    reportId: localStorage.getItem("reportId") ? localStorage.getItem("reportId") : ""
+                })
+            });
+            const data = await res.json();
+          
+            if (data && data?.records && data?.records?.length > 0) {
+                const newId = data?.records[0].id;
+                localStorage.setItem("sessionId", newId);
+            }
+         
+    }
+    const createReport = async () => {
+       
+            const res = await fetch("/api/user-session/store-report",{
+                method: 'POST',
+                headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    reportName: `Report_${Date.now()}`,
+                    sessionId: [localStorage.getItem("sessionId")], 
+                    techType: formValues?.categoryName,
+                    initialBudget:Number(formValues.budget.replace(/,/g, "")),
+                    projectName: formValues?.projectName ?? "",
+                    email: formValues?.email,
+                    status: "Draft"
+                })
+            });
+            const data = await res.json();
+
+            if (data && data?.records && data?.records?.length > 0) {
+                
+                const newId = data?.records[0].id;
+
+                const existing = localStorage.getItem("reportId");
+
+                if (existing) {
+                    const ids = existing.split(",");
+
+                    if (!ids.includes(newId)) {
+                        ids.push(newId);
+                        localStorage.setItem("reportId", ids.join(","));
+                    }
+                } else {
+                    localStorage.setItem("reportId", newId);
+                }
+                 storeSession();
+                }
+            
+         }
+  
     function isValidEmail(value: string) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
@@ -271,7 +348,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             Principles(allValues?.principles);
         }
        
-
+        createReport();
         selectedValues({
             budget: formValues?.budget,
             categoryName: formValues?.categoryName,
@@ -302,7 +379,6 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         }
         return num.toString();
     }
-
 
     return (
         <>
@@ -346,7 +422,9 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                     id="projectName"
                                     value={formValues?.projectName ?? ""}
                                     onChange={(e) => {
-                                        setFormValues({...formValues,["projectName"]: e.target.value.trim()});
+                                        const value = e.target.value;
+                                        if (value.length === 1 && value === " ") return;
+                                        setFormValues({...formValues,["projectName"]: value});
                                     }}
                                     className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
                                     placeholder="Enter project name"
@@ -399,7 +477,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                     value={formValues?.budget  ? formValues.budget : ""} 
                                     onChange={(e) => {
                                         const formatted = formatNumber(e.target.value);
-                                        setFormValues({...formValues,["budget"]: formatted, ["tier"]: ""})
+                                        setFormValues({...formValues,["budget"]: formatted,  ["tier"]: ""})
                                     }}
                                     className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
                                     placeholder="50,000"

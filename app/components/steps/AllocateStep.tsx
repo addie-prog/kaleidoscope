@@ -32,7 +32,6 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   const [principles, setPrinciples] = useState<PrincipleProps[]>(selectedValues?.principles?.length > 0 ? selectedValues?.principles : Principles);
   const [showToast, setShowToast] = useState<boolean>(false);
   const [loader, setLoader] = useState<boolean>(false);
-  // const [notes, setNotes] = useState<string>(selectedValues?.notes ? selectedValues?.notes : "");
 
   const [error, setError] = useState("");
 
@@ -106,6 +105,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     const amount = (layer.percentage / 100 * Number(principles?.find((p) => p.id === principleId)?.budget)).toLocaleString("en-US", { maximumFractionDigits: 1 });
     return amount;
   };
+
+  
 
 
   useEffect(() => {
@@ -283,7 +284,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
       <main className="mx-auto max-w-4xl px-4 lg:px-8 py-8 sm:py-12 lg:py-16">
         <div className='w-fit flex gap-1 ' onClick={() => onNext(1)}>
           <div className="flex gap-1 cursor-pointer mb-4" onClick={() => onNext(1)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon' className="sm:w-[18px] w-[14px]" />
-          <span className="text-sm">Back</span></div>
+          <span>Back</span></div>
          
         </div>
         {/* Title Section */}
