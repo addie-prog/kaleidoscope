@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import ToastModal from '../CustomToast';
 
 type PrincipleProps = {
     id: string;
@@ -44,7 +45,9 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     const [showStage, setShowStage] = useState<string>(allValues?.stage ?? "");
     const [loader, setLoader] = useState<boolean>(false);
     const [formValues, setFormValues] = useState<objectType>(allValues ? {...allValues, ["tier"]: allValues?.tier}: {});
-   
+    const [error, setError] = useState<string>("");
+    const [showToast, setShowToast] = useState<boolean>(false);
+
     const categories = [
         {
             id: 'ai-ml',
@@ -188,7 +191,9 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         },
     ];
 
-
+    function isValidEmail(value: string) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
     const formatNumber = (value: string) => {
         const numeric = value.replace(/\D/g, "");
         // add commas
@@ -231,7 +236,11 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     }
 
     const getPrinciples = async () => {
-      
+        if(formValues?.email && !isValidEmail(formValues?.email)){
+            setError("Please enter a valid email address");
+            setShowToast(true);
+            return;
+        }
         if((typeof allValues?.principles =="undefined" && !allValues?.principles) || allValues?.principles?.length == 0){
             setLoader(true);
             const res = await fetch("/api/principles");
@@ -273,7 +282,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 (item: any) => item.fields.checked === true
             )?.fields["Tier ID"] ?? null,
             principles: allValues?.principles?.length > 0 ? allValues?.principles : [],
-            notes: allValues?.notes
+            notes: allValues?.notes,
+            email: formValues?.email
         }); 
     }
 
@@ -298,6 +308,12 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         <>
             {/* Main Content */}
             <main className="mx-auto max-w-4xl px-4  lg:px-8 py-8 sm:py-12 lg:py-16">
+                <ToastModal
+                    open={showToast}
+                    message={error}
+                    onClose={() => setShowToast(false)}
+                    />
+
                 {/* Title Section */}
                 <div className="mb-8 sm:mb-12 text-center">
                     <h1 className="text-xl sm:text-[45px] font-bold text-gray-900 mb-3 sm:mb-4 leading-tight tracking-tight">
@@ -312,7 +328,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 <div className="flex flex-col gap-6 sm:gap-7">
                     {/* Project Name */}
                     <div
-                        className="p-6 sm:p-8 rounded-xl bg-gray-50"
+                        className="p-6 sm:p-8 rounded-xl bg-gray-50 flex flex-col gap-5"
                         style={{
                             border: '2.5px solid transparent',
                             backgroundImage: 'linear-gradient(#FFFFFF, #FFFFFF), linear-gradient(135deg, #8B5CF5 0%, #EF4444 50%, #05B5D4 75%, #0C9668 87.5%, #D68908 93.75%, #3B81F5 100%)',
@@ -320,7 +336,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                             backgroundClip: 'padding-box, border-box',
                         }}
                     >
-                        <div className="flex flex-col gap-5">
+                        <div className="flex flex-col gap-2">
                             <label htmlFor="budget" className="sm:text-base text-sm font-semibold text-[#323152]">
                                 Project Name
                             </label>
@@ -334,6 +350,26 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                     }}
                                     className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
                                     placeholder="Enter project name"
+                                />
+                               
+                            </div>
+                        
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="budget" className="sm:text-base text-sm font-semibold text-[#323152]">
+                                Email
+                            </label>
+                            <div className="flex items-center gap-1.5 px-5 py-3.5 rounded-md border border-gray-100 bg-white">
+                                    <input
+                                    type="text"
+                                    id="email"
+                                    value={formValues?.email ?? ""}
+                                    onChange={(e) => {
+                                        setFormValues({...formValues,["email"]: e.target.value.trim()});
+                                    }}
+                                    className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
+                                    placeholder="Enter your email address"
                                 />
                                
                             </div>

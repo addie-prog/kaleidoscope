@@ -16,30 +16,38 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
     month: "long",
     day: "numeric",
   });
-  
+
   const reactToPrintFn = useReactToPrint({ contentRef });
 
   const groupedByPrinciple = uniqueByPrinciple.map((principle) => {
-  const principleItems = reportData.filter(
-    (rd) => rd.principleId === principle.principleId
-  );
+    const principleItems = reportData.filter(
+      (rd) => rd.principleId === principle.principleId
+    );
 
-  return {
-    ...principle,
-    items: principleItems.flatMap((p) => p.items ?? []),
-  };
-});
+    return {
+      ...principle,
+      items: principleItems.flatMap((p) => p.items ?? []),
+    };
+  });
 
   return (
     <div>
-      {/* <button onClick={reactToPrintFn}>Download PDF</button> */}
+      
       {/* Main Content */}
-      <div ref={contentRef}>
-        <main className="mx-auto max-w-4xl px-4  py-6 sm:py-8 lg:py-12">
+      <div >
 
-           <div className='w-fit flex gap-1 cursor-pointer mb-[15px]' onClick={()=>onBack(2)}>
-                  <Image src="/arrow-left.svg" width={18} height={18} alt='icon'/>Back
-                  </div>
+        <div className='mx-auto max-w-4xl px-4 pt-6 sm:pt-8 lg:pt-12 flex justify-between' >
+            <div className="flex gap-1 cursor-pointer" onClick={() => onBack(2)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon'  /><span className="text-sm">Back</span></div>
+
+            <div className="flex gap-1 items-center cursor-pointer" onClick={reactToPrintFn}><svg  xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+              <span className="text-sm">Download PDF</span></div>
+          </div>
+
+        <main className="mx-auto max-w-4xl px-4 mt-[15px] " ref={contentRef}>
 
           {/* Report Header Card */}
           <div
@@ -56,18 +64,18 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
                 Responsible Tech Evaluation Report
               </h2>
 
-              <div className="flex flex-wrap items-center justify-around  w-full">
+              <div className="flex flex-wrap items-center justify-around  w-full sm:flex-row flex-col gap-[20px]">
                 <div className="flex flex-col items-center gap-2 sm:w-[30%]">
-                  <div className="sm:text-[15px] text-[12px] font-medium text-[#6B7280] text-center w-full">Budget</div>
-                  <div className="sm:text-[17px] text-[12px] font-bold text-[#111827] text-center w-full">${selectedValues?.budget}</div>
+                  <div className="md:text-[15px] text-[13px] font-medium text-[#6B7280] text-center w-full">Budget</div>
+                  <div className="md:text-[17px] text-[13px] font-bold text-[#111827] text-center w-full">${selectedValues?.budget}</div>
                 </div>
                 <div className="flex flex-col items-center gap-2 sm:w-[30%]">
-                  <div className="sm:text-[15px] text-[12px] font-medium text-[#6B7280] text-center w-full">Tech Type</div>
-                  <div className="sm:text-[17px] text-[12px] font-bold text-[#111827] text-center">{selectedValues?.categoryName}</div>
+                  <div className="md:text-[15px] text-[13px] font-medium text-[#6B7280] text-center w-full">Tech Type</div>
+                  <div className="md:text-[17px] text-[13px] font-bold text-[#111827] text-center">{selectedValues?.categoryName}</div>
                 </div>
                 <div className="flex flex-col items-center gap-2 sm:w-[30%]">
-                  <div className="sm:text-[15px] text-[12px] font-medium text-[#6B7280] text-center">Generated</div>
-                  <div className="sm:text-[17px] text-[12px] font-bold text-[#111827] text-center whitespace-nowrap">{formattedDate}</div>
+                  <div className="md:text-[15px] text-[13px] font-medium text-[#6B7280] text-center">Generated</div>
+                  <div className="md:text-[17px] text-[13px] font-bold text-[#111827] text-center whitespace-nowrap">{formattedDate}</div>
                 </div>
               </div>
 
@@ -95,12 +103,12 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
                     <div className={`w-[3px] h-16 rounded-full bg-[${up.principleColor}]`} style={{ background: up.principleColor }}></div>
                     <div className="flex flex-col gap-1">
                       <div className="text-[15px] sm:text-[18px]  font-semibold text-[#111827]">{up.principleName}</div>
-                      <div className="text-sm font-medium text-[#6B7280]">{up.principleDes}</div>
+                      <div className="text-xs sm:text-sm font-medium text-[#6B7280]">{up.principleDes}</div>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <div className="sm:text-lg text-md font-bold text-[#111827]">{up.principlePercentage}%</div>
-                    <div className="text-sm font-medium text-[#111827]">${up.principleBudget.toLocaleString("en-US")}</div>
+                    <div className="text-xs sm:text-sm font-medium text-[#111827]">${up.principleBudget.toLocaleString("en-US")}</div>
                   </div>
                 </div>
               )}
@@ -109,9 +117,8 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
 
           {/* Tasks Container */}
           <div className="flex flex-col gap-10">
-            {groupedByPrinciple?.map((principle, index) =>
-             {
-              
+            {groupedByPrinciple?.map((principle, index) => {
+
               return <div key={index} className="max-w-4xl px-5 py-6 sm:py-8 lg:py-12 rounded-md border-2 border-[#E5E7EB]">
                 {/* Section Header */}
                 <div className="mb-8 flex gap-2 items-center">
@@ -124,139 +131,139 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
 
                 {/* Task Container */}
                 {principle?.items?.map((item: any, ind: number) => {
-                 
-                  return typeof item != "undefined" ? 
-                  <div key={ind} className="border-l-2 border-[#E5E7EB] bg-white px-4 sm:px-6 mb-8">
-                    {/* Task 1: Document dataset representation gaps */}
-                    <div className="flex flex-col gap-8">
-                      <div className="flex items-start justify-between gap-4 flex-wrap">
-                        <div className="flex items-center gap-3">
-                          { 
-                          (item['Category'] == "skip"
-                            ?
-                            <div className="inline-flex items-center px-3 py-2 rounded-full bg-[#EF4444]">
-                              <span className="text-[10px] font-semibold text-white leading-[normal]">SKIP FOR NOW</span>
-                            </div> :
-                            item['Category'] == "must_have" ?
-                              <div className="inline-flex items-center px-3 py-2 rounded-full bg-[#10B981]">
-                                <span className="text-[10px] font-semibold text-white leading-[normal]">MUST HAVE</span>
-                              </div>
 
-                              :
-                              <div className="inline-flex items-center px-3 py-2 rounded-full bg-[#F59E0B]">
-                                <span className="text-[10px] font-semibold text-white leading-[normal]">SHOULD HAVE</span>
-                              </div>)
-                          }
-
-                          <div className="flex items-center gap-1.5">
-                            <svg className="w-4 h-4" viewBox="0 0 10 10" fill="none">
-                              <circle cx="5" cy="5" r="4.167" stroke="#6B7280" strokeWidth="0.833" />
-                              <path d="M5 2.5V5L6.667 5.833" stroke="#6B7280" strokeWidth="0.833" strokeLinecap="round" />
-                            </svg>
-                            <span className="text-xs font-medium text-[#6B7280]">{item["Time Weeks"]} week</span>
-                          </div>
-                        </div>
-                        <div className="text-sm font-semibold" style={{ color: principle.principleColor }}>{item["Cost Display"]}</div>
-                      </div>
-
-                      <h4 className="text-[15px] sm:text-[20px] font-semibold text-[#111827] leading-tight">
-                        {item["Item Name"]}
-                      </h4>
-
-                      <div className="flex items-start gap-1.5">
-                        <Image src="/warning.svg" width={15} height={15} alt="Icon" className="mt-1" />
-                        <div className="flex flex-col gap-3.5 w-full">
-                          <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">Why This Matters:</div>
-                          <p className="text-xs sm:text-sm font-medium text-[#6B7280] leading-relaxed">
-                            {item["Why This Matters"]}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-1.5">
-                        <Image src="/quesmark.svg" width={15} height={15} alt="Icon" className="mt-1" />
-                        <div className="flex flex-col gap-3.5 w-full">
-                          <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">What To Look For:</div>
-                          <div className="flex flex-col gap-3">
-                            {item["What To Look For"].split("\\n").map((line: string) => line.replace("• ", "")).map((line: any, idx: number) => (
-                              <div key={idx} className="flex items-center gap-1.5">
-                                <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: principle.principleColor }}></div>
-                                <p className="text-xs sm:text-sm font-medium text-[#6B7280]">
-                                  {line}
-                                </p>
-                              </div>
-                            ))}
-
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB]">
-                        <div className="flex flex-col gap-3.5 w-full">
-                          <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">Due Diligence Questions</div>
-                          <div className="flex flex-col gap-3">
-
-                            {item["Due Diligence Questions"].split("\\n").map((line: string) => line.replace("• ", "")).map((line2: any, idx2: number) => (
-                              <div key={idx2} className="flex items-center gap-1.5">
-                                <div className="text-sm font-bold" style={{ color: principle.principleColor }}>{idx2 + 1}.</div>
-                                <p className="text-xs sm:text-sm font-medium text-[#6B7280]">
-                                  {line2}
-                                </p>
-                              </div>
-                            ))}
-
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        {item["Red Flags"] ?
-                          <div className="p-6 rounded-md border border-[#EF4444] bg-[#FDF4F4]">
-                            <div className="flex flex-col gap-2">
-                              <div className="sm:text-sm text-xs font-semibold text-[#EF4444]">Red Flags</div>
-                              <div className="flex flex-col sm:gap-3 gap-2">
-
-                                {item["Red Flags"].split("\\n").map((line: string) => line.replace("• ", "")).map((flag1: any, idx3: number) => (
-                                  <div key={idx3} className="flex items-center gap-2">
-                                    <Image src="/cross.svg" width={9} height={9} alt="Icon" />
-                                    <p className="sm:text-sm text-xs font-medium text-[#EF4444]">
-                                      {flag1}
-                                    </p>
+                  return typeof item != "undefined" ?
+                    <div key={ind} className="border-l-2 border-[#E5E7EB] bg-white px-4 sm:px-6 mb-8">
+                      {/* Task 1: Document dataset representation gaps */}
+                      <div className="flex flex-col gap-8">
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            {
+                              (item['Category'] == "skip"
+                                ?
+                                <div className="inline-flex items-center px-3 py-2 rounded-full bg-[#EF4444]">
+                                  <span className="text-[10px] font-semibold text-white leading-[normal]">SKIP FOR NOW</span>
+                                </div> :
+                                item['Category'] == "must_have" ?
+                                  <div className="inline-flex items-center px-3 py-2 rounded-full bg-[#10B981]">
+                                    <span className="text-[10px] font-semibold text-white leading-[normal]">MUST HAVE</span>
                                   </div>
-                                ))}
 
-                              </div>
+                                  :
+                                  <div className="inline-flex items-center px-3 py-2 rounded-full bg-[#F59E0B]">
+                                    <span className="text-[10px] font-semibold text-white leading-[normal]">SHOULD HAVE</span>
+                                  </div>)
+                            }
+
+                            <div className="flex items-center gap-1.5">
+                              <svg className="w-4 h-4" viewBox="0 0 10 10" fill="none">
+                                <circle cx="5" cy="5" r="4.167" stroke="#6B7280" strokeWidth="0.833" />
+                                <path d="M5 2.5V5L6.667 5.833" stroke="#6B7280" strokeWidth="0.833" strokeLinecap="round" />
+                              </svg>
+                              <span className="text-xs font-medium text-[#6B7280]">{item["Time Weeks"]} week</span>
                             </div>
-                          </div> : ""}
+                          </div>
+                          <div className="text-sm font-semibold" style={{ color: principle.principleColor }}>{item["Cost Display"]}</div>
+                        </div>
 
-                        {item["Green Flags"] ?
-                          <div className="p-6 rounded-md border border-[#10B981] bg-[#F4FBF7]">
-                            <div className="flex flex-col gap-2">
-                              <div className="sm:text-sm text-xs font-semibold text-[#10B981]">Green Flags</div>
-                              <div className="flex flex-col sm:gap-3 gap-2">
+                        <h4 className="text-[15px] sm:text-[20px] font-semibold text-[#111827] leading-tight">
+                          {item["Item Name"]}
+                        </h4>
 
-                                {item["Green Flags"].split("\\n").map((line: string) => line.replace("• ", "")).map((flag2: any, idx4: number) => (
-                                  <div key={idx4} className="flex items-center gap-2">
-                                    <Image src="/tick.svg" width={9} height={9} alt="Icon" />
-                                    <p className="sm:text-sm text-xs font-medium text-[#10B981]">
-                                      {flag2}
-                                    </p>
-                                  </div>
-                                ))}
+                        <div className="flex items-start gap-1.5">
+                          <Image src="/warning.svg" width={15} height={15} alt="Icon" className="mt-1" />
+                          <div className="flex flex-col gap-3.5 w-full">
+                            <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">Why This Matters:</div>
+                            <p className="text-xs sm:text-sm font-medium text-[#6B7280] leading-relaxed">
+                              {item["Why This Matters"]}
+                            </p>
+                          </div>
+                        </div>
 
+                        <div className="flex items-start gap-1.5">
+                          <Image src="/quesmark.svg" width={15} height={15} alt="Icon" className="mt-1" />
+                          <div className="flex flex-col gap-3.5 w-full">
+                            <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">What To Look For:</div>
+                            <div className="flex flex-col gap-3">
+                              {item["What To Look For"].split("\\n").map((line: string) => line.replace("• ", "")).map((line: any, idx: number) => (
+                                <div key={idx} className="flex items-center gap-1.5">
+                                  <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: principle.principleColor }}></div>
+                                  <p className="text-xs sm:text-sm font-medium text-[#6B7280]">
+                                    {line}
+                                  </p>
+                                </div>
+                              ))}
 
-                              </div>
                             </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB]">
+                          <div className="flex flex-col gap-3.5 w-full">
+                            <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">Due Diligence Questions</div>
+                            <div className="flex flex-col gap-3">
+
+                              {item["Due Diligence Questions"].split("\\n").map((line: string) => line.replace("• ", "")).map((line2: any, idx2: number) => (
+                                <div key={idx2} className="flex items-center gap-1.5">
+                                  <div className="text-sm font-bold" style={{ color: principle.principleColor }}>{idx2 + 1}.</div>
+                                  <p className="text-xs sm:text-sm font-medium text-[#6B7280]">
+                                    {line2}
+                                  </p>
+                                </div>
+                              ))}
+
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {item["Red Flags"] ?
+                            <div className="p-6 rounded-md border border-[#EF4444] bg-[#FDF4F4]">
+                              <div className="flex flex-col gap-2">
+                                <div className="sm:text-sm text-xs font-semibold text-[#EF4444]">Red Flags</div>
+                                <div className="flex flex-col sm:gap-3 gap-2">
+
+                                  {item["Red Flags"].split("\\n").map((line: string) => line.replace("• ", "")).map((flag1: any, idx3: number) => (
+                                    <div key={idx3} className="flex items-center gap-2">
+                                      <Image src="/cross.svg" width={9} height={9} alt="Icon" />
+                                      <p className="sm:text-sm text-xs font-medium text-[#EF4444]">
+                                        {flag1}
+                                      </p>
+                                    </div>
+                                  ))}
+
+                                </div>
+                              </div>
+                            </div> : ""}
+
+                          {item["Green Flags"] ?
+                            <div className="p-6 rounded-md border border-[#10B981] bg-[#F4FBF7]">
+                              <div className="flex flex-col gap-2">
+                                <div className="sm:text-sm text-xs font-semibold text-[#10B981]">Green Flags</div>
+                                <div className="flex flex-col sm:gap-3 gap-2">
+
+                                  {item["Green Flags"].split("\\n").map((line: string) => line.replace("• ", "")).map((flag2: any, idx4: number) => (
+                                    <div key={idx4} className="flex items-center gap-2">
+                                      <Image src="/tick.svg" width={9} height={9} alt="Icon" />
+                                      <p className="sm:text-sm text-xs font-medium text-[#10B981]">
+                                        {flag2}
+                                      </p>
+                                    </div>
+                                  ))}
+
+
+                                </div>
+                              </div>
+                            </div> : ""}
+                        </div>
+                        {item["Investment Recommendation"] ?
+                          <div className="p-3 rounded bg-purple-100">
+                            <p className="sm:text-sm text-xs text-[#111827] leading-relaxed">
+                              <span className="font-bold text-[#8B5CF6]">Recommendation:</span>{' '}
+                              {item["Investment Recommendation"]}                </p>
                           </div> : ""}
                       </div>
-                      {item["Investment Recommendation"] ?
-                        <div className="p-3 rounded bg-purple-100">
-                          <p className="sm:text-sm text-xs text-[#111827] leading-relaxed">
-                            <span className="font-bold text-[#8B5CF6]">Recommendation:</span>{' '}
-                            {item["Investment Recommendation"]}                </p>
-                        </div> : ""}
-                    </div>
-                  </div> : ""
+                    </div> : ""
                 }
                 )}
 
@@ -484,20 +491,23 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
             </div>
 
           </div> */}
-              </div>}
+              </div>
+            }
             )}
           </div>
+
+            <footer className="border-t-2 border-gray-200 py-4 my-6 sm:my-8 lg:my-12">
+
+          <div className="flex items-center justify-between text-[8px] font-medium text-gray-400">
+            <span className="text-xs sm:text-sm">The Kaleidoscope Project</span>
+            <span className="text-xs sm:text-sm">{formattedDate}</span>
+          </div>
+
+        </footer>
         </main>
 
         {/* Footer */}
-        <footer className="max-w-4xl mx-auto px-4 sm:px-0 border-t-2 border-gray-200 py-4 ">
-
-          <div className="flex items-center px-4 justify-between text-[8px] font-medium text-gray-400">
-            <span className="text-sm">The Kaleidoscope Project</span>
-            <span className="text-sm">{formattedDate}</span>
-          </div>
-
-        </footer></div>
+      </div>
     </div>
   );
 }

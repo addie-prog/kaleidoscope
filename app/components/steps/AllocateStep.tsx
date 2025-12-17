@@ -281,8 +281,10 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     <>
       {/* Main Content */}
       <main className="mx-auto max-w-4xl px-4 lg:px-8 py-8 sm:py-12 lg:py-16">
-        <div className='w-fit flex gap-1 cursor-pointer' onClick={() => onNext(1)}>
-          <Image src="/arrow-left.svg" width={18} height={18} alt='icon' />Back
+        <div className='w-fit flex gap-1 ' onClick={() => onNext(1)}>
+          <div className="flex gap-1 cursor-pointer mb-4" onClick={() => onNext(1)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon' className="sm:w-[18px] w-[14px]" />
+          <span className="text-sm">Back</span></div>
+         
         </div>
         {/* Title Section */}
         <ToastModal
@@ -316,7 +318,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             :
             shouldShowSuccessMessage(principles) ?
               <div className="px-7 py-5 inline-block m-auto rounded-xl border text-center border-[#10B981] bg-[#CFF1E6] max-w-100 text-[#10B981]">
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-2 sm:text-[15px] text-[13px]'>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" clipRule="evenodd" d="M12.0292 5.22001C12.1696 5.36064 12.2485 5.55126 12.2485 5.75001C12.2485 5.94876 12.1696 6.13939 12.0292 6.28001L7.52918 10.78C7.38855 10.9205 7.19793 10.9994 6.99918 10.9994C6.80043 10.9994 6.6098 10.9205 6.46918 10.78L4.21918 8.53001C4.14549 8.46135 4.08639 8.37855 4.0454 8.28655C4.0044 8.19455 3.98236 8.09524 3.98059 7.99453C3.97881 7.89383 3.99733 7.7938 4.03505 7.70041C4.07278 7.60703 4.12892 7.52219 4.20014 7.45097C4.27136 7.37975 4.35619 7.32361 4.44958 7.28589C4.54297 7.24817 4.643 7.22964 4.7437 7.23142C4.8444 7.2332 4.94372 7.25524 5.03571 7.29623C5.12771 7.33722 5.21052 7.39632 5.27918 7.47001L6.99918 9.19001L10.9692 5.22001C11.1098 5.07956 11.3004 5.00067 11.4992 5.00067C11.6979 5.00067 11.8886 5.07956 12.0292 5.22001Z" fill="#10B981" />
                     <circle cx="8" cy="8" r="7.25" stroke="#10B981" strokeWidth="1.5" />
@@ -325,14 +327,14 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
               :
               remainingPercentage > 100 ?
                 <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
-                  <div className='flex items-center gap-2'>
+                  <div className='flex items-center gap-2 sm:text-[15px] text-[13px]'>
                     {ValidationIcon()}
                     Total must equal 100% (currently: {remainingPercentage}%)</div></div>
                 :
                 <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
                   <div className='flex items-center gap-2'>
                     {ValidationIcon()}
-                    <span>Please ensure execution layers total exactly 100%</span>
+                    <span className='sm:text-[15px] text-[13px]'>Please ensure execution layers total exactly 100%</span>
                   </div></div>
           }
 
@@ -473,8 +475,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                                 Remaining: {calculateRemainingL(principle.id)}% (${calculateDollarAmountL(calculateRemainingL(principle.id), principle.budget)})
                               </span> : calculateRemainingL(principle.id) == 0 ?
 
-                                <span className='text-sm text-[#10B981]'>Selected layers: 100% </span>
-                                : <span className='text-sm text-[#EF4444]'>Selected layers: {calculateRemainingL(principle.id)}% (Must equal 100%)</span>}
+                                <span className='text-xs sm:text-sm text-[#10B981]'>Selected layers: 100% </span>
+                                : <span className='text-xs sm:text-sm text-[#EF4444]'>Selected layers: {calculateRemainingL(principle.id)}% (Must equal 100%)</span>}
                             </div>
 
                             {/* Execution Layers Items */}
@@ -572,7 +574,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
               </div>
             ))}
             <div className="flex flex-col gap-4 rounded-xl border border-gray-200 p-6 sm:p-8 bg-[#FAFAFA]">
-              <h1 className="font-inter text-lg font-semibold leading-6 text-gray-900">
+              <h1 className="font-inter sm:text-lg text-md font-semibold leading-6 text-gray-900">
                 Project Notes / Context
               </h1>
 
