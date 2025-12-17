@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import BudgetStep from "@/app/components/steps/BudgetStep";
 import AllocateStep from "@/app/components/steps/AllocateStep";
 import ReportStep from "@/app/components/steps/ReportStep";
 import Image from "next/image";
 
-export default function BudgetTool() {
+export default function BudgetTool({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const utmSource: any = use(searchParams)?.utm_source ?? "";
   const [step, setStep] = useState<Number>(1);
   const [selectedValues, setSelectedValues] = useState({});
   const [principles, setPrinciples] = useState([]);
@@ -30,7 +35,7 @@ export default function BudgetTool() {
           </div>
         </div>
       </header>
-      {step === 1 && <BudgetStep Principles={(val:any)=>{setPrinciples(val), setStep(2)}} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value)=>setSelectedValues(value)} />}
+      {step === 1 && <BudgetStep utmSource={utmSource} Principles={(val:any)=>{setPrinciples(val), setStep(2)}} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value)=>setSelectedValues(value)} />}
 
       {step === 2 && (
         <AllocateStep

@@ -25,6 +25,7 @@ type props = {
     selectedValues: (value: any) => void;
     Principles: (value: PrincipleProps) => void;
     allValues: objectType;
+    utmSource: string;
 }
 
 type TierObject = {
@@ -40,7 +41,7 @@ type TierObject = {
 };
 
 
-export default function BudgetTool({ onNext, selectedValues, Principles, allValues }: props) {
+export default function BudgetTool({ onNext, selectedValues, Principles, allValues, utmSource }: props) {
     const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
     const [showStage, setShowStage] = useState<string>(allValues?.stage ?? "");
@@ -48,8 +49,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     const [formValues, setFormValues] = useState<objectType>(allValues ? {...allValues, ["tier"]: allValues?.tier}: {});
     const [error, setError] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
-    const searchParams = useSearchParams();
-     const utm_source = searchParams.get("utm_source");
+    const utm_source = utmSource;
    
     const categories = [
         {
