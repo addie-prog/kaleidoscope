@@ -347,7 +347,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                    <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
                   <div className='flex items-center gap-2'>
                     {ValidationIcon()}
-                    <span className='sm:text-[15px] text-[13px]'>Please ensure selected principles have budget allocated!</span>
+                    <span className='sm:text-[15px] text-[13px]'>Please ensure all the selected principles have budget allocated!</span>
                   </div></div>
                 
                 :

@@ -49,8 +49,11 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     const [loader, setLoader] = useState<boolean>(false);
     const [formValues, setFormValues] = useState<objectType>(allValues ? { ...allValues, ["tier"]: allValues?.tier } : {});
     const [error, setError] = useState<string>("");
+    const [budgetError, setBudgetError] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
     const utm_source = utmSource;
+
+
 
     const categories = [
         {
@@ -204,7 +207,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     useEffect(() => {
         if (!localStorage.getItem("kaleido_sessionId")) {
             localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
-            // storeSession();
+            storeSession();
         }
     }, []);
 
@@ -268,9 +271,25 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             } else {
                 localStorage.setItem("reportId", newId);
             }
-            // storeSession();
+            storeSession();
         }
 
+    }
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const rawValue = e.target.value.replace(/,/g, ""); // remove commas
+        const maxDigits = Math.max(
+            ...budgetTier
+                .filter(t => t?.fields?.["Budget Max"] != null)
+                .map(t => t.fields["Budget Max"])
+        )
+        if (Number(rawValue) > maxDigits) {
+            setBudgetError(`Max limit: ${toMillion(maxDigits)}`);
+            return
+        };
+
+        const formatted = formatNumber(e.target.value);
+        setFormValues({ ...formValues, ["budget"]: formatted, ["tier"]: "" });
     }
 
     // function isValidEmail(value: string) {
@@ -278,6 +297,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     // }
     const formatNumber = (value: string) => {
         const numeric = value.replace(/\D/g, "");
+        let SelectedTier: any = {};
         // add commas
 
         const matched = budgetTier?.find((item: any) => {
@@ -300,16 +320,28 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
 
             return Number(numeric) >= min && Number(numeric) <= max;
         });
+
+        const lastTierMaxBudget = Math.max(
+            ...budgetTier
+                .filter(t => t?.fields?.["Budget Max"] != null)
+                .map(t => t.fields["Budget Max"])
+        );
         if (Number(numeric) > 0 && matched) {
+            setBudgetError("");
             setShowStage(`${matched.fields["Display Name"]} ($${formatBudget(matched.fields["Budget Min"])}-${formatBudget(matched.fields["Budget Max"])})`);
+        } else if (Number(numeric) > 0 && !matched) {
+            setBudgetError(`Max limit reached ${toMillion(lastTierMaxBudget)}`);
         } else {
-            setError("");
+            setBudgetError("");
             setShowStage("");
         }
 
         return numeric.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
-
+    function toMillion(value: number) {
+        const m = Math.floor((value / 1_000_000) * 100) / 100;
+        return `${m}${m % 1 === 0 ? "" : ""}M`;
+    }
     const getBudgetTier = async () => {
         const res = await fetch("/api/budget-tier");
         const data = await res.json();
@@ -317,6 +349,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         setBudgetTier(data.records);
 
     }
+
+
 
     const getPrinciples = async () => {
 
@@ -350,7 +384,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             Principles(allValues?.principles);
         }
 
-        // createReport();
+        createReport();
         selectedValues({
             budget: formValues?.budget,
             categoryName: formValues?.categoryName,
@@ -463,17 +497,22 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                 <input
                                     type="text"
                                     id="budget"
-                                    maxLength={10}
                                     value={formValues?.budget ? formValues.budget : ""}
                                     onChange={(e) => {
-                                        const formatted = formatNumber(e.target.value);
-                                        setFormValues({ ...formValues, ["budget"]: formatted, ["tier"]: "" })
+                                        handleChange(e);
                                     }}
                                     className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
                                     placeholder="50,000"
                                 />
+                                {budgetError ?
 
+                                    <span className="text-[#323152] text-sm font-semibold leading-[normal]">
+                                        {budgetError}
+                                    </span>
+
+                                    : ""}
                             </div>
+
                             {showStage ? <div className="inline-block">
                                 <div className="inline-flex w-[fit-content] max-w-max items-center px-4 py-3 rounded-full bg-[#10B981]">
                                     <span className="sm:text-[15px] text-[11px] font-semibold text-white leading-[normal]">
@@ -513,15 +552,15 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                     }}
                                     className={`${category.disabled == true ? "bg-gray-100 cursor-not-allowed border border-[#babcc1a1]" : "cursor-pointer hover:bg-[#3B82F6]"} ${(formValues?.category == category.id && category.disabled == false) ? "bg-[#3B82F6]" : ""} relative p-4 sm:p-5 rounded-md border-2 relative transition-all text-left group  transition-colors duration-600  border-gray-100`
                                     }
-                                > 
-                                {category.disabled == true &&  <div className="absolute top-0 left-0 flex items-center"><svg width="106" height="19" viewBox="0 0 106 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H106L97.5 9.5L106 19H0V0Z" fill="#EF4444"></path></svg><div className="absolute top-0 left-0 w-full h-full flex items-center justify-start pl-3"><span className="text-white text-[10px] font-semibold tracking-wide leading-none">COMING SOON</span></div></div>}
-                               
+                                >
+                                    {category.disabled == true && <div className="absolute top-0 left-0 flex items-center"><svg width="106" height="19" viewBox="0 0 106 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H106L97.5 9.5L106 19H0V0Z" fill="#EF4444"></path></svg><div className="absolute top-0 left-0 w-full h-full flex items-center justify-start pl-3"><span className="text-white text-[10px] font-semibold tracking-wide leading-none">COMING SOON</span></div></div>}
+
 
                                     <div className="flex flex-col gap-3.5 sm:gap-4 relative">
                                         <div className=" flex items-start justify-center sm:justify-between">
-                                           
+
                                             <div className="flex-shrink-0">{category.icon}</div>
-                                            
+
                                             <div
                                                 className="absolute top-[1px] right-[1px] sm:top-[-8px] sm:right-[-8px] flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center "
                                                 role="button"
@@ -595,10 +634,15 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
 
                     {/* Continue Button */}
                     <button onClick={() => {
-                        (formValues?.budget && formValues?.category && !loader) ?
-                            getPrinciples() : "";
+                        if (formValues?.budget && formValues?.category && !loader) {
+                            getPrinciples();
+                            } else {
+                            setError("Please select budget and type of tech before proceeding");
+                            setShowToast(true);
+                            }
+                       
                     }
-                    } className={`${(formValues?.budget && formValues?.category) && !loader ? "cursor-pointer" : "cursor-not-allowed"} flex items-center justify-center gap-2.5 px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6]`}>
+                    } className={`cursor-pointer flex items-center justify-center gap-2.5 px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6]`}>
                         {!loader ? <>
                             <span className="text-base font-semibold text-white">Continue</span>
                             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
