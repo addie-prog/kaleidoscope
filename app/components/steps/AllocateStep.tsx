@@ -234,7 +234,13 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   const generateReport = async () => {
     setLoader(true);
     const res = await fetch("/api/generate-report");
-    const data = await res.json();
+    let data: any;
+
+    try{
+       data = await res.json();
+    }catch(e: any){
+      setLoader(false);
+    }
 
     setLoader(false);
     const normalize = (val: any) => String(val).trim().toUpperCase();

@@ -1,5 +1,5 @@
-import fs from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
+
 
 export async function GET() {
   try {
@@ -31,23 +31,18 @@ export async function GET() {
       allRecords.push(...data.records);
       offset = data.offset;
     } while (offset);
+    const json = JSON.stringify(allRecords, null, 2);
 
-    // 📁 Save to file
-    const dirPath = path.join(process.cwd(), "app", "data");
-    const filePath = path.join(dirPath, "items.json");
 
-    await fs.mkdir(dirPath, { recursive: true });
-
-    await fs.writeFile(
-      filePath,
-      JSON.stringify(allRecords, null, 2),
-      "utf-8"
-    );
-
-    return Response.json({
+    // Overwrite existing blob
+    await put("items.json", json, {
+      access: "public",
+      contentType: "application/json",
+      allowOverwrite: true
+    });
+   return Response.json({
       success: true,
       count: allRecords.length,
-      records: allRecords,
     });
 
   } catch (error: any) {

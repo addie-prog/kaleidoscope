@@ -47,11 +47,11 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
     const [showStage, setShowStage] = useState<string>(allValues?.stage ?? "");
     const [loader, setLoader] = useState<boolean>(false);
-    const [formValues, setFormValues] = useState<objectType>(allValues ? {...allValues, ["tier"]: allValues?.tier}: {});
+    const [formValues, setFormValues] = useState<objectType>(allValues ? { ...allValues, ["tier"]: allValues?.tier } : {});
     const [error, setError] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
     const utm_source = utmSource;
-   
+
     const categories = [
         {
             id: 'ai-ml',
@@ -201,78 +201,78 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         },
     ];
 
-    useEffect(()=>{
-        if(!localStorage.getItem("kaleido_sessionId")){
-           localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
-           storeSession();  
-          }
-    },[]);
+    useEffect(() => {
+        if (!localStorage.getItem("kaleido_sessionId")) {
+            localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
+            // storeSession();
+        }
+    }, []);
 
     const storeSession = async () => {
 
-            const res = await fetch("/api/user-session/store-session",{
-                method: 'POST',
-                headers: {
+        const res = await fetch("/api/user-session/store-session", {
+            method: 'POST',
+            headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sessionId: localStorage.getItem("kaleido_sessionId"), 
-                    recordId: localStorage.getItem("sessionId") ?? "",
-                    userType: 'Anonymous Guest',
-                    DateJoined: new Date().toISOString().split("T")[0],
-                    UTCSource: utm_source,
-                    reportId: localStorage.getItem("reportId") ? localStorage.getItem("reportId") : ""
-                })
-            });
-            const data = await res.json();
-          
-            if (data && data?.records && data?.records?.length > 0) {
-                const newId = data?.records[0].id;
-                localStorage.setItem("sessionId", newId);
-            }
-         
+            },
+            body: JSON.stringify({
+                sessionId: localStorage.getItem("kaleido_sessionId"),
+                recordId: localStorage.getItem("sessionId") ?? "",
+                userType: 'Anonymous Guest',
+                DateJoined: new Date().toISOString().split("T")[0],
+                UTCSource: utm_source,
+                reportId: localStorage.getItem("reportId") ? localStorage.getItem("reportId") : ""
+            })
+        });
+        const data = await res.json();
+
+        if (data && data?.records && data?.records?.length > 0) {
+            const newId = data?.records[0].id;
+            localStorage.setItem("sessionId", newId);
+        }
+
     }
     const createReport = async () => {
-       
-            const res = await fetch("/api/user-session/store-report",{
-                method: 'POST',
-                headers: {
+
+        const res = await fetch("/api/user-session/store-report", {
+            method: 'POST',
+            headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    reportName: `Report_${Date.now()}`,
-                    sessionId: [localStorage.getItem("sessionId")], 
-                    techType: formValues?.categoryName,
-                    initialBudget:Number(formValues.budget.replace(/,/g, "")),
-                    projectName: formValues?.projectName ?? "",
-                    status: "Draft"
-                })
-            });
-            const data = await res.json();
+            },
+            body: JSON.stringify({
+                reportName: `Report_${Date.now()}`,
+                sessionId: [localStorage.getItem("sessionId")],
+                techType: formValues?.categoryName,
+                initialBudget: Number(formValues.budget.replace(/,/g, "")),
+                projectName: formValues?.projectName ?? "",
+                status: "Draft"
+            })
+        });
+        const data = await res.json();
 
-            if (data && data?.records && data?.records?.length > 0) {
-                
-                const newId = data?.records[0].id;
+        if (data && data?.records && data?.records?.length > 0) {
 
-                const existing = localStorage.getItem("reportId");
+            const newId = data?.records[0].id;
 
-                if (existing) {
-                    const ids = existing.split(",");
+            const existing = localStorage.getItem("reportId");
 
-                    if (!ids.includes(newId)) {
-                        ids.push(newId);
-                        localStorage.setItem("reportId", ids.join(","));
-                    }
-                } else {
-                    localStorage.setItem("reportId", newId);
+            if (existing) {
+                const ids = existing.split(",");
+
+                if (!ids.includes(newId)) {
+                    ids.push(newId);
+                    localStorage.setItem("reportId", ids.join(","));
                 }
-                 storeSession();
-                }
-            
-         }
-  
+            } else {
+                localStorage.setItem("reportId", newId);
+            }
+            // storeSession();
+        }
+
+    }
+
     // function isValidEmail(value: string) {
     //     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     // }
@@ -319,8 +319,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     }
 
     const getPrinciples = async () => {
-        
-        if((typeof allValues?.principles =="undefined" && !allValues?.principles) || allValues?.principles?.length == 0){
+
+        if ((typeof allValues?.principles == "undefined" && !allValues?.principles) || allValues?.principles?.length == 0) {
             setLoader(true);
             const res = await fetch("/api/principles");
             const data = await res.json();
@@ -346,11 +346,11 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                     }))
                 }))
             );
-        }else{
+        } else {
             Principles(allValues?.principles);
         }
-       
-        createReport();
+
+        // createReport();
         selectedValues({
             budget: formValues?.budget,
             categoryName: formValues?.categoryName,
@@ -362,7 +362,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             )?.fields["Tier ID"] ?? null,
             principles: allValues?.principles?.length > 0 ? allValues?.principles : [],
             notes: allValues?.notes,
-        }); 
+        });
     }
 
 
@@ -383,32 +383,20 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
 
     return (
         <>
+            <div className='w-full flex justify-end sm:px-15 px-[16px] pt-10'>
+                <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" onClick={() => { setFormValues({}), setShowStage(""), selectedValues({}) }}>
+                    <span>Reset</span>
+                </button>
+            </div>
             {/* Main Content */}
             <main className="mx-auto max-w-4xl px-4  lg:px-8 py-8 sm:py-12 lg:py-16">
                 <ToastModal
                     open={showToast}
                     message={error}
                     onClose={() => setShowToast(false)}
-                    />
-                
-                <div className="flex gap-1 cursor-pointer mb-4 justify-end" onClick={() => {setFormValues({}), setShowStage(""), selectedValues({})}}><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="h-5 w-5 text-gray-600"
-                    >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M16.023 9.348h4.992m0 0V4.356m0 4.992-3.181-3.181a8.25 8.25 0 10.43 11.86"
-                    />
-                    </svg>
+                />
 
-                <span>Reset</span></div>
-                
-                
+
                 {/* Title Section */}
                 <div className="mb-8 sm:mb-12 text-center">
                     <h1 className="text-xl sm:text-[45px] font-bold text-gray-900 mb-3 sm:mb-4 leading-tight tracking-tight">
@@ -436,24 +424,24 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                 Project Name
                             </label>
                             <div className="flex items-center gap-1.5 px-5 py-3.5 rounded-md border border-gray-100 bg-white">
-                                    <input
+                                <input
                                     type="text"
                                     id="projectName"
                                     value={formValues?.projectName ?? ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (value.length === 1 && value === " ") return;
-                                        setFormValues({...formValues,["projectName"]: value});
+                                        setFormValues({ ...formValues, ["projectName"]: value });
                                     }}
                                     className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
                                     placeholder="Enter project name"
                                 />
-                               
+
                             </div>
-                        
+
                         </div>
 
-                
+
                     </div>
 
                     {/* Budget Input Card */}
@@ -476,10 +464,10 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                     type="text"
                                     id="budget"
                                     maxLength={10}
-                                    value={formValues?.budget  ? formValues.budget : ""} 
+                                    value={formValues?.budget ? formValues.budget : ""}
                                     onChange={(e) => {
                                         const formatted = formatNumber(e.target.value);
-                                        setFormValues({...formValues,["budget"]: formatted,  ["tier"]: ""})
+                                        setFormValues({ ...formValues, ["budget"]: formatted, ["tier"]: "" })
                                     }}
                                     className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
                                     placeholder="50,000"
@@ -496,7 +484,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                         </div>
                     </div>
 
-                    
+
                     {/* Tech Categories Card */}
                     <div
                         className="p-6 sm:p-8 rounded-xl bg-gray-50 relative"
@@ -517,18 +505,23 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                 <div
                                     key={category.id}
                                     onClick={() => {
-                                       setFormValues({...formValues, ['category']: category.id, ['categoryName']: category.name})
+                                        setFormValues({ ...formValues, ['category']: category.id, ['categoryName']: category.name })
                                     }}
                                     style={{
                                         border: category.disabled == true ? "1px solid #babcc1a1" : "",
                                         background: (formValues?.category == category.id && category.disabled == false) ? "bg-[#3B82F6]" : ""
                                     }}
-                                    className={`${category.disabled == true ? "bg-gray-100 cursor-not-allowed border border-[#babcc1a1]" : "cursor-pointer hover:bg-[#3B82F6]"} ${(formValues?.category == category.id && category.disabled == false) ? "bg-[#3B82F6]" : ""} relative p-4 sm:p-5 rounded-md border-2 transition-all text-left group  transition-colors duration-600  border-gray-100`
+                                    className={`${category.disabled == true ? "bg-gray-100 cursor-not-allowed border border-[#babcc1a1]" : "cursor-pointer hover:bg-[#3B82F6]"} ${(formValues?.category == category.id && category.disabled == false) ? "bg-[#3B82F6]" : ""} relative p-4 sm:p-5 rounded-md border-2 relative transition-all text-left group  transition-colors duration-600  border-gray-100`
                                     }
-                                >
+                                > 
+                                {category.disabled == true &&  <div className="absolute top-0 left-0 flex items-center"><svg width="106" height="19" viewBox="0 0 106 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H106L97.5 9.5L106 19H0V0Z" fill="#EF4444"></path></svg><div className="absolute top-0 left-0 w-full h-full flex items-center justify-start pl-3"><span className="text-white text-[10px] font-semibold tracking-wide leading-none">COMING SOON</span></div></div>}
+                               
+
                                     <div className="flex flex-col gap-3.5 sm:gap-4 relative">
-                                        <div className="flex items-start justify-center sm:justify-between">
+                                        <div className=" flex items-start justify-center sm:justify-between">
+                                           
                                             <div className="flex-shrink-0">{category.icon}</div>
+                                            
                                             <div
                                                 className="absolute top-[1px] right-[1px] sm:top-[-8px] sm:right-[-8px] flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center "
                                                 role="button"
