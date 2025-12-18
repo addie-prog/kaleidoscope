@@ -176,7 +176,12 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
   };
 
+  const getCheckedPrinciples = (principles: any[]) => {
+    const checkedP = principles?.filter((p) => p.checked && p.percentage == 0);
 
+    return checkedP;
+
+  };
   const areAllLayersValid = (principles: any[], totalBudget: number) => {
     return principles?.every((p) => {
 
@@ -213,7 +218,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   const shouldShowSuccessMessage = (principles: any[]) => {
     const principlesTotal = getTotalPrinciplesPercentage(principles);
     const layersValid = areAllLayersValid(principles, Number(totalBudget.replace(/,/g, "")));
-    return principlesTotal === 100 && layersValid;
+    
+    return principlesTotal === 100 && layersValid && getCheckedPrinciples(principles)?.length == 0;
   };
 
   const ValidationIcon = () => {
@@ -236,7 +242,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
     const items = data.records;
 
-    principles?.map((p) => {
+    principles?.filter((pf) => pf.checked === true)?.map((p) => {
       p.layers.filter((lf) => lf.checked === true).map((layer) => {
 
         const layerBudget = Number(layer.budget || 0);
@@ -331,6 +337,13 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                   <div className='flex items-center gap-2 sm:text-[15px] text-[13px]'>
                     {ValidationIcon()}
                     Total must equal 100% (currently: {remainingPercentage}%)</div></div>
+                : getCheckedPrinciples(principles)?.length > 0 ? 
+                   <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
+                  <div className='flex items-center gap-2'>
+                    {ValidationIcon()}
+                    <span className='sm:text-[15px] text-[13px]'>Please ensure selected principles have budget allocated!</span>
+                  </div></div>
+                
                 :
                 <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
                   <div className='flex items-center gap-2'>
@@ -597,7 +610,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             if (!loader) {
               const principlesTotal = getTotalPrinciplesPercentage(principles);
               const layersValid = areAllLayersValid(principles, Number(totalBudget.replace(/,/g, "")));
-
+              
               if (principlesTotal > 100 || (principlesTotal < 100 && principlesTotal > 0)) {
                 setError(`Total must equal 100% (Allocated: ${principlesTotal}%)`);
                 setShowToast(true);
@@ -614,6 +627,12 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                 setShowToast(true);
                 return;
               }
+              else if(getCheckedPrinciples(principles)?.length > 0){
+                setError("Please ensure selected principles have budget allocated!");
+                setShowToast(true);
+                return;
+              }
+              
               generateReport();
             }
           }

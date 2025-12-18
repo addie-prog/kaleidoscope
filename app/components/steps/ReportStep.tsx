@@ -37,14 +37,16 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
       <div >
 
         <div className='mx-auto max-w-4xl px-4 pt-6 sm:pt-8 lg:pt-12 flex justify-between' >
-            <div className="flex gap-1 cursor-pointer" onClick={() => onBack(2)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon'  /><span className="text-sm">Back</span></div>
+            <div className="flex gap-1 cursor-pointer items-center" onClick={() => onBack(2)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon'  /><span >Back</span></div>
 
-            <div className="flex gap-1 items-center cursor-pointer" onClick={reactToPrintFn}><svg  xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-              <span className="text-sm">Download PDF</span></div>
+            <button className="cursor-pointer flex items-center gap-[5px] text-white px-5 sm:py-3 py-2 rounded-lg bg-[#3B82F6] text-center" onClick={reactToPrintFn}>
+                <svg  xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+              <span className="text-sm">Download PDF</span>
+              </button>
           </div>
 
         <main className="mx-auto max-w-4xl px-4 mt-[15px] " ref={contentRef}>
@@ -200,7 +202,7 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
 
                         <div className="p-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB]">
                           <div className="flex flex-col gap-3.5 w-full">
-                            <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">Due Diligence Questions</div>
+                            <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">Common Due Diligence Questions</div>
                             <div className="flex flex-col gap-3">
 
                               {item["Due Diligence Questions"].split("\\n").map((line: string) => line.replace("• ", "")).map((line2: any, idx2: number) => (
