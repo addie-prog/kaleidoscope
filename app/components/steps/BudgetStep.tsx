@@ -25,6 +25,7 @@ type props = {
     onNext: (value: number) => void;
     selectedValues: (value: any) => void;
     Principles: (value: PrincipleProps) => void;
+    ResetPrinciples: (value: PrincipleProps) => void;
     allValues: objectType;
     utmSource: string;
 }
@@ -42,7 +43,7 @@ type TierObject = {
 };
 
 
-export default function BudgetTool({ onNext, selectedValues, Principles, allValues, utmSource }: props) {
+export default function BudgetTool({ onNext, selectedValues, Principles, allValues, utmSource,ResetPrinciples }: props) {
     const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
     const [showStage, setShowStage] = useState<string>(allValues?.stage ?? "");
@@ -207,7 +208,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     useEffect(() => {
         if (!localStorage.getItem("kaleido_sessionId")) {
             localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
-            storeSession();
+             storeSession();
         }
     }, []);
 
@@ -271,7 +272,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             } else {
                 localStorage.setItem("reportId", newId);
             }
-            storeSession();
+             storeSession();
         }
 
     }
@@ -283,6 +284,11 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 .filter(t => t?.fields?.["Budget Max"] != null)
                 .map(t => t.fields["Budget Max"])
         )
+
+        if(rawValue!="" && Number(rawValue) == 0){
+            return
+        }
+        
         if (Number(rawValue) > maxDigits) {
             setBudgetError(`Max limit: ${toMillion(maxDigits)}`);
             return
@@ -358,9 +364,9 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             setLoader(true);
             const res = await fetch("/api/principles");
             const data = await res.json();
+            createReport();
             setLoader(false);
-            Principles(
-                data?.records?.map((prin: any) => ({
+            const principles = data?.records?.map((prin: any) => ({
                     id: prin.fields["Principle ID"],
                     name: prin.fields["Display Name"],
                     description: prin.fields["Description"],
@@ -379,12 +385,14 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                         checked: false
                     }))
                 }))
-            );
+            Principles(principles);
+            ResetPrinciples(principles);
         } else {
+            createReport();
             Principles(allValues?.principles);
         }
 
-        createReport();
+        
         selectedValues({
             budget: formValues?.budget,
             categoryName: formValues?.categoryName,
@@ -489,6 +497,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                         }}
                     >
                         <div className="flex flex-col gap-5">
+                            <div>
+                                <div className='flex flex-col gap-5'>
                             <label htmlFor="budget" className="sm:text-base text-sm font-semibold text-[#323152]">
                                 What&apos;s your responsible tech budget?
                             </label>
@@ -499,20 +509,25 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                     id="budget"
                                     value={formValues?.budget ? formValues.budget : ""}
                                     onChange={(e) => {
-                                        handleChange(e);
+                                       
+                                                 
+                                                        handleChange(e);
+                                                                                           
                                     }}
                                     className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
                                     placeholder="50,000"
                                 />
-                                {budgetError ?
+                                </div>
+                            </div>
+                            {budgetError ?
 
-                                    <span className="text-[#323152] text-sm font-semibold leading-[normal]">
+                                    <div className="mt-2 text-[#EF4444] text-xs font-semibold leading-[normal]">
                                         {budgetError}
-                                    </span>
+                                    </div>
 
                                     : ""}
                             </div>
-
+                            
                             {showStage ? <div className="inline-block">
                                 <div className="inline-flex w-[fit-content] max-w-max items-center px-4 py-3 rounded-full bg-[#10B981]">
                                     <span className="sm:text-[15px] text-[11px] font-semibold text-white leading-[normal]">
@@ -544,7 +559,10 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                 <div
                                     key={category.id}
                                     onClick={() => {
-                                        setFormValues({ ...formValues, ['category']: category.id, ['categoryName']: category.name })
+                                        if(category.disabled == false){
+                                            setFormValues({ ...formValues, ['category']: category.id, ['categoryName']: category.name })
+                                        }
+                                        
                                     }}
                                     style={{
                                         border: category.disabled == true ? "1px solid #babcc1a1" : "",
@@ -634,10 +652,11 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
 
                     {/* Continue Button */}
                     <button onClick={() => {
+                        
                         if (formValues?.budget && formValues?.category && !loader) {
                             getPrinciples();
                             } else {
-                            setError("Please select budget and type of tech before proceeding");
+                            setError("Please select budget and type of tech before proceed");
                             setShowToast(true);
                             }
                        

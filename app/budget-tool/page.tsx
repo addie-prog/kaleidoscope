@@ -15,6 +15,7 @@ export default function BudgetTool({
   const [step, setStep] = useState<Number>(1);
   const [selectedValues, setSelectedValues] = useState({});
   const [principles, setPrinciples] = useState([]);
+  const [resetPrinciples, setResetPrinciples] = useState([]);
   const [reportData, setReportData] = useState([]);
 
   return (
@@ -35,7 +36,7 @@ export default function BudgetTool({
           </div>
         </div>
       </header>
-      {step === 1 && <BudgetStep utmSource={utmSource} Principles={(val:any)=>{setPrinciples(val), setStep(2)}} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value)=>setSelectedValues(value)} />}
+      {step === 1 && <BudgetStep ResetPrinciples={(principles: any)=>setResetPrinciples(principles)}utmSource={utmSource} Principles={(val:any)=>{setPrinciples(val), setStep(2)}} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value)=>setSelectedValues(value)} />}
 
       {step === 2 && (
         <AllocateStep
@@ -44,6 +45,7 @@ export default function BudgetTool({
           selectedValues={selectedValues}
           onNext={(value: number) => setStep(value)}
           Principles={principles}
+          ResetPrinciples={resetPrinciples}
           reportData={(value: any)=>{setReportData(value)}}
         />
       )}

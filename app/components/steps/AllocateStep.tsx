@@ -8,6 +8,7 @@ type props = {
   onNext: (value: number) => void;
   selectedValues: any,
   Principles: PrincipleProps[],
+  ResetPrinciples: PrincipleProps[],
   reportData: (value: Array<any>) => void
   userNotes: (value: string) => void
   updatedPrinciples: (value: Array<any>) => void
@@ -26,7 +27,7 @@ type PrincipleProps = {
   layers: any[];
 }
 
-export default function AllocatePage({ onNext, selectedValues, Principles, reportData, userNotes, updatedPrinciples }: props) {
+export default function AllocatePage({ onNext, selectedValues, Principles, reportData, userNotes, updatedPrinciples, ResetPrinciples }: props) {
   const totalBudget = selectedValues.budget;
 
   const [principles, setPrinciples] = useState<PrincipleProps[]>(selectedValues?.principles?.length > 0 ? selectedValues?.principles : Principles);
@@ -230,6 +231,29 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     </svg>
   }
 
+  const createInteraction = async (newReportData:any) => {
+        
+        const res = await fetch("/api/user-session/store-interaction", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                reportName: [localStorage
+                  .getItem("reportId")
+                  ?.split(",")
+                  .pop()],
+                itemName: newReportData.map((item:any) => item.itemRecordId),
+                interactionStatus: "Added to Budget",
+                userNotes: selectedValues?.notes ?? "",
+                allocatedCost:newReportData.map((item1:any) => item1.items["Cost Max"])
+            })
+        });
+        const data = await res.json();
+
+
+    }
 
   const generateReport = async () => {
     setLoader(true);
@@ -277,12 +301,14 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           principleDes: p.description,
           layerId: layer.id,
           layerBudget,
+          itemRecordId:matching ? matching[0]?.id :"",
           items: matching ? matching[0]?.fields : [],
         });
       });
     });
     userNotes(selectedValues?.notes);
     reportData(newReportData);
+    createInteraction(newReportData);
     onNext(3);
   }
 
@@ -292,8 +318,15 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
   return (
     <>
+
+    <div className='w-full flex justify-end sm:px-15 px-[16px] pt-10'>
+                <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" onClick={() => { setPrinciples(ResetPrinciples), userNotes("")}}>
+                    <span>Reset</span>
+                </button>
+            </div>
+
       {/* Main Content */}
-      <main className="mx-auto max-w-4xl px-4 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <main className="mx-auto max-w-4xl px-4 lg:px-8 pb-8 sm:pb-12 lg:pb-16">
         <div className='w-fit flex gap-1 ' onClick={() => onNext(1)}>
           <div className="flex gap-1 cursor-pointer mb-4" onClick={() => onNext(1)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon' className="sm:w-[18px] w-[14px]" />
           <span>Back</span></div>
@@ -634,7 +667,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                 return;
               }
               else if(getCheckedPrinciples(principles)?.length > 0){
-                setError("Please ensure selected principles have budget allocated!");
+                setError("Please ensure all the selected principles have budget allocated!");
                 setShowToast(true);
                 return;
               }
