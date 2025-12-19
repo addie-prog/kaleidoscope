@@ -1,12 +1,13 @@
 import Image from "next/image";
 
 interface ToastModalProps {
-  message: string;
+  message: string | Array<string>;
   open: boolean;
   onClose: () => void;
 }
 
 const ToastModal = ({ message, open, onClose }: ToastModalProps) => {
+ 
   return (
     <div
       className={`fixed inset-0 z-50 transition-opacity duration-300
@@ -40,7 +41,16 @@ const ToastModal = ({ message, open, onClose }: ToastModalProps) => {
 
             <div className="flex-1">
               <h4 className="font-semibold">Validation Error</h4>
-              <p className="text-sm">{message}</p>
+              {(typeof message == "object") ? 
+              <ul className="list-disc pl-3 text-sm">
+                {message?.map((m, i)=>
+                   <li key={i}>{m}</li>
+                )}               
+              </ul>
+              :<p className="text-sm">{message}</p>
+
+              }
+              
             </div>
 
             <button

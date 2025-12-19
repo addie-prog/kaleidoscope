@@ -49,7 +49,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     const [showStage, setShowStage] = useState<string>(allValues?.stage ?? "");
     const [loader, setLoader] = useState<boolean>(false);
     const [formValues, setFormValues] = useState<objectType>(allValues ? { ...allValues, ["tier"]: allValues?.tier } : {});
-    const [error, setError] = useState<string>("");
+    const [error, setError] = useState<string | Array<string>>("");
     const [budgetError, setBudgetError] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
     const utm_source = utmSource;
@@ -226,6 +226,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 userType: 'Anonymous Guest',
                 DateJoined: new Date().toISOString().split("T")[0],
                 UTCSource: utm_source,
+                Email: formValues?.email,
                 reportId: localStorage.getItem("reportId") ? localStorage.getItem("reportId") : ""
             })
         });
@@ -251,6 +252,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 techType: formValues?.categoryName,
                 initialBudget: Number(formValues.budget.replace(/,/g, "")),
                 projectName: formValues?.projectName ?? "",
+                email: formValues?.email,
                 status: "Draft"
             })
         });
@@ -290,7 +292,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         }
         
         if (Number(rawValue) > maxDigits) {
-            setBudgetError(`Max limit: ${toMillion(maxDigits)}`);
+            setBudgetError(`Maximum limit: ${toMillion(maxDigits)}`);
             return
         };
 
@@ -298,9 +300,9 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         setFormValues({ ...formValues, ["budget"]: formatted, ["tier"]: "" });
     }
 
-    // function isValidEmail(value: string) {
-    //     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-    // }
+    function isValidEmail(value: string) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
     const formatNumber = (value: string) => {
         const numeric = value.replace(/\D/g, "");
         let SelectedTier: any = {};
@@ -336,7 +338,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             setBudgetError("");
             setShowStage(`${matched.fields["Display Name"]} ($${formatBudget(matched.fields["Budget Min"])}-${formatBudget(matched.fields["Budget Max"])})`);
         } else if (Number(numeric) > 0 && !matched) {
-            setBudgetError(`Max limit reached ${toMillion(lastTierMaxBudget)}`);
+            setBudgetError(`Max. limit reached ${toMillion(lastTierMaxBudget)}`);
         } else {
             setBudgetError("");
             setShowStage("");
@@ -351,16 +353,14 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     const getBudgetTier = async () => {
         const res = await fetch("/api/budget-tier");
         const data = await res.json();
-
         setBudgetTier(data.records);
-
     }
-
-
 
     const getPrinciples = async () => {
 
+        
         if ((typeof allValues?.principles == "undefined" && !allValues?.principles) || allValues?.principles?.length == 0) {
+            
             setLoader(true);
             const res = await fetch("/api/principles");
             const data = await res.json();
@@ -402,6 +402,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             tier: formValues?.tier ? formValues.tier : budgetTier.find(
                 (item: any) => item.fields.checked === true
             )?.fields["Tier ID"] ?? null,
+            email: formValues?.email,
             principles: allValues?.principles?.length > 0 ? allValues?.principles : [],
             notes: allValues?.notes,
         });
@@ -461,8 +462,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                             backgroundClip: 'padding-box, border-box',
                         }}
                     >
-                        <div className="flex flex-col gap-5">
-                            <label htmlFor="budget" className="sm:text-base text-sm font-semibold text-[#323152]">
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="projectName" className="sm:text-base text-sm font-semibold text-[#323152]">
                                 Project Name
                             </label>
                             <div className="flex items-center gap-1.5 px-5 py-3.5 rounded-md border border-gray-100 bg-white">
@@ -482,7 +483,27 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                             </div>
 
                         </div>
+                            <div className="flex flex-col gap-2">
+                            <label htmlFor="email" className="sm:text-base text-sm font-semibold text-[#323152]">
+                                Email
+                            </label>
+                            <div className="flex items-center gap-1.5 px-5 py-3.5 rounded-md border border-gray-100 bg-white">
+                                <input
+                                    type="text"
+                                    id="email"
+                                    value={formValues?.email ?? ""}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value.length === 1 && value === " ") return;
+                                        setFormValues({ ...formValues, ["email"]: value });
+                                    }}
+                                    className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
+                                    placeholder="Enter your email address"
+                                />
 
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -653,12 +674,30 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                     {/* Continue Button */}
                     <button onClick={() => {
                         
-                        if (formValues?.budget && formValues?.category && !loader) {
+                        if (formValues?.budget && formValues?.category && (typeof formValues?.email!="undefined" && formValues?.email && isValidEmail(formValues?.email) || !formValues?.email) && !loader) {
                             getPrinciples();
-                            } else {
-                            setError("Please select budget and type of tech before proceed");
+                        } else if (formValues?.email && !isValidEmail(formValues?.email)) {
+                            setError("Please enter valid email address");
                             setShowToast(true);
-                            }
+                        } else if (!formValues?.budget && !formValues?.category) {
+                            setError([
+                                "Please select tech budget",
+                                "What type of tech are you building?"
+                                ]);
+                            setShowToast(true);
+                        } else if (!formValues?.budget && formValues?.category) {
+                            setError("Please select tech budget");
+                            setShowToast(true);
+                        } else if (formValues?.budget && !formValues?.category) {
+                            setError("What type of tech are you building?");
+                            setShowToast(true);
+                        } else {
+                            setError([
+                                    "Please select tech budget",
+                                    "What type of tech are you building?"
+                                    ]);
+                            setShowToast(true);
+                        }
                        
                     }
                     } className={`cursor-pointer flex items-center justify-center gap-2.5 px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6]`}>

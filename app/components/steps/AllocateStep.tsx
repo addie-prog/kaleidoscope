@@ -634,7 +634,11 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
               <div className="relative w-full">
                 <textarea
                   value={selectedValues?.notes}
-                  onChange={(e) => {userNotes(e.target.value.trim() ?? "")}}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length === 1 && value === " ") return;
+                    userNotes(value ?? "")
+                  }}
                   placeholder="Use this space to record any critical context, rationale, etc."
                   className="h-32 w-full resize-none bg-white rounded-md border border-gray-200/50 px-5 py-5 font-inter text-sm tracking-tight text-gray-900 placeholder:text-gray-500/80 focus:border-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-300"
                 />
