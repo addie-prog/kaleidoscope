@@ -244,10 +244,10 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                   .getItem("reportId")
                   ?.split(",")
                   .pop()],
-                itemName: newReportData.map((item:any) => item.itemRecordId),
+                itemName: newReportData?.map((item:any) => item?.itemRecordId),
                 interactionStatus: "Added to Budget",
                 userNotes: selectedValues?.notes ?? "",
-                allocatedCost:newReportData.map((item1:any) => item1.items["Cost Max"])
+                allocatedCost:newReportData?.map((item1:any) => item1?.layerBudget)
             })
         });
         const data = await res.json();
@@ -291,6 +291,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           const pb = b.fields.Priority ?? Infinity;
           return Number(pa) - Number(pb);
         }) ?? [];
+
         
         newReportData.push({
           principleId: p.id,
@@ -299,10 +300,11 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           principleName: p.name,
           principleColor: p.color,
           principleDes: p.description,
-          layerId: layer.id,
+          layerName: p.layers.filter((lf) => lf.checked === true).map((l)=>l.name),
+          layerId: p.layers.filter((lf) => lf.checked === true).map((l)=>l.id),
           layerBudget,
-          itemRecordId:matching ? matching[0]?.id :"",
-          items: matching ? matching[0]?.fields : [],
+          itemRecordId:matching?.length > 0 ? matching.map((m: any)=>m.id) : [],
+          items: matching?.length ? matching : [],
         });
       });
     });

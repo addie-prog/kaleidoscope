@@ -9,7 +9,7 @@ export async function POST(request: Request) {
                     fields: {
                     "Interaction ID": `Int_${Date.now()}`,
                     "Report Name": reportName,
-                    "Item Name": [itemN],
+                    "Item Name":itemN ?? [],
                     "Interaction Status": interactionStatus,
                     "User Notes": userNotes,
                     "Allocated Cost":allocatedCost[i],
