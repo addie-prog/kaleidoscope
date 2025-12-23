@@ -598,7 +598,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
                                     <div className="flex items-end gap-2">
                                       <div className="text-xs sm:text-sm font-medium text-gray-900">
-                                        {layer.percentage}%
+                                        {layer?.percentage?.toFixed(1)}%
                                       </div>
                                       {layer.checked && (
                                         <div className="text-xs sm:text-sm font-medium text-[#6B7280]">
