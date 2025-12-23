@@ -720,7 +720,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           }
           } className="cursor-pointer w-full px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6] text-center">
             <span className="text-base font-semibold text-white">
-              {loader ? "Processing..." : "Generate Report"}
+              {loader ? "Generating report..." : "Generate Report"}
             </span>
           </button>
         </div>
