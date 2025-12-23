@@ -555,7 +555,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
                             {/* Execution Layers Items */}
                             <div className="flex flex-col gap-3">
-                              {principle.layers.map((layer) => (
+                              {principle?.layers?.map((layer) => (
                                 <div
                                   key={layer.id}
                                   className="flex flex-col gap-4 p-5 rounded-lg border border-gray-200 bg-white"
@@ -598,7 +598,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
                                     <div className="flex items-end gap-2">
                                       <div className="text-xs sm:text-sm font-medium text-gray-900">
-                                        {layer?.percentage?.toFixed(1)}%
+                                        {parseFloat(layer?.percentage?.toFixed(1)).toString()}%
                                       </div>
                                       {layer.checked && (
                                         <div className="text-xs sm:text-sm font-medium text-[#6B7280]">
