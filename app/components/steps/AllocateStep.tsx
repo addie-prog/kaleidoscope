@@ -274,6 +274,12 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
   }
 
+  const categoryOrder: Record<string, number> = {
+    must_have: 1,
+    should_have: 2,
+    skip: 3,
+  };
+
   const generateReport = async () => {
     setLoader(true);
     const res = await fetch("/api/generate-report");
@@ -311,9 +317,17 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                           fields["Status"] == "Active"
                         );
                       }).sort((a: any, b: any) => {
+                        const ca = categoryOrder[a.fields.Category] ?? Infinity;
+                        const cb = categoryOrder[b.fields.Category] ?? Infinity;
+
+                        if (ca !== cb) {
+                          return ca - cb; // category first
+                        }
+
                         const pa = a.fields.Priority ?? Infinity;
                         const pb = b.fields.Priority ?? Infinity;
-                        return Number(pa) - Number(pb);
+
+                        return Number(pa) - Number(pb); // then priority
                       }) ?? [];
 
         newReportData.push({
