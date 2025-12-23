@@ -283,7 +283,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             normalize(fields["Execution Layer"]) === normalize(layer.id) &&
             Number(fields["Cost Min"]) <= layerBudget &&
             Number(fields["Cost Max"]) >= layerBudget &&
-            fields["Budget Tier"] === selectedValues.tier &&
+            // fields["Budget Tier"] === selectedValues.tier &&
             fields["Status"] == "Active"
           );
         }).sort((a: any, b: any) => {
