@@ -485,7 +485,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                         </div>
                             <div className="flex flex-col gap-2">
                             <label htmlFor="email" className="sm:text-base text-sm font-semibold text-[#323152]">
-                                Email
+                                Email <span className='text-xs'>(Optional)</span>
                             </label>
                             <div className="flex items-center gap-1.5 px-5 py-3.5 rounded-md border border-gray-100 bg-white">
                                 <input

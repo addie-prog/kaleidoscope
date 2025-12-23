@@ -68,14 +68,33 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   };
 
   const handlePrincipleSlider = (principleId: string, value: number) => {
+    const clampedValue = Math.min(Math.max(value, 0), 100); // principle percentage
     setPrinciples((prev) =>
-      prev.map((p) =>
-        p.id === principleId
-          ? { ...p, percentage: Math.min(Math.max(value, 0), 100), budget: Math.min(Math.max(value, 0), 100) == 0 ? 0 : p.budget }
-          : p
-      )
+      prev.map((p) => {
+        if (p.id !== principleId) return p;
+
+        const numLayers = p.layers.length;
+        if (numLayers === 0) return p;
+
+        // Each layer gets an equal share of 100% (relative to principle)
+        const layerPercentage = 100 / numLayers;
+        const layerBudget = p.budget / numLayers;
+
+        return {
+          ...p,
+          percentage: clampedValue,
+          budget: clampedValue === 0 ? 0 : p.budget,
+          layers: p.layers.map((layer) => ({
+            ...layer,
+            checked: clampedValue > 0,
+            percentage: clampedValue === 0 ? 0 : layerPercentage,
+            budget: clampedValue === 0 ? 0 : layerBudget,
+          })),
+        };
+      })
     );
   };
+
 
   const handleLayerSlider = (principleId: string, layerId: string, value: number) => {
     setPrinciples((prev) =>
@@ -107,7 +126,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     return amount;
   };
 
-  
+
 
 
   useEffect(() => {
@@ -219,7 +238,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   const shouldShowSuccessMessage = (principles: any[]) => {
     const principlesTotal = getTotalPrinciplesPercentage(principles);
     const layersValid = areAllLayersValid(principles, Number(totalBudget.replace(/,/g, "")));
-    
+
     return principlesTotal === 100 && layersValid && getCheckedPrinciples(principles)?.length == 0;
   };
 
@@ -231,38 +250,38 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     </svg>
   }
 
-  const createInteraction = async (newReportData:any) => {
-        
-        const res = await fetch("/api/user-session/store-interaction", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                reportName: [localStorage
-                  .getItem("reportId")
-                  ?.split(",")
-                  .pop()],
-                itemName: newReportData?.map((item:any) => item?.itemRecordId),
-                interactionStatus: "Added to Budget",
-                userNotes: selectedValues?.notes ?? "",
-                allocatedCost:newReportData?.map((item1:any) => item1?.layerBudget)
-            })
-        });
-        const data = await res.json();
+  const createInteraction = async (newReportData: any) => {
+
+    const res = await fetch("/api/user-session/store-interaction", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        reportName: [localStorage
+          .getItem("reportId")
+          ?.split(",")
+          .pop()],
+        itemName: newReportData?.map((item: any) => item?.itemRecordId),
+        interactionStatus: "Added to Budget",
+        userNotes: selectedValues?.notes ?? "",
+        allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget)
+      })
+    });
+    const data = await res.json();
 
 
-    }
+  }
 
   const generateReport = async () => {
     setLoader(true);
     const res = await fetch("/api/generate-report");
     let data: any;
 
-    try{
-       data = await res.json();
-    }catch(e: any){
+    try {
+      data = await res.json();
+    } catch (e: any) {
       setLoader(false);
     }
 
@@ -292,7 +311,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           return Number(pa) - Number(pb);
         }) ?? [];
 
-        
+
         newReportData.push({
           principleId: p.id,
           principlePercentage: p.percentage,
@@ -300,10 +319,10 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           principleName: p.name,
           principleColor: p.color,
           principleDes: p.description,
-          layerName: p.layers.filter((lf) => lf.checked === true).map((l)=>l.name),
-          layerId: p.layers.filter((lf) => lf.checked === true).map((l)=>l.id),
+          layerName: p.layers.filter((lf) => lf.checked === true).map((l) => l.name),
+          layerId: p.layers.filter((lf) => lf.checked === true).map((l) => l.id),
           layerBudget,
-          itemRecordId:matching?.length > 0 ? matching.map((m: any)=>m.id) : [],
+          itemRecordId: matching?.length > 0 ? matching.map((m: any) => m.id) : [],
           items: matching?.length ? matching : [],
         });
       });
@@ -314,25 +333,25 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     onNext(3);
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     updatedPrinciples(principles);
-  },[principles])
+  }, [principles])
 
   return (
     <>
 
-    <div className='w-full flex justify-end sm:px-15 px-[16px] pt-10'>
-                <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" onClick={() => { setPrinciples(ResetPrinciples), userNotes("")}}>
-                    <span>Reset</span>
-                </button>
-            </div>
+      <div className='w-full flex justify-end sm:px-15 px-[16px] pt-10'>
+        <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" onClick={() => { setPrinciples(ResetPrinciples), userNotes("") }}>
+          <span>Reset</span>
+        </button>
+      </div>
 
       {/* Main Content */}
       <main className="mx-auto max-w-4xl px-4 lg:px-8 pb-8 sm:pb-12 lg:pb-16">
         <div className='w-fit flex gap-1 ' onClick={() => onNext(1)}>
           <div className="flex gap-1 cursor-pointer mb-4" onClick={() => onNext(1)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon' className="sm:w-[18px] w-[14px]" />
-          <span>Back</span></div>
-         
+            <span>Back</span></div>
+
         </div>
         {/* Title Section */}
         <ToastModal
@@ -378,19 +397,19 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                   <div className='flex items-center gap-2 sm:text-[15px] text-[13px]'>
                     {ValidationIcon()}
                     Total must equal 100% (currently: {remainingPercentage}%)</div></div>
-                : getCheckedPrinciples(principles)?.length > 0 ? 
-                   <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
-                  <div className='flex items-center gap-2'>
-                    {ValidationIcon()}
-                    <span className='sm:text-[15px] text-[13px]'>Please ensure all the selected principles have budget allocated!</span>
-                  </div></div>
-                
-                :
-                <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
-                  <div className='flex items-center gap-2'>
-                    {ValidationIcon()}
-                    <span className='sm:text-[15px] text-[13px]'>Please ensure execution layers total exactly 100%</span>
-                  </div></div>
+                : getCheckedPrinciples(principles)?.length > 0 ?
+                  <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
+                    <div className='flex items-center gap-2'>
+                      {ValidationIcon()}
+                      <span className='sm:text-[15px] text-[13px]'>Please ensure all the selected principles have budget allocated!</span>
+                    </div></div>
+
+                  :
+                  <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
+                    <div className='flex items-center gap-2'>
+                      {ValidationIcon()}
+                      <span className='sm:text-[15px] text-[13px]'>Please ensure execution layers total exactly 100%</span>
+                    </div></div>
           }
 
           <div className="flex flex-col gap-6 sm:gap-7">
@@ -655,7 +674,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             if (!loader) {
               const principlesTotal = getTotalPrinciplesPercentage(principles);
               const layersValid = areAllLayersValid(principles, Number(totalBudget.replace(/,/g, "")));
-              
+
               if (principlesTotal > 100 || (principlesTotal < 100 && principlesTotal > 0)) {
                 setError(`Total must equal 100% (Allocated: ${principlesTotal}%)`);
                 setShowToast(true);
@@ -672,12 +691,12 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
                 setShowToast(true);
                 return;
               }
-              else if(getCheckedPrinciples(principles)?.length > 0){
+              else if (getCheckedPrinciples(principles)?.length > 0) {
                 setError("Please ensure all the selected principles have budget allocated!");
                 setShowToast(true);
                 return;
               }
-              
+
               generateReport();
             }
           }
