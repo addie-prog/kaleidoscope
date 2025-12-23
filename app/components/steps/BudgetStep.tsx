@@ -581,7 +581,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                     key={category.id}
                                     onClick={() => {
                                         if(category.disabled == false){
-                                            setFormValues({ ...formValues, ['category']: category.id, ['categoryName']: category.name })
+                                            setFormValues({ ...formValues, ['category']: !formValues.category ? category.id : null, ['categoryName']: !formValues.category ? category.name : "" })
                                         }
                                         
                                     }}
@@ -674,28 +674,29 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                     {/* Continue Button */}
                     <button onClick={() => {
                         
-                        if (formValues?.budget && formValues?.category && (typeof formValues?.email!="undefined" && formValues?.email && isValidEmail(formValues?.email) || !formValues?.email) && !loader) {
+                        if (formValues?.budget && (typeof formValues?.email!="undefined" && formValues?.email && isValidEmail(formValues?.email) || !formValues?.email) && !loader) {
                             getPrinciples();
                         } else if (formValues?.email && !isValidEmail(formValues?.email)) {
                             setError("Please enter valid email address");
                             setShowToast(true);
-                        } else if (!formValues?.budget && !formValues?.category) {
-                            setError([
-                                "Please select tech budget",
-                                "What type of tech are you building?"
-                                ]);
-                            setShowToast(true);
-                        } else if (!formValues?.budget && formValues?.category) {
+                        } 
+                        // else if (!formValues?.budget) {
+                        //     setError([
+                        //         "Please select tech budget",
+                        //         "What type of tech are you building?"
+                        //         ]);
+                        //     setShowToast(true);
+                        // }
+                         else if (!formValues?.budget) {
                             setError("Please select tech budget");
                             setShowToast(true);
-                        } else if (formValues?.budget && !formValues?.category) {
-                            setError("What type of tech are you building?");
-                            setShowToast(true);
-                        } else {
-                            setError([
-                                    "Please select tech budget",
-                                    "What type of tech are you building?"
-                                    ]);
+                        } 
+                        // else if (formValues?.budget && !formValues?.category) {
+                        //     setError("What type of tech are you building?");
+                        //     setShowToast(true);
+                        // }
+                         else {
+                            setError("Please select tech budget");
                             setShowToast(true);
                         }
                        

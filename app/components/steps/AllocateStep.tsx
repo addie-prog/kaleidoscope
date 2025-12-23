@@ -301,16 +301,20 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           return (
             normalize(fields["Execution Layer"]) === normalize(layer.id) &&
             Number(fields["Cost Min"]) <= layerBudget &&
-            Number(fields["Cost Max"]) >= layerBudget &&
-            // fields["Budget Tier"] === selectedValues.tier &&
-            fields["Status"] == "Active"
-          );
-        }).sort((a: any, b: any) => {
-          const pa = a.fields.Priority ?? Infinity;
-          const pb = b.fields.Priority ?? Infinity;
-          return Number(pa) - Number(pb);
-        }) ?? [];
-
+            Number(fields["Cost Max"]) >= layerBudget && 
+            (
+                selectedValues?.category
+                  ? true
+                  : fields["Tags"] === "baseline"
+              )  &&
+                          // fields["Budget Tier"] === selectedValues.tier &&
+                          fields["Status"] == "Active"
+                        );
+                      }).sort((a: any, b: any) => {
+                        const pa = a.fields.Priority ?? Infinity;
+                        const pb = b.fields.Priority ?? Infinity;
+                        return Number(pa) - Number(pb);
+                      }) ?? [];
 
         newReportData.push({
           principleId: p.id,
@@ -350,7 +354,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
       <main className="mx-auto max-w-4xl px-4 lg:px-8 pb-8 sm:pb-12 lg:pb-16">
         <div className='w-fit flex gap-1 ' onClick={() => onNext(1)}>
           <div className="flex gap-1 cursor-pointer mb-4" onClick={() => onNext(1)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon' className="sm:w-[18px] w-[14px]" />
-            <span>Back</span></div>
+            <span>Edit</span></div>
 
         </div>
         {/* Title Section */}

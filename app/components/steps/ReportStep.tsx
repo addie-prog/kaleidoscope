@@ -54,7 +54,7 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
         <div className='mx-auto max-w-4xl px-4 pt-6 sm:pt-8 lg:pt-12 flex flex-col justify-between' >
 
           <div className="w-full flex-row flex justify-between">
-            <div className="flex gap-1 cursor-pointer items-center" onClick={() => onBack(2)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon' /><span >Back</span></div>
+            <div className="flex gap-1 cursor-pointer items-center" onClick={() => onBack(2)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon' /><span >Edit</span></div>
 
             <button className="cursor-pointer flex items-center gap-[5px] text-white px-5 sm:py-2 py-2 rounded-lg bg-[#3B82F6] text-center" onClick={reactToPrintFn}>
 
@@ -102,7 +102,7 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
                 </div>
                 <div className="flex flex-col items-center gap-2 sm:w-[30%]">
                   <div className="md:text-[15px] text-[13px] font-medium text-[#6B7280] text-center w-full">Tech Type</div>
-                  <div className="md:text-[17px] text-[13px] font-bold text-[#111827] text-center">{selectedValues?.categoryName}</div>
+                  <div className="md:text-[17px] text-[13px] font-bold text-[#111827] text-center">{selectedValues?.categoryName ? selectedValues?.categoryName : "None"}</div>
                 </div>
                 <div className="flex flex-col items-center gap-2 sm:w-[30%]">
                   <div className="md:text-[15px] text-[13px] font-medium text-[#6B7280] text-center">Generated</div>
