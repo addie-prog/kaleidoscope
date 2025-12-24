@@ -284,8 +284,10 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     setLoader(true);
     const res = await fetch("/api/generate-report");
     let data: any;
-
-    try {
+    const tiers = localStorage.getItem("Tiers");
+    const budgetTiers = tiers ? JSON.parse(tiers) : [];   
+  
+  try {
       data = await res.json();
     } catch (e: any) {
       setLoader(false);
@@ -296,39 +298,76 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     const newReportData: any[] = [];
 
     const items = data.records;
+    
 
     principles?.filter((pf) => pf.checked === true)?.map((p) => {
       p.layers.filter((lf) => lf.checked === true).map((layer) => {
 
         const layerBudget = Number(layer.budget || 0);
-        const matching = items?.filter((item: any) => {
+
+        const matchedTier = budgetTiers.find(
+        (tier: any) =>
+          layerBudget >= Number(tier["Budget Min"]) &&
+          layerBudget <= Number(tier["Budget Max"])
+      )?.["Tier ID"];
+
+        const baseFilter = (fields: any) =>
+          normalize(fields["Principle"]) == normalize(p.id) &&
+          normalize(fields["Execution Layer"]) === normalize(layer.id) &&
+          (
+            selectedValues?.category
+              ? true
+              : fields["Tags"] == "baseline"
+          ) &&
+          fields["Status"] == "Active";
+
+
+      let matching =
+        items
+          ?.filter((item: any) => {
+            const fields = item.fields;
+
+            return (
+              baseFilter(fields) &&
+              Number(fields["Cost Min"]) <= layerBudget &&
+              Number(fields["Cost Max"]) >= layerBudget
+            );
+          })
+          ?.sort((a: any, b: any) => {
+            const ca = categoryOrder[a.fields.Category] ?? Infinity;
+            const cb = categoryOrder[b.fields.Category] ?? Infinity;
+
+            if (ca !== cb) return ca - cb;
+
+            const pa = a.fields.Priority ?? Infinity;
+            const pb = b.fields.Priority ?? Infinity;
+
+            return Number(pa) - Number(pb);
+          }) ?? [];
+
+
+        if(matching?.length == 0){
+          matching = items?.filter((item: any) => {
           const fields = item.fields;
 
-          return (
-            normalize(fields["Execution Layer"]) === normalize(layer.id) &&
-            Number(fields["Cost Min"]) <= layerBudget &&
-            Number(fields["Cost Max"]) >= layerBudget && 
-            (
-                selectedValues?.category
-                  ? true
-                  : fields["Tags"] === "baseline"
-              )  &&
-                          // fields["Budget Tier"] === selectedValues.tier &&
-                          fields["Status"] == "Active"
-                        );
-                      }).sort((a: any, b: any) => {
-                        const ca = categoryOrder[a.fields.Category] ?? Infinity;
-                        const cb = categoryOrder[b.fields.Category] ?? Infinity;
+            return (
+              baseFilter(fields) &&
+              fields["Budget Tier"] == matchedTier
+            );
+          }).sort((a: any, b: any) => {
+            const ca = categoryOrder[a.fields.Category] ?? Infinity;
+            const cb = categoryOrder[b.fields.Category] ?? Infinity;
 
-                        if (ca !== cb) {
-                          return ca - cb; // category first
-                        }
+            if (ca !== cb) {
+              return ca - cb; // category first
+            }
 
-                        const pa = a.fields.Priority ?? Infinity;
-                        const pb = b.fields.Priority ?? Infinity;
+            const pa = a.fields.Priority ?? Infinity;
+            const pb = b.fields.Priority ?? Infinity;
 
-                        return Number(pa) - Number(pb); // then priority
-                      }) ?? [];
+            return Number(pa) - Number(pb); // then priority
+          }) ?? [];
+        }
 
         newReportData.push({
           principleId: p.id,

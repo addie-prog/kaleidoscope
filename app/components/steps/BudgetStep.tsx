@@ -354,6 +354,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         const res = await fetch("/api/budget-tier");
         const data = await res.json();
         setBudgetTier(data.records);
+        localStorage.setItem("Tiers", JSON.stringify(data?.records?.map((t: any)=>t.fields)));
     }
 
     const getPrinciples = async () => {
