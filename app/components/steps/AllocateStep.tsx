@@ -346,7 +346,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           }) ?? [];
 
 
-        if(matching?.length == 0){
+        if(matching?.length == 0 || layerBudget>=2000000){
           matching = items?.filter((item: any) => {
           const fields = item.fields;
 
