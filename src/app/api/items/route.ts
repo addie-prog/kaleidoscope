@@ -2,7 +2,7 @@ import { put } from "@vercel/blob";
 
 
 export async function GET() {
-  try {
+  try { 
     const token = process.env.AIRTABLE_TOKEN!;
     const APIDomain = process.env.AIRTABLE_DOMAIN!;
     const appID = process.env.AIRTABLE_APPID!;
