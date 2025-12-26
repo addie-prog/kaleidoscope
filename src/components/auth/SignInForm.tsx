@@ -19,13 +19,14 @@ export default function SignInForm() {
   const [isChecked, setIsChecked] = useState(false);
   const [formValues, setFormValues] = useState<Obj>({});
   const [error, setError] = useState<Obj>({});
+  const [loader, setLoader] = useState<boolean>(false);
 
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let error: Obj = {};
-
+    
     setError({});
 
     if (!formValues?.email?.trim()) {
@@ -36,14 +37,15 @@ export default function SignInForm() {
       error.password = "Password is required";
     }
     setError(error);
-
+    
     if (formValues?.email?.trim() && formValues?.password?.trim()) {
+      setLoader(true);
       const res = await signIn("credentials", {
         redirect: false,
         email: formValues?.email,
         password: formValues?.password,
       });
-
+       setLoader(false);
       if (res?.ok) {
         router.push("/sessions");
       } else {
@@ -113,8 +115,8 @@ export default function SignInForm() {
                   {error?.auth && <p className="lg:text-sm text-xs text-red-500">{error?.auth}</p>} 
                 </div>
                 <div>
-                  <button type="submit" className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600" >
-                    Sign in
+                  <button type="submit" disabled={loader} className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600" >
+                    {loader ? "Signing in…" : "Sign in"}
                   </button>
                 </div>
                                     
