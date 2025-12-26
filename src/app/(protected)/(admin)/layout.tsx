@@ -8,11 +8,9 @@ import { SessionProvider } from "next-auth/react";
 import React from "react";
 
 export default function AdminLayout({
-  children,
-  session,
+  children
 }: {
   children: React.ReactNode;
-  session: any
 }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   // Dynamic class for main content margin based on sidebar state
@@ -23,7 +21,7 @@ export default function AdminLayout({
     : "lg:ml-[90px]";
 
   return (
-     <SessionProvider session={session}>
+     <SessionProvider>
     <div className="min-h-screen xl:flex">
       {/* Sidebar and Backdrop */}
       <AppSidebar />
