@@ -3,9 +3,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 const STATIC_USER = {
   id: "1",
-  name: process.env.ADMIM_NAME,
-  email: process.env.ADMIM_EMAIL,
-  password: process.env.ADMIM_PASSWORD, 
+  name: process.env.ADMIN_NAME,
+  email: process.env.ADMIN_EMAIL,
+  password: process.env.ADMIN_PASSWORD, 
 };
 
 export const authOptions: NextAuthOptions = {
