@@ -39,7 +39,7 @@ export default function InteractionsTable() {
     const data = await res.json();
     setLoading(false);
     setLoadData(false);
-    console.log("data?.records",data?.records);
+ 
     if (data && data?.records && data?.records?.length > 0) {
       if (tableData) {
         setInteractions([...tableData, ...data?.records]);
@@ -58,7 +58,6 @@ export default function InteractionsTable() {
     getInteractions("");
   }, []);
 
-  useEffect(()=>{console.log("view", viewDetail)},[viewDetail])
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -210,24 +209,27 @@ export default function InteractionsTable() {
                 Item Name
               </div>
 
-              <div className="flex flex-wrap gap-2 bg-gray-50 p-3 rounded-md">
+              <div className="dark:bg-gray-900 flex flex-wrap gap-2 p-3 rounded-md  ">
                 {viewDetail?.fields?.["Item Name"]?.map((item: any, i: number) => (
                   <span
                     key={i}
-                    className="px-3 py-1 text-sm rounded-full bg-green-100 text-green-700"
+                    className="px-3 py-1 text-sm rounded-full bg-green-100 dark:bg-success-500/15 dark:text-success-500 text-green-700  "
                   >
                     {item}
                   </span>
-                ))}
+                )) ?? <Badge
+                      size="sm"
+                      color="error"
+                    >Not found</Badge>}
               </div>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 dark:bg-gray-900 ">
               <div className="mb-2 text-md font-semibold text-gray-800 dark:text-white/90">
                 User Notes
               </div>
 
-              <div className="flex flex-wrap gap-2 bg-gray-50 p-3 rounded-md">
+              <div className="flex dark:bg-gray-900 text-gray-800 dark:text-white/90 flex-wrap gap-2  p-3 rounded-md ">
                 {viewDetail?.fields?.["User Notes"] ?? <Badge
                       size="sm"
                       color="error"
@@ -235,7 +237,7 @@ export default function InteractionsTable() {
               </div>
             </div>
           </div>
-           <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+           <div className="dark:bg-gray-900 flex items-center gap-3 px-2 mt-6 lg:justify-end">
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
