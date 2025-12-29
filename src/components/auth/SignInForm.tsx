@@ -82,7 +82,10 @@ export default function SignInForm() {
                   </Label>
                   <input onFocus={() => setError({ ...error, ["email"]: "", ["auth"]: "" })} placeholder="info@gmail.com" type="email" name="email"
                     className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800  bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                    onChange={(e) => setFormValues({ ...formValues, ["email"]: e.target.value })}
+                    onChange={(e) => {
+                      setError({ ...error, ["email"]: "", ["auth"]: "" })
+                      setFormValues({ ...formValues, ["email"]: e.target.value })
+                    }}
                   />
                   {error?.email && <p className="lg:text-sm text-xs text-red-500">{error?.email}</p>}
 
@@ -98,7 +101,10 @@ export default function SignInForm() {
                       placeholder="Enter your password"
                       className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800  bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                       name="password"
-                      onChange={(e) => setFormValues({ ...formValues, ["password"]: e.target.value })}
+                      onChange={(e) => {
+                        setError({ ...error, ["password"]: "", ["auth"]: "" })
+                        setFormValues({ ...formValues, ["password"]: e.target.value })
+                      }}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}

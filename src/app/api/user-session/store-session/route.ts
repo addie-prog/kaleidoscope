@@ -1,5 +1,5 @@
 export async function POST(request: Request) {
-     const { recordId, sessionId, userType, DateJoined, UTCSource, Email, reportId } = await request.json()
+     const { recordId, sessionId, userType, DateJoined, DateUpdated, type, UTCSource, Email, reportId } = await request.json()
     try {
         const token = process.env.AIRTABLE_TOKEN;
         const APIDomain = process.env.AIRTABLE_DOMAIN;
@@ -10,12 +10,15 @@ export async function POST(request: Request) {
         const fields:any = {
             "Session ID":sessionId,
             "User Type": userType,
-            "Date Joined": DateJoined,
             "UTM Source": UTCSource ?? "",
             "Email": Email,
+            "Date Updated": DateUpdated
         } 
         if(reportId){
             fields["Reports"] = reportId.split(",");
+        }
+        if(type == 1){
+            fields["Date Joined"] = DateJoined;
         }
 
         if( recordId ){

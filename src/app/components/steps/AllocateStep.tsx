@@ -24,6 +24,7 @@ type PrincipleProps = {
   checked: boolean;
   layersVisible: boolean;
   budget: number;
+  layersAllocated: boolean;
   layers: any[];
 }
 
@@ -86,9 +87,9 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           budget: clampedValue === 0 ? 0 : p.budget,
           layers: p.layers.map((layer) => ({
             ...layer,
-            checked: clampedValue > 0,
-            percentage: clampedValue === 0 ? 0 : layerPercentage,
-            budget: clampedValue === 0 ? 0 : layerBudget,
+            checked: !p.layersAllocated ? clampedValue > 0 : layer.checked,
+            percentage: !p.layersAllocated ? (clampedValue === 0 ? 0 : layerPercentage) : layer.percentage,
+            budget: !p.layersAllocated ? (clampedValue === 0 ? 0 : layerBudget) : layer.budget,
           })),
         };
       })
@@ -102,6 +103,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
         p.id === principleId
           ? {
             ...p,
+            layersAllocated: true,
             layers: p.layers.map((layer) =>
               layer.id === layerId
                 ? { ...layer, percentage: Math.min(Math.max(value, 0), 100) }
@@ -266,7 +268,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
         itemName: newReportData?.map((item: any) => item?.itemRecordId),
         interactionStatus: "Added to Budget",
         userNotes: selectedValues?.notes ?? "",
-        allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget)
+        allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget),
+        DateCreated: new Date().toISOString().split("T")[0]
       })
     });
     const data = await res.json();

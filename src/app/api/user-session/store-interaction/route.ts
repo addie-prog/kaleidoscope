@@ -1,5 +1,5 @@
 export async function POST(request: Request) {
-     const { reportName, itemName, interactionStatus, userNotes, allocatedCost } = await request.json()
+     const { reportName, itemName, interactionStatus, DateCreated, userNotes, allocatedCost } = await request.json()
     try {
         const token = process.env.AIRTABLE_TOKEN;
         const APIDomain = process.env.AIRTABLE_DOMAIN;
@@ -13,6 +13,7 @@ export async function POST(request: Request) {
                     "Interaction Status": interactionStatus,
                     "User Notes": userNotes,
                     "Allocated Cost":allocatedCost[i],
+                    "Date Created": DateCreated
                 }
             };
         });

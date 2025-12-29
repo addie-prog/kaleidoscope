@@ -1,5 +1,5 @@
 export async function POST(request: Request) {
-     const { reportName, sessionId, techType, initialBudget, projectName, status, email } = await request.json()
+     const { reportName, sessionId, DateCreated, techType, initialBudget, projectName, status, email } = await request.json()
     try {
         const token = process.env.AIRTABLE_TOKEN;
         const APIDomain = process.env.AIRTABLE_DOMAIN;
@@ -21,7 +21,8 @@ export async function POST(request: Request) {
                     "Tech Type": techType,
                     "Initial Budget": initialBudget,
                     "Project Name":projectName,
-                    "Email": email
+                    "Email": email,
+                    "Date Created": DateCreated
                 }
             }
             ]

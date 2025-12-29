@@ -54,8 +54,6 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     const [showToast, setShowToast] = useState<boolean>(false);
     const utm_source = utmSource;
 
-
-
     const categories = [
         {
             id: 'ai-ml',
@@ -206,13 +204,13 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     ];
 
     useEffect(() => {
-        if (!localStorage.getItem("kaleido_sessionId")) {
+        if (!localStorage.getItem("sessionId")) {
             localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
-             storeSession();
+             storeSession(1);
         }
     }, []);
 
-    const storeSession = async () => {
+    const storeSession = async (type:number) => {
 
         const res = await fetch("/api/user-session/store-session", {
             method: 'POST',
@@ -225,6 +223,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 recordId: localStorage.getItem("sessionId") ?? "",
                 userType: 'Anonymous Guest',
                 DateJoined: new Date().toISOString().split("T")[0],
+                DateUpdated: new Date().toISOString().split("T")[0],
+                type,
                 UTCSource: utm_source,
                 Email: formValues?.email,
                 reportId: localStorage.getItem("reportId") ? localStorage.getItem("reportId") : ""
@@ -253,6 +253,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 initialBudget: Number(formValues.budget.replace(/,/g, "")),
                 projectName: formValues?.projectName ?? "",
                 email: formValues?.email,
+                DateCreated: new Date().toISOString().split("T")[0],
                 status: "Draft"
             })
         });
@@ -274,7 +275,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             } else {
                 localStorage.setItem("reportId", newId);
             }
-             storeSession();
+             storeSession(2);
         }
 
     }
