@@ -178,7 +178,6 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
                             <div className="flex flex-col gap-8">
                               <div className="flex items-start justify-between gap-4 flex-wrap">
                                 <div className="flex items-center gap-3">
-                                  {item['Tags'] }
                                   {
                                     (item['Category'] == "skip"
                                       ?
