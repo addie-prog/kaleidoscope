@@ -4,7 +4,9 @@ import SessionTable from "@/components/tables/Sessions";
 import { Metadata } from "next";
 import React from "react";
 
-
+export const metadata: Metadata = {
+  title: "Sessions | The Kaleidoscope Project",
+};
 export default function BasicTables() {
 
   return (

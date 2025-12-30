@@ -3,11 +3,16 @@ import './globals.css';
 
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { Metadata } from "next";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
+
+export const metadata: Metadata = {
+  title: "Calculator | The Kaleidoscope Project",
+};
 
 export default function RootLayout({
   children,
