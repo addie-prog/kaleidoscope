@@ -201,9 +201,9 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     useEffect(() => {
         if (!localStorage.getItem("sessionId")) {
             localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
-            // storeSession(1);
+            storeSession(1);
         } else {
-            // storeSession(2);
+            storeSession(2);
         }
     }, []);
 
@@ -269,7 +269,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             } else {
                 localStorage.setItem("reportId", newId);
             }
-            // storeSession(2);
+            storeSession(2);
         }
 
     }
@@ -367,7 +367,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             const res = await fetch("/api/principles");
             const data = await res.json();
 
-            // createReport();
+            createReport();
             setLoader(false);
             const principles: any = data?.map((prin: any) => ({
                 id: prin["Principle ID"],
@@ -392,7 +392,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             Principles(principles);
             ResetPrinciples(principles);
         } else {
-            // createReport();
+            createReport();
             Principles(allValues?.principles);
         }
 
