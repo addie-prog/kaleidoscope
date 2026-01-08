@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import ToastModal from '../CustomToast';
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
 
 type props = {
   onNext: (value: number) => void;
@@ -284,113 +285,114 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   };
 
   const generateReport = async () => {
-    setLoader(true);
-    const res = await fetch("/api/generate-report");
-    let data: any;
-    const tiers = localStorage.getItem("Tiers");
-    const budgetTiers = tiers ? JSON.parse(tiers) : [];   
+    redirect("/dashboard");
+  //   setLoader(true);
+  //   const res = await fetch("/api/generate-report");
+  //   let data: any;
+  //   const tiers = localStorage.getItem("Tiers");
+  //   const budgetTiers = tiers ? JSON.parse(tiers) : [];   
   
-  try {
-      data = await res.json();
-    } catch (e: any) {
-      setLoader(false);
-    }
+  // try {
+  //     data = await res.json();
+  //   } catch (e: any) {
+  //     setLoader(false);
+  //   }
 
-    setLoader(false);
-    const normalize = (val: any) => String(val).trim().toUpperCase();
-    const newReportData: any[] = [];
+  //   setLoader(false);
+  //   const normalize = (val: any) => String(val).trim().toUpperCase();
+  //   const newReportData: any[] = [];
 
-    const items = data.records;
+  //   const items = data.records;
     
 
-    principles?.filter((pf) => pf.checked === true)?.map((p) => {
-      p.layers.filter((lf) => lf.checked === true).map((layer) => {
+  //   principles?.filter((pf) => pf.checked === true)?.map((p) => {
+  //     p.layers.filter((lf) => lf.checked === true).map((layer) => {
 
-        const layerBudget = Number(layer.budget || 0);
+  //       const layerBudget = Number(layer.budget || 0);
 
-        const matchedTier = budgetTiers.find(
-        (tier: any) =>
-          layerBudget >= Number(tier["Budget Min"]) &&
-          layerBudget <= Number(tier["Budget Max"])
-      )?.["Tier ID"];
+  //       const matchedTier = budgetTiers.find(
+  //       (tier: any) =>
+  //         layerBudget >= Number(tier["Budget Min"]) &&
+  //         layerBudget <= Number(tier["Budget Max"])
+  //     )?.["Tier ID"];
 
-        const baseFilter = (fields: any) =>
-          normalize(fields["Principle"]) == normalize(p.id) &&
-          normalize(fields["Execution Layer"]) === normalize(layer.id) &&
-          (
-            selectedValues?.category
-              ? true
-              : fields["Tags"] == "baseline"
-          ) &&
-          fields["Status"] == "Active";
-
-
-      let matching =
-        items
-          ?.filter((item: any) => {
-            const fields = item;
-
-            return (
-              baseFilter(fields) &&
-              Number(fields["Cost Min"]) <= layerBudget &&
-              Number(fields["Cost Max"]) >= layerBudget
-            );
-          })
-          ?.sort((a: any, b: any) => {
-            const ca = categoryOrder[a.Category] ?? Infinity;
-            const cb = categoryOrder[b.Category] ?? Infinity;
-
-            if (ca !== cb) return ca - cb;
-
-            const pa = a.Priority ?? Infinity;
-            const pb = b.Priority ?? Infinity;
-
-            return Number(pa) - Number(pb);
-          }) ?? [];
+  //       const baseFilter = (fields: any) =>
+  //         normalize(fields["Principle"]) == normalize(p.id) &&
+  //         normalize(fields["Execution Layer"]) === normalize(layer.id) &&
+  //         (
+  //           selectedValues?.category
+  //             ? true
+  //             : fields["Tags"] == "baseline"
+  //         ) &&
+  //         fields["Status"] == "Active";
 
 
-        if(matching?.length == 0 || layerBudget>=2000000){
-          matching = items?.filter((item: any) => {
-          const fields = item;
+  //     let matching =
+  //       items
+  //         ?.filter((item: any) => {
+  //           const fields = item;
 
-            return (
-              baseFilter(fields) &&
-              fields["Budget Tier"] == matchedTier
-            );
-          }).sort((a: any, b: any) => {
-            const ca = categoryOrder[a.Category] ?? Infinity;
-            const cb = categoryOrder[b.Category] ?? Infinity;
+  //           return (
+  //             baseFilter(fields) &&
+  //             Number(fields["Cost Min"]) <= layerBudget &&
+  //             Number(fields["Cost Max"]) >= layerBudget
+  //           );
+  //         })
+  //         ?.sort((a: any, b: any) => {
+  //           const ca = categoryOrder[a.Category] ?? Infinity;
+  //           const cb = categoryOrder[b.Category] ?? Infinity;
 
-            if (ca !== cb) {
-              return ca - cb; // category first
-            }
+  //           if (ca !== cb) return ca - cb;
 
-            const pa = a.Priority ?? Infinity;
-            const pb = b.Priority ?? Infinity;
+  //           const pa = a.Priority ?? Infinity;
+  //           const pb = b.Priority ?? Infinity;
 
-            return Number(pa) - Number(pb); // then priority
-          }) ?? [];
-        }
+  //           return Number(pa) - Number(pb);
+  //         }) ?? [];
 
-        newReportData.push({
-          principleId: p.id,
-          principlePercentage: p.percentage,
-          principleBudget: p.budget,
-          principleName: p.name,
-          principleColor: p.color,
-          principleDes: p.description,
-          layerName: p.layers.filter((lf) => lf.checked === true).map((l) => l.name),
-          layerId: p.layers.filter((lf) => lf.checked === true).map((l) => l.id),
-          layerBudget,
-          itemRecordId: matching?.length > 0 ? matching.map((m: any) => m.id) : [],
-          items: matching?.length ? matching : [],
-        });
-      });
-    });
-    userNotes(selectedValues?.notes);
-    reportData(newReportData);
-    // createInteraction(newReportData);
-    onNext(3);
+
+  //       if(matching?.length == 0 || layerBudget>=2000000){
+  //         matching = items?.filter((item: any) => {
+  //         const fields = item;
+
+  //           return (
+  //             baseFilter(fields) &&
+  //             fields["Budget Tier"] == matchedTier
+  //           );
+  //         }).sort((a: any, b: any) => {
+  //           const ca = categoryOrder[a.Category] ?? Infinity;
+  //           const cb = categoryOrder[b.Category] ?? Infinity;
+
+  //           if (ca !== cb) {
+  //             return ca - cb; // category first
+  //           }
+
+  //           const pa = a.Priority ?? Infinity;
+  //           const pb = b.Priority ?? Infinity;
+
+  //           return Number(pa) - Number(pb); // then priority
+  //         }) ?? [];
+  //       }
+
+  //       newReportData.push({
+  //         principleId: p.id,
+  //         principlePercentage: p.percentage,
+  //         principleBudget: p.budget,
+  //         principleName: p.name,
+  //         principleColor: p.color,
+  //         principleDes: p.description,
+  //         layerName: p.layers.filter((lf) => lf.checked === true).map((l) => l.name),
+  //         layerId: p.layers.filter((lf) => lf.checked === true).map((l) => l.id),
+  //         layerBudget,
+  //         itemRecordId: matching?.length > 0 ? matching.map((m: any) => m.id) : [],
+  //         items: matching?.length ? matching : [],
+  //       });
+  //     });
+  //   });
+  //   userNotes(selectedValues?.notes);
+  //   reportData(newReportData);
+  //   // createInteraction(newReportData);
+  //   onNext(3);
   }
 
   useEffect(() => {
