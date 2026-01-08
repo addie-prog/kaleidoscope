@@ -1,66 +1,57 @@
+import { adminDb } from "@/lib/firebase-auth";
+import { Timestamp } from "firebase-admin/firestore";
+import { NextResponse } from "next/server";
+
 export async function POST(request: Request) {
-     const { recordId, sessionId, userType, DateJoined, DateUpdated, type, UTCSource, Email, reportId } = await request.json()
+    const { recordId, sessionId, userType, type, UTCSource, Email, reportId } = await request.json()
     try {
-        const token = process.env.AIRTABLE_TOKEN;
-        const APIDomain = process.env.AIRTABLE_DOMAIN;
-        const appID = process.env.AIRTABLE_APPID;
-        let record: any;
-        let method = "POST";
+        let docRef: any;
 
-        const fields:any = {
-            "Session ID":sessionId,
+        const fields: any = {
+            "Session ID": sessionId,
             "User Type": userType,
-            "UTM Source": UTCSource ?? "",
-            "Email": Email,
-            "Date Updated": DateUpdated
-        } 
-        if(reportId){
-            fields["Reports"] = reportId.split(",");
+            "UTM Source": UTCSource ?? null,
+            "Email": Email ?? null
         }
-        if(type == 1){
-            fields["Date Joined"] = DateJoined;
+        if (reportId) {
+            fields["Reports"] = reportId.split(",");
+        }else{
+            fields["Reports"] = null;
+        }
+        if (type == 1) {
+            fields["Date Joined"] = Timestamp.now();
+            fields["Date Updated"] = null;
         }
 
-        if( recordId ){
-            method = "PATCH";
-            record =   [
-                    {
-                        "id": recordId,
-                        fields: fields
-                }
-                ]
+        if (recordId) {
+
+            docRef = adminDb.collection("sessions").doc(recordId);
+
+            // Update document (only fields you pass will be updated)
+            await docRef.update({
+                ...fields,
+                "Date Updated": Timestamp.now() // track update time
+            });
         }
-        else{
-            record =   [
-                {
-                    fields: fields
-            }
-            ]
+        else {
+            docRef = await adminDb
+                .collection("sessions")
+                .add({
+                    ...fields
+                });
         }
-        const res = await fetch(`${APIDomain}/v0/${appID}/Sessions`, {
-            method: method,
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-            records: record
-        })
+
+
+        return NextResponse.json({
+            success: true,
+            id: docRef.id,
         });
 
-        const data = await res.json();
-        if (!res.ok) {
-            return Response.json(
-                { error: data?.error || "Airtable request failed" },
-                { status: res.status }
-            );
-        }
 
-    return Response.json(data, { status: 200 });
     } catch (error: any) {
-         return Response.json(
+        return NextResponse.json(
             { error: error.message || "Internal Server Error" },
             { status: 500 }
-            );
+        );
     }
 }

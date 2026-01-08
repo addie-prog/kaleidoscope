@@ -11,7 +11,7 @@ export default function BudgetTool({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const utmSource: any = use(searchParams)?.utm_source ?? "";
+  const utmSource: any = use(searchParams)?.utm_source ?? null;
   const [step, setStep] = useState<Number>(1);
   const [selectedValues, setSelectedValues] = useState({});
   const [principles, setPrinciples] = useState([]);

@@ -24,24 +24,24 @@ export default function ReportsTable() {
   const getReportsData = async (offset: string) => {
     let offsetParam = "";
     if (offset) {
-      offsetParam = `&offset=${offset}`;
+      offsetParam = `&pageToken=${offset}`;
     }
     setLoading(true);
     const res = await fetch(`/api/user-session/get-reports?pageSize=10${offsetParam}`, {
       method: 'GET',
     });
-    const data = await res.json();
+    const { data, nextPageToken } = await res.json();
     setLoading(false);
     setLoadData(false);
-    if (data && data?.records && data?.records?.length > 0) {
+    if (data && data?.length > 0) {
       if (tableData) {
-        getReports([...tableData, ...data?.records]);
+        getReports([...tableData, ...data]);
       } else {
-        getReports(data?.records);
+        getReports(data);
       }
 
-      setOffset(data?.offset ? data?.offset : "");
     }
+      setOffset(nextPageToken ? nextPageToken : "");
 
   }
 
@@ -109,31 +109,38 @@ export default function ReportsTable() {
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
 
-              {!loadData ? tableData?.map((order) => (
-                <TableRow key={order.id}>
+              {!loadData ? tableData?.map((order, ind) => (
+                <TableRow key={ind}>
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
 
-                    <div className="block font-medium text-gray-800 text-theme-sm dark:text-white/90"> {order?.fields?.["Report Name"]}</div>
+                    <div className="block font-medium text-gray-800 text-theme-sm dark:text-white/90"> {order["id"]}</div>
 
 
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {order?.fields?.["Session ID"]?.map((report: string, index: number) => (
-                      <React.Fragment key={index}>
-                        <Badge
-                          size="sm"
-                          color="success"
-                        >{report}</Badge>
-                        <br />
-                      </React.Fragment>
-                    )) ?? <Badge
-                      size="sm"
-                      color="error"
-                    >Not found</Badge>}
+                    {Array.isArray(order["Session ID"]) ? (
+                    // It's an array
+                    order["Session ID"].length > 0 ? (
+                      order["Session ID"].map((report: string, index: number) => (
+                        <React.Fragment key={index}>
+                          <Badge size="sm" color="success">{report}</Badge>
+                          <br />
+                        </React.Fragment>
+                      ))
+                    ) : (
+                      <Badge size="sm" color="error">Not found</Badge>
+                    )
+                  ) : typeof order["Session ID"] === "string" && order["Session ID"] ? (
+                    // It's a string
+                    <Badge size="sm" color="success">{order["Session ID"]}</Badge>
+                  ) : (
+                    <Badge size="sm" color="error">Not found</Badge>
+                  )}
+
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                     <div className="flex -space-x-2">
-                      {order?.fields?.["Tech Type"] ?? <Badge
+                      {order["Tech Type"] ?? <Badge
                       size="sm"
                       color="error"
                     >Not found</Badge>}
@@ -142,14 +149,14 @@ export default function ReportsTable() {
 
 
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    ${(order?.fields?.["Initial Budget"] ?? 0)?.toLocaleString("en-US")}
+                    ${(order["Initial Budget"] ?? 0)?.toLocaleString("en-US")}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    ${(order?.fields?.["Total Allocated"] ?? 0)?.toLocaleString("en-US")}
+                    ${(order["Total Allocated"] ?? 0)?.toLocaleString("en-US")}
 
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {order?.fields?.["Date Created"] ?? <Badge
+                    {order["Date Created"] ?? <Badge
                       size="sm"
                       color="error"
                     >Not found</Badge>}

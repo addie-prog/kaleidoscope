@@ -30,25 +30,25 @@ export default function InteractionsTable() {
   const getInteractions = async (offset: string) => {
     let offsetParam = "";
     if (offset) {
-      offsetParam = `&offset=${offset}`;
+      offsetParam = `&pageToken=${offset}`;
     }
     setLoading(true);
     const res = await fetch(`/api/user-session/get-interactions?pageSize=10${offsetParam}`, {
       method: 'GET',
     });
-    const data = await res.json();
+    const { data, nextPageToken } = await res.json();
     setLoading(false);
     setLoadData(false);
  
-    if (data && data?.records && data?.records?.length > 0) {
+    if (data && data?.length > 0) {
       if (tableData) {
-        setInteractions([...tableData, ...data?.records]);
+        setInteractions([...tableData, ...data]);
       } else {
-        setInteractions(data?.records);
+        setInteractions(data);
       }
 
-      setOffset(data?.offset ? data?.offset : "");
     }
+    setOffset(nextPageToken ? nextPageToken : "");
 
   }
 
@@ -131,31 +131,37 @@ export default function InteractionsTable() {
               {!loadData ? tableData?.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
-                    <div className="block font-medium text-gray-800 text-theme-sm dark:text-white/90"> {order?.fields?.["Interaction ID"]}</div>
+                    <div className="block font-medium text-gray-800 text-theme-sm dark:text-white/90"> {order["Interaction ID"]}</div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {order?.fields?.["Report Name"]?.map((report: string, index: number) => (
-                      <React.Fragment key={index}>
-                        <Badge
-                          size="sm"
-                          color="success"
-                        >{report}</Badge>
-                        <br />
-                      </React.Fragment>
-                    )) ?? <Badge
-                      size="sm"
-                      color="error"
-                    >Not found</Badge>}
+                    {Array.isArray(order["Report Name"]) ? (
+                    // It's an array
+                    order["Report Name"].length > 0 ? (
+                      order["Report Name"].map((report: string, index: number) => (
+                        <React.Fragment key={index}>
+                          <Badge size="sm" color="success">{report}</Badge>
+                          <br />
+                        </React.Fragment>
+                      ))
+                    ) : (
+                      <Badge size="sm" color="error">Not found</Badge>
+                    )
+                  ) : typeof order["Report Name"] === "string" && order["Report Name"] ? (
+                    // It's a string
+                    <Badge size="sm" color="success">{order["Report Name"]}</Badge>
+                  ) : (
+                    <Badge size="sm" color="error">Not found</Badge>
+                  )}
                   </TableCell>
                  
                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {order?.fields?.["Interaction Status"]}
+                    {order["Interaction Status"]}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    ${(order?.fields?.["Allocated Cost"] ?? 0)?.toLocaleString("en-US")}
+                    ${(order["Allocated Cost"] ?? 0)?.toLocaleString("en-US")}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                     {order?.fields?.["Date Created"] ?? <Badge
+                     {order["Date Created"] ?? <Badge
                       size="sm"
                       color="error"
                     >Not found</Badge>}
@@ -199,7 +205,7 @@ export default function InteractionsTable() {
         <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
         
             <h4 className="mb-7 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Interaction ID: <span className="font-normal">{viewDetail?.fields?.["Interaction ID"]}</span>
+              Interaction ID: <span className="font-normal">{viewDetail["Interaction ID"]}</span>
             </h4>
            
           
@@ -210,7 +216,7 @@ export default function InteractionsTable() {
               </div>
 
               <div className="dark:bg-gray-900 flex flex-wrap gap-2 p-3 rounded-md  ">
-                {viewDetail?.fields?.["Item Name"]?.map((item: any, i: number) => (
+                {viewDetail["Item Name"]?.map((item: any, i: number) => (
                   <span
                     key={i}
                     className="px-3 py-1 text-sm rounded-full bg-green-100 dark:bg-success-500/15 dark:text-success-500 text-green-700  "
@@ -230,7 +236,7 @@ export default function InteractionsTable() {
               </div>
 
               <div className="flex dark:bg-gray-900 text-gray-800 dark:text-white/90 flex-wrap gap-2  p-3 rounded-md ">
-                {viewDetail?.fields?.["User Notes"] ?? <Badge
+                {viewDetail["User Notes"] ?? <Badge
                       size="sm"
                       color="error"
                     >Not found</Badge>}

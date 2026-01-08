@@ -328,7 +328,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
       let matching =
         items
           ?.filter((item: any) => {
-            const fields = item.fields;
+            const fields = item;
 
             return (
               baseFilter(fields) &&
@@ -337,13 +337,13 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             );
           })
           ?.sort((a: any, b: any) => {
-            const ca = categoryOrder[a.fields.Category] ?? Infinity;
-            const cb = categoryOrder[b.fields.Category] ?? Infinity;
+            const ca = categoryOrder[a.Category] ?? Infinity;
+            const cb = categoryOrder[b.Category] ?? Infinity;
 
             if (ca !== cb) return ca - cb;
 
-            const pa = a.fields.Priority ?? Infinity;
-            const pb = b.fields.Priority ?? Infinity;
+            const pa = a.Priority ?? Infinity;
+            const pb = b.Priority ?? Infinity;
 
             return Number(pa) - Number(pb);
           }) ?? [];
@@ -351,22 +351,22 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
         if(matching?.length == 0 || layerBudget>=2000000){
           matching = items?.filter((item: any) => {
-          const fields = item.fields;
+          const fields = item;
 
             return (
               baseFilter(fields) &&
               fields["Budget Tier"] == matchedTier
             );
           }).sort((a: any, b: any) => {
-            const ca = categoryOrder[a.fields.Category] ?? Infinity;
-            const cb = categoryOrder[b.fields.Category] ?? Infinity;
+            const ca = categoryOrder[a.Category] ?? Infinity;
+            const cb = categoryOrder[b.Category] ?? Infinity;
 
             if (ca !== cb) {
               return ca - cb; // category first
             }
 
-            const pa = a.fields.Priority ?? Infinity;
-            const pb = b.fields.Priority ?? Infinity;
+            const pa = a.Priority ?? Infinity;
+            const pb = b.Priority ?? Infinity;
 
             return Number(pa) - Number(pb); // then priority
           }) ?? [];
@@ -389,7 +389,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     });
     userNotes(selectedValues?.notes);
     reportData(newReportData);
-    createInteraction(newReportData);
+    // createInteraction(newReportData);
     onNext(3);
   }
 
@@ -762,7 +762,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           }
           } className="cursor-pointer w-full px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6] text-center">
             <span className="text-base font-semibold text-white">
-              {loader ? "Generating report..." : "Generate Report"}
+              {/* {loader ? "Generating report..." : "Generate Report"} */}
+              View Strategy
             </span>
           </button>
         </div>

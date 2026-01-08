@@ -1,28 +1,12 @@
+import { adminDb } from "@/lib/firebase-auth";
+import { NextResponse } from "next/server";
+
 export async function GET() {
-  try {
-    const token = process.env.AIRTABLE_TOKEN;
-    const APIDomain = process.env.AIRTABLE_DOMAIN;
-    const appID = process.env.AIRTABLE_APPID;
+  const snap = await adminDb.collection("budget_tiers").get();
+  const data = snap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 
-    const res = await fetch(`${APIDomain}/v0/${appID}/Budget%20Tiers`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const data = await res.json();
-    return Response.json(data);
-
-  } catch (error: any) {
-    return Response.json({ error: error.message }, { status: 500 });
-  }
+  return NextResponse.json(data);
 }
-
-
-// export async function POST(request) {
-//   const body = await request.json();
-
-//   return Response.json({
-//     received: body
-//   });
-// }

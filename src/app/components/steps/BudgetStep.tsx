@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import ToastModal from '../CustomToast';
-import { useSearchParams } from 'next/navigation';
-import Image from 'next/image';
+import { Timestamp } from 'firebase/firestore/lite';
 
 type PrincipleProps = {
     id: string;
@@ -31,19 +30,15 @@ type props = {
 }
 
 type TierObject = {
-    id: string;
-    createdTime: string;
-    fields: {
-        "Tier ID": string;
-        "Display Name": string;
-        "Budget Min": number;
-        "Budget Max": number;
-        "Display Order": number;
-    };
+    "Tier ID": string;
+    "Display Name": string;
+    "Budget Min": number;
+    "Budget Max": number;
+    "Display Order": number;
 };
 
 
-export default function BudgetTool({ onNext, selectedValues, Principles, allValues, utmSource,ResetPrinciples }: props) {
+export default function BudgetTool({ onNext, selectedValues, Principles, allValues, utmSource, ResetPrinciples }: props) {
     const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
     const [showStage, setShowStage] = useState<string>(allValues?.stage ?? "");
@@ -206,11 +201,13 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     useEffect(() => {
         if (!localStorage.getItem("sessionId")) {
             localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
-             storeSession(1);
+            // storeSession(1);
+        } else {
+            // storeSession(2);
         }
     }, []);
 
-    const storeSession = async (type:number) => {
+    const storeSession = async (type: number) => {
 
         const res = await fetch("/api/user-session/store-session", {
             method: 'POST',
@@ -222,8 +219,6 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 sessionId: localStorage.getItem("kaleido_sessionId"),
                 recordId: localStorage.getItem("sessionId") ?? "",
                 userType: 'Anonymous Guest',
-                DateJoined: new Date().toISOString().split("T")[0],
-                DateUpdated: new Date().toISOString().split("T")[0],
                 type,
                 UTCSource: utm_source,
                 Email: formValues?.email,
@@ -232,8 +227,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         });
         const data = await res.json();
 
-        if (data && data?.records && data?.records?.length > 0) {
-            const newId = data?.records[0].id;
+        if (data && data?.success && data?.id) {
+            const newId = data?.id;
             localStorage.setItem("sessionId", newId);
         }
 
@@ -253,15 +248,14 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 initialBudget: Number(formValues.budget.replace(/,/g, "")),
                 projectName: formValues?.projectName ?? "",
                 email: formValues?.email,
-                DateCreated: new Date().toISOString().split("T")[0],
                 status: "Draft"
             })
         });
         const data = await res.json();
 
-        if (data && data?.records && data?.records?.length > 0) {
+        if (data && data?.success && data?.id) {
 
-            const newId = data?.records[0].id;
+            const newId = data?.id;
 
             const existing = localStorage.getItem("reportId");
 
@@ -275,7 +269,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             } else {
                 localStorage.setItem("reportId", newId);
             }
-             storeSession(2);
+            // storeSession(2);
         }
 
     }
@@ -284,14 +278,14 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         const rawValue = e.target.value.replace(/,/g, ""); // remove commas
         const maxDigits = Math.max(
             ...budgetTier
-                .filter(t => t?.fields?.["Budget Max"] != null)
-                .map(t => t.fields["Budget Max"])
+                .filter(t => t["Budget Max"] != null)
+                .map(t => t["Budget Max"])
         )
 
-        if(rawValue!="" && Number(rawValue) == 0){
+        if (rawValue != "" && Number(rawValue) == 0) {
             return
         }
-        
+
         if (Number(rawValue) > maxDigits) {
             setBudgetError(`Maximum limit: ${toMillion(maxDigits)}`);
             return
@@ -306,21 +300,20 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     }
     const formatNumber = (value: string) => {
         const numeric = value.replace(/\D/g, "");
-        let SelectedTier: any = {};
         // add commas
 
         const matched = budgetTier?.find((item: any) => {
-            const min = item.fields["Budget Min"];
-            const max = item.fields["Budget Max"];
+            const min = item["Budget Min"];
+            const max = item["Budget Max"];
             const updatedBudgetTier = budgetTier.map((item: any) => {
-                const min = Number(item.fields["Budget Min"]);
-                const max = Number(item.fields["Budget Max"]);
+                const min = Number(item["Budget Min"]);
+                const max = Number(item["Budget Max"]);
                 const value = Number(numeric);
 
                 return {
                     ...item,
                     fields: {
-                        ...item.fields,
+                        ...item,
                         checked: value >= min && value <= max,
                     },
                 };
@@ -332,12 +325,12 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
 
         const lastTierMaxBudget = Math.max(
             ...budgetTier
-                .filter(t => t?.fields?.["Budget Max"] != null)
-                .map(t => t.fields["Budget Max"])
+                .filter(t => t?.["Budget Max"] != null)
+                .map(t => t["Budget Max"])
         );
         if (Number(numeric) > 0 && matched) {
             setBudgetError("");
-            setShowStage(`${matched.fields["Display Name"]} ($${formatBudget(matched.fields["Budget Min"])}-${formatBudget(matched.fields["Budget Max"])})`);
+            setShowStage(`${matched["Display Name"]} ($${formatBudget(matched["Budget Min"])}-${formatBudget(matched["Budget Max"])})`);
         } else if (Number(numeric) > 0 && !matched) {
             setBudgetError(`Max. limit reached ${toMillion(lastTierMaxBudget)}`);
         } else {
@@ -351,50 +344,59 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         const m = Math.floor((value / 1_000_000) * 100) / 100;
         return `${m}${m % 1 === 0 ? "" : ""}M`;
     }
+
+
+
     const getBudgetTier = async () => {
-        const res = await fetch("/api/budget-tier");
-        const data = await res.json();
-        setBudgetTier(data.records);
-        localStorage.setItem("Tiers", JSON.stringify(data?.records?.map((t: any)=>t.fields)));
+        try {
+            const res = await fetch("/api/budget-tier");
+            const data = await res.json();
+            setBudgetTier(data);
+            localStorage.setItem("Tiers", JSON.stringify(data?.map((t: any) => t)));
+        } catch (e) {
+            console.log("e", e);
+        }
+
     }
 
     const getPrinciples = async () => {
 
-        
         if ((typeof allValues?.principles == "undefined" && !allValues?.principles) || allValues?.principles?.length == 0) {
-            
+
             setLoader(true);
             const res = await fetch("/api/principles");
             const data = await res.json();
-            createReport();
+
+            // createReport();
             setLoader(false);
-            const principles = data?.records?.map((prin: any) => ({
-                    id: prin.fields["Principle ID"],
-                    name: prin.fields["Display Name"],
-                    description: prin.fields["Description"],
-                    color: prin.fields["Color"],
-                    bgcolor: "#FFFDFD",
-                    percentage: 0,
+            const principles: any = data?.map((prin: any) => ({
+                id: prin["Principle ID"],
+                name: prin["Display Name"],
+                description: prin["Description"],
+                color: prin["Color"],
+                bgcolor: "#FFFDFD",
+                percentage: 0,
+                budget: 0,
+                checked: false,
+                layersVisible: false,
+                layers: prin?.subPrinciples.map((sp: any) => ({
+                    id: sp.executionLayerId,
                     budget: 0,
-                    checked: false,
-                    layersVisible: false,
-                    layers: prin?.subPrinciples.map((sp: any) => ({
-                        id: sp.executionLayerId,
-                        budget: 0,
-                        name: sp.displayName,
-                        description: sp.description,
-                        percentage: 0,
-                        checked: false
-                    }))
+                    name: sp.displayName,
+                    description: sp.description,
+                    percentage: 0,
+                    checked: false
                 }))
+            }))
+
             Principles(principles);
             ResetPrinciples(principles);
         } else {
-            createReport();
+            // createReport();
             Principles(allValues?.principles);
         }
 
-        
+
         selectedValues({
             budget: formValues?.budget,
             categoryName: formValues?.categoryName,
@@ -402,8 +404,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             stage: showStage?.toUpperCase(),
             category: formValues?.category ? formValues?.category : "",
             tier: formValues?.tier ? formValues.tier : budgetTier.find(
-                (item: any) => item.fields.checked === true
-            )?.fields["Tier ID"] ?? null,
+                (item: any) => item.checked === true
+            )?.["Tier ID"] ?? null,
             email: formValues?.email,
             principles: allValues?.principles?.length > 0 ? allValues?.principles : [],
             notes: allValues?.notes,
@@ -485,7 +487,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                             </div>
 
                         </div>
-                            <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2">
                             <label htmlFor="email" className="sm:text-base text-sm font-semibold text-[#323152]">
                                 Email <span className='text-xs'>(Optional)</span>
                             </label>
@@ -522,27 +524,27 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                         <div className="flex flex-col gap-5">
                             <div>
                                 <div className='flex flex-col gap-5'>
-                            <label htmlFor="budget" className="sm:text-base text-sm font-semibold text-[#323152]">
-                                What&apos;s your responsible tech budget?
-                            </label>
-                            <div className="flex items-center gap-1.5 px-5 py-3.5 rounded-md border border-gray-100 bg-white">
-                                <span className="text-sm font-medium text-gray-900">$</span>
-                                <input
-                                    type="text"
-                                    id="budget"
-                                    value={formValues?.budget ? formValues.budget : ""}
-                                    onChange={(e) => {
-                                       
-                                                 
-                                                        handleChange(e);
-                                                                                           
-                                    }}
-                                    className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
-                                    placeholder="50,000"
-                                />
+                                    <label htmlFor="budget" className="sm:text-base text-sm font-semibold text-[#323152]">
+                                        What&apos;s your responsible tech budget?
+                                    </label>
+                                    <div className="flex items-center gap-1.5 px-5 py-3.5 rounded-md border border-gray-100 bg-white">
+                                        <span className="text-sm font-medium text-gray-900">$</span>
+                                        <input
+                                            type="text"
+                                            id="budget"
+                                            value={formValues?.budget ? formValues.budget : ""}
+                                            onChange={(e) => {
+
+
+                                                handleChange(e);
+
+                                            }}
+                                            className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
+                                            placeholder="50,000"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            {budgetError ?
+                                {budgetError ?
 
                                     <div className="mt-2 text-[#EF4444] text-xs font-semibold leading-[normal]">
                                         {budgetError}
@@ -550,7 +552,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
 
                                     : ""}
                             </div>
-                            
+
                             {showStage ? <div className="inline-block">
                                 <div className="inline-flex w-[fit-content] max-w-max items-center px-4 py-3 rounded-full bg-[#10B981]">
                                     <span className="sm:text-[15px] text-[11px] font-semibold text-white leading-[normal]">
@@ -582,10 +584,10 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                                 <div
                                     key={category.id}
                                     onClick={() => {
-                                        if(category.disabled == false){
+                                        if (category.disabled == false) {
                                             setFormValues({ ...formValues, ['category']: !formValues.category ? category.id : null, ['categoryName']: !formValues.category ? category.name : "" })
                                         }
-                                        
+
                                     }}
                                     style={{
                                         border: category.disabled == true ? "1px solid #babcc1a1" : "",
@@ -675,13 +677,13 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
 
                     {/* Continue Button */}
                     <button onClick={() => {
-                        
-                        if (formValues?.budget && (typeof formValues?.email!="undefined" && formValues?.email && isValidEmail(formValues?.email) || !formValues?.email) && !loader) {
+
+                        if (formValues?.budget && (typeof formValues?.email != "undefined" && formValues?.email && isValidEmail(formValues?.email) || !formValues?.email) && !loader) {
                             getPrinciples();
                         } else if (formValues?.email && !isValidEmail(formValues?.email)) {
                             setError("Please enter valid email address");
                             setShowToast(true);
-                        } 
+                        }
                         // else if (!formValues?.budget) {
                         //     setError([
                         //         "Please select tech budget",
@@ -689,19 +691,19 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                         //         ]);
                         //     setShowToast(true);
                         // }
-                         else if (!formValues?.budget) {
+                        else if (!formValues?.budget) {
                             setError("Please select tech budget");
                             setShowToast(true);
-                        } 
+                        }
                         // else if (formValues?.budget && !formValues?.category) {
                         //     setError("What type of tech are you building?");
                         //     setShowToast(true);
                         // }
-                         else {
+                        else {
                             setError("Please select tech budget");
                             setShowToast(true);
                         }
-                       
+
                     }
                     } className={`cursor-pointer flex items-center justify-center gap-2.5 px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6]`}>
                         {!loader ? <>

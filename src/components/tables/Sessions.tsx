@@ -24,32 +24,38 @@ export default function SessionTable() {
   const getSessions = async (offset: string) => {
     let offsetParam = "";
     if (offset) {
-      offsetParam = `&offset=${offset}`;
+      offsetParam = `&pageToken=${offset}`;
     }
     setLoading(true);
     const res = await fetch(`/api/user-session/get-sessions?pageSize=10${offsetParam}`, {
       method: 'GET',
     });
-    const data = await res.json();
+    const { data, nextPageToken } = await res.json();
+
+    console.log("data", data)
     setLoading(false);
     setLoadData(false);
-    if (data && data?.records && data?.records?.length > 0) {
+    if (data && data?.length > 0) {
       if (tableData) {
-        setSessions([...tableData, ...data?.records]);
+        setSessions([...tableData, ...data]);
       } else {
-        setSessions(data?.records);
+        setSessions(data);
       }
 
-      setOffset(data?.offset ? data?.offset : "");
-    }
 
+    }
+    setOffset(nextPageToken ? nextPageToken : "");
   }
 
 
   useEffect(() => {
     setLoadData(true);
     getSessions("");
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    console.log("offset", offset)
+  }, [offset])
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -63,7 +69,7 @@ export default function SessionTable() {
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-sm dark:text-gray-400"
                 >
-                  Session ID
+                  ID
 
                 </TableCell>
                 <TableCell
@@ -110,25 +116,25 @@ export default function SessionTable() {
                 <TableRow key={order.id}>
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
 
-                    <div className="block font-medium text-gray-800 text-theme-sm dark:text-white/90"> {order?.fields?.["Session ID"]}</div>
+                    <div className="block font-medium text-gray-800 text-theme-sm dark:text-white/90"> {order.id}</div>
 
 
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {order?.fields?.["Email"] ?? <Badge
+                    {order["Email"] ?? <Badge
                       size="sm"
                       color="error"
                     >Not found</Badge>}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                     <div className="flex -space-x-2">
-                      {order?.fields?.["User Type"]}
+                      {order["User Type"]}
                     </div>
                   </TableCell>
 
 
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {order?.fields?.["Reports"]?.map((report: string, index: number) => (
+                    {order["Reports"]?.map((report: string, index: number) => (
                       <React.Fragment key={index}>
                         <Badge
                           size="sm"
@@ -142,14 +148,14 @@ export default function SessionTable() {
                     >Not found</Badge>}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {order?.fields?.["UTM Source"] ?? <Badge
+                    {order["UTM Source"] ?? <Badge
                       size="sm"
                       color="error"
                     >Not found</Badge>}
 
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {order?.fields?.["Date Joined"]}
+                   {order["DateJoined"]} 
                   </TableCell>
                 </TableRow>
               )) : <TableRow>

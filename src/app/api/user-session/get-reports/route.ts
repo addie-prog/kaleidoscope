@@ -1,40 +1,39 @@
-export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
+import { adminDb } from "@/lib/firebase-auth";
+import { NextResponse } from "next/server";
 
-    const pageSize = searchParams.get("pageSize");
-    const offset = searchParams.get("offset");
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const pageSize = parseInt(searchParams.get("pageSize") || "10");
+  const pageToken = searchParams.get("pageToken");
 
-    try {
-        const token = process.env.AIRTABLE_TOKEN;
-        const APIDomain = process.env.AIRTABLE_DOMAIN;
-        const appID = process.env.AIRTABLE_APPID;
-        let method = "GET";
+  // Order by "Date Created" descending (latest first)
+  let query = adminDb.collection("reports").orderBy("Date Created", "desc").limit(pageSize);
 
-      let offsetParam = "";
-        if(offset){
-            offsetParam=`&offset=${offset}`;
-        }
-        const res = await fetch(`${APIDomain}/v0/${appID}/Reports?pageSize=${pageSize}${offsetParam}&sort[0][field]=Date%20Created&sort[0][direction]=desc`, {
-            method: method,
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
-            }
-        });
-
-        const data = await res.json();
-        if (!res.ok) {
-            return Response.json(
-                { error: data?.error || "Airtable request failed" },
-                { status: res.status }
-            );
-        }
-
-    return Response.json(data, { status: 200 });
-    } catch (error: any) {
-         return Response.json(
-            { error: error.message || "Internal Server Error" },
-            { status: 500 }
-            );
+  if (pageToken) {
+    const lastDocSnap = await adminDb.collection("reports").doc(pageToken).get();
+    if (lastDocSnap.exists) {
+      query = query.startAfter(lastDocSnap);
     }
+  }
+
+  const snap = await query.get();
+
+  const data = snap.docs.map(doc => {
+    const d = doc.data();
+    const dateJoined = d['Date Created']
+      ? new Date(d['Date Created'].seconds * 1000 + d['Date Created'].nanoseconds / 1000000).toLocaleDateString()
+      : null;
+
+    return {
+      id: doc.id,
+      ...d,
+      "Date Created": dateJoined, // readable ISO string
+    };
+  });
+
+  // Last doc ID for next page
+  const lastVisible = snap.docs[snap.docs.length - 1];
+  const nextPageToken = lastVisible ? lastVisible.id : null;
+
+  return NextResponse.json({ data, nextPageToken });
 }
