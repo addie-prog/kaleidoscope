@@ -285,7 +285,9 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   };
 
   const generateReport = async () => {
-    redirect("/dashboard");
+    const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
+            
+    redirect(`/dashboard?project=${projectId}`);
   //   setLoader(true);
   //   const res = await fetch("/api/generate-report");
   //   let data: any;

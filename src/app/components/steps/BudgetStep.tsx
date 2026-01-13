@@ -203,6 +203,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
             storeSession(1);
         } else {
+            
             storeSession(2);
         }
     }, []);
