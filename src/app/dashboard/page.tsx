@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 interface Tab {
   id: string;
@@ -33,7 +34,11 @@ interface ActionStep {
   skipped: boolean;
   note: string;
 }
-export default function Dashboard2Page() {
+export default function Dashboard2Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("fairness");
   const [activeSubTab, setActiveSubTab] = useState<string>("data-quality");
@@ -41,6 +46,7 @@ export default function Dashboard2Page() {
   const [activeCardTab, setActiveCardTab] = useState<string>("action");
   const [activeNoteId, setActiveNoteId] = useState<{ cardId: number; stepId: number } | null>(null);
   const [tempNote, setTempNote] = useState("");
+  const project = use(searchParams)?.project ?? null;
   // State for task cards with steps
   const [cardSteps, setCardSteps] = useState<Record<number, ActionStep[]>>({
     1: [
@@ -458,7 +464,7 @@ export default function Dashboard2Page() {
           {/* Sticky Action Buttons */}
           <div className="sticky bottom-0 bg-white border-t border-[#E5E5E5] p-4 space-y-2">
             <div className="flex gap-2.5">
-              <button className="flex-1 flex items-center justify-center gap-1 h-11 px-2.5 py-3 border border-[#E5E7EB] bg-[#F9FAFB] rounded-xl hover:bg-gray-100 transition-colors">
+              <button onClick={()=>redirect(`/calculator?project=${project}`)} className="flex-1 flex items-center justify-center gap-1 h-11 px-2.5 py-3 border border-[#E5E7EB] bg-[#F9FAFB] rounded-xl hover:bg-gray-100 transition-colors">
                 <svg
                   width="20"
                   height="20"

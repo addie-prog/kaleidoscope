@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       "Report Name": reportName ?? null,
       "Date Created": Timestamp.now(),
       "Initial Budget": initialBudget,
-      "Project Name": projectName ?? null,
+      "Project Name": projectName ? projectName : null,
       "Status": status,
       "Tech Type": techType ?? null,
       "Email": email ?? null

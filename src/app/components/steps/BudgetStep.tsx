@@ -41,13 +41,19 @@ type TierObject = {
 export default function BudgetTool({ onNext, selectedValues, Principles, allValues, utmSource, ResetPrinciples }: props) {
     const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
-    const [showStage, setShowStage] = useState<string>(allValues?.stage ?? "");
+    const [showStage, setShowStage] = useState<string>("");
     const [loader, setLoader] = useState<boolean>(false);
-    const [formValues, setFormValues] = useState<objectType>(allValues ? { ...allValues, ["tier"]: allValues?.tier } : {});
+    const [formValues, setFormValues] = useState<objectType>({});
     const [error, setError] = useState<string | Array<string>>("");
     const [budgetError, setBudgetError] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
     const utm_source = utmSource;
+
+
+    useEffect(()=>{
+        setFormValues({ ...allValues, ["tier"]: allValues?.tier }),
+        setShowStage(allValues?.stage ?? "")
+    },[allValues]);
 
     const categories = [
         {
@@ -428,7 +434,14 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
     return (
         <>
             <div className='w-full flex justify-end sm:px-15 px-[16px] pt-10'>
-                <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" onClick={() => { setFormValues({}), setShowStage(""), selectedValues({}) }}>
+                <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" 
+                onClick={() => { 
+                    setFormValues({}), 
+                    setShowStage(""), 
+                    selectedValues({}), 
+                    localStorage.removeItem("selectedValues");
+                    localStorage.removeItem("principles") 
+                    }}>
                     <span>Reset</span>
                 </button>
             </div>

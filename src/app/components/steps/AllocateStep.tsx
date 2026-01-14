@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import ToastModal from '../CustomToast';
 import Image from 'next/image';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 type props = {
   onNext: (value: number) => void;
@@ -13,6 +13,7 @@ type props = {
   reportData: (value: Array<any>) => void
   userNotes: (value: string) => void
   updatedPrinciples: (value: Array<any>) => void
+  project: any
 }
 
 type PrincipleProps = {
@@ -29,13 +30,12 @@ type PrincipleProps = {
   layers: any[];
 }
 
-export default function AllocatePage({ onNext, selectedValues, Principles, reportData, userNotes, updatedPrinciples, ResetPrinciples }: props) {
+export default function AllocatePage({ onNext, selectedValues, Principles, reportData, userNotes, updatedPrinciples, ResetPrinciples, project }: props) {
   const totalBudget = selectedValues.budget;
-
   const [principles, setPrinciples] = useState<PrincipleProps[]>(selectedValues?.principles?.length > 0 ? selectedValues?.principles : Principles);
   const [showToast, setShowToast] = useState<boolean>(false);
   const [loader, setLoader] = useState<boolean>(false);
-
+  const router = useRouter();
   const [error, setError] = useState("");
 
   const togglePrincipleChecked = (principleId: string) => {
@@ -254,6 +254,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   }
 
   const createProject = async () => {
+    
+    const existProjectId = project ? project : "";
     const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
     const res = await fetch("/api/user-session/store-project", {
       method: 'POST',
@@ -276,11 +278,21 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           "Vertical": selectedValues?.categoryName ? selectedValues?.categoryName : "None"
         },
         email: null,
-        projectId: projectId
+        projectId: existProjectId ? "" : projectId,
+        existProjectId
       })
     });
-    const data = await res.json();
-    redirect(`/dashboard?project=${projectId}`);
+    try{
+      const {id} = await res.json();
+      localStorage.setItem("selectedValues",JSON.stringify(selectedValues));
+      localStorage.setItem("principles",JSON.stringify(principles));
+      router.push(`/dashboard?project=${id}`);
+    }catch(e){
+      console.log("e",e);
+    }
+    setLoader(false);
+
+    
   }
 
   const createInteraction = async (newReportData: any) => {
@@ -359,10 +371,9 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
       console.log("error in fetching items: ", e);
     }
 
-    setLoader(false);
+    
 
 
-    const normalize = (val: any) => String(val).trim().toUpperCase();
     const newReportData: any[] = [];
 
     const items = data.data;
@@ -450,7 +461,9 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     <>
 
       <div className='w-full flex justify-end sm:px-15 px-[16px] pt-10'>
-        <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" onClick={() => { setPrinciples(ResetPrinciples), userNotes("") }}>
+        <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" 
+        onClick={() => { setPrinciples(ResetPrinciples), userNotes(""), 
+                    localStorage.removeItem("principles")  }}>
           <span>Reset</span>
         </button>
       </div>
@@ -811,8 +824,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           }
           } className="cursor-pointer w-full px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6] text-center">
             <span className="text-base font-semibold text-white">
-              {/* {loader ? "Generating report..." : "Generate Report"} */}
-              View Strategy
+              {loader ? "Processing..." : "View Strategy"}
+             
             </span>
           </button>
         </div>

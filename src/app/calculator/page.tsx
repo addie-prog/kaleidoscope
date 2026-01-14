@@ -6,6 +6,10 @@ import AllocateStep from "@/app/components/steps/AllocateStep";
 import ReportStep from "@/app/components/steps/ReportStep";
 import Image from "next/image";
 
+type objectType = {
+  [key: string | number]: any
+}
+
 export default function BudgetTool({
   searchParams,
 }: {
@@ -13,10 +17,31 @@ export default function BudgetTool({
 }) {
   const utmSource: any = use(searchParams)?.utm_source ?? null;
   const [step, setStep] = useState<Number>(1);
-  const [selectedValues, setSelectedValues] = useState({});
-  const [principles, setPrinciples] = useState([]);
+  const [selectedValues, setSelectedValues] = useState<objectType>({});
+  const [principles, setPrinciples] = useState<Array<any>>([]);
   const [resetPrinciples, setResetPrinciples] = useState([]);
   const [reportData, setReportData] = useState([]);
+  const project = use(searchParams)?.project ?? null;
+  
+
+  useEffect(() => {
+    const init = () => {
+      if (project && localStorage.getItem("selectedValues")) {
+        const storedSelectedValues = localStorage.getItem("selectedValues");
+        const storedPrinciples = localStorage.getItem("principles");
+        if (storedSelectedValues) {
+          setSelectedValues(JSON.parse(storedSelectedValues));
+        }
+        if (storedPrinciples) {
+          setPrinciples(JSON.parse(storedPrinciples))
+        }
+      } else {
+        localStorage.removeItem("selectedValues");
+        localStorage.removeItem("principles");
+      }
+    }
+    init();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -36,21 +61,22 @@ export default function BudgetTool({
           </div>
         </div>
       </header>
-      {step === 1 && <BudgetStep ResetPrinciples={(principles: any)=>setResetPrinciples(principles)}utmSource={utmSource} Principles={(val:any)=>{setPrinciples(val), setStep(2)}} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value)=>setSelectedValues(value)} />}
+      {step === 1 && <BudgetStep ResetPrinciples={(principles: any) => setResetPrinciples(principles)} utmSource={utmSource} Principles={(val: any) => { setPrinciples(val), setStep(2) }} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value) => setSelectedValues(value)} />}
 
       {step === 2 && (
         <AllocateStep
-          updatedPrinciples={(val: any)=>setSelectedValues({...selectedValues,['principles']: val})}
-          userNotes={(val: any)=>setSelectedValues({...selectedValues,["notes"]:val})}
+          updatedPrinciples={(val: any) => setSelectedValues({ ...selectedValues, ['principles']: val })}
+          userNotes={(val: any) => setSelectedValues({ ...selectedValues, ["notes"]: val })}
           selectedValues={selectedValues}
           onNext={(value: number) => setStep(value)}
           Principles={principles}
           ResetPrinciples={resetPrinciples}
-          reportData={(value: any)=>{setReportData(value)}}
+          reportData={(value: any) => { setReportData(value) }}
+          project={project ?? ""}
         />
       )}
 
-      {step === 3 && <ReportStep onBack={(value: number) => setStep(value)} reportData={reportData} selectedValues={selectedValues}/>}
+      {step === 3 && <ReportStep onBack={(value: number) => setStep(value)} reportData={reportData} selectedValues={selectedValues} />}
     </div>
   );
 }
