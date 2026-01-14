@@ -253,6 +253,36 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     </svg>
   }
 
+  const createProject = async () => {
+    const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
+    const res = await fetch("/api/user-session/store-project", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        reportId: localStorage.getItem("reportId")?.split(",").pop(),
+        sessionId: localStorage.getItem("sessionId"),
+        Allocations: principles
+        ?.filter(pf => pf.checked)
+        ?.reduce((acc: any, p) => {
+          acc[p.name] = p.budget;
+          return acc;
+        }, {}),
+        budgetInputs: {
+          "Stage": selectedValues?.stage,
+          "Total cash": Number(selectedValues.budget.replace(/,/g, "")),
+          "Vertical": selectedValues?.categoryName ? selectedValues?.categoryName : "None"
+        },
+        email: null,
+        projectId: projectId
+      })
+    });
+    const data = await res.json();
+    redirect(`/dashboard?project=${projectId}`);
+  }
+
   const createInteraction = async (newReportData: any) => {
 
     const res = await fetch("/api/user-session/store-interaction", {
@@ -269,12 +299,11 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
         itemName: newReportData?.map((item: any) => item?.itemRecordId),
         interactionStatus: "Added to Budget",
         userNotes: selectedValues?.notes ?? "",
-        allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget),
-        DateCreated: new Date().toISOString().split("T")[0]
+        allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget)
       })
     });
     const data = await res.json();
-
+    createProject();
 
   }
 
@@ -285,116 +314,132 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   };
 
   const generateReport = async () => {
-    const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
-            
-    redirect(`/dashboard?project=${projectId}`);
-  //   setLoader(true);
-  //   const res = await fetch("/api/generate-report");
-  //   let data: any;
-  //   const tiers = localStorage.getItem("Tiers");
-  //   const budgetTiers = tiers ? JSON.parse(tiers) : [];   
-  
-  // try {
-  //     data = await res.json();
-  //   } catch (e: any) {
-  //     setLoader(false);
-  //   }
+    const tiers = localStorage.getItem("Tiers");
+    const budgetTiers = tiers ? JSON.parse(tiers) : [];
+    let data: any;
 
-  //   setLoader(false);
-  //   const normalize = (val: any) => String(val).trim().toUpperCase();
-  //   const newReportData: any[] = [];
+    const layersWithTier =
+      principles
+        ?.filter(pf => pf.checked)
+        ?.flatMap(p =>
+          p.layers
+            ?.filter(lf => lf.checked)
+            ?.map(layer => {
+              const layerBudget = Number(layer.budget || 0);
 
-  //   const items = data.records;
-    
+              const matchedTier = budgetTiers.find(
+                (tier: any) =>
+                  layerBudget >= Number(tier["Budget Min"]) &&
+                  layerBudget <= Number(tier["Budget Max"])
+              )?.["Tier ID"];
 
-  //   principles?.filter((pf) => pf.checked === true)?.map((p) => {
-  //     p.layers.filter((lf) => lf.checked === true).map((layer) => {
+              return {
+                layerId: layer.id,
+                budgetTier: matchedTier
+              };
+            })
+        );
+    setLoader(true);
+    const res = await fetch("/api/items", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        layers: layersWithTier,
+        category: selectedValues?.category,
 
-  //       const layerBudget = Number(layer.budget || 0);
+      })
+    });
 
-  //       const matchedTier = budgetTiers.find(
-  //       (tier: any) =>
-  //         layerBudget >= Number(tier["Budget Min"]) &&
-  //         layerBudget <= Number(tier["Budget Max"])
-  //     )?.["Tier ID"];
+    try {
+      data = await res.json();
+    } catch (e: any) {
+      console.log("error in fetching items: ", e);
+    }
 
-  //       const baseFilter = (fields: any) =>
-  //         normalize(fields["Principle"]) == normalize(p.id) &&
-  //         normalize(fields["Execution Layer"]) === normalize(layer.id) &&
-  //         (
-  //           selectedValues?.category
-  //             ? true
-  //             : fields["Tags"] == "baseline"
-  //         ) &&
-  //         fields["Status"] == "Active";
-
-
-  //     let matching =
-  //       items
-  //         ?.filter((item: any) => {
-  //           const fields = item;
-
-  //           return (
-  //             baseFilter(fields) &&
-  //             Number(fields["Cost Min"]) <= layerBudget &&
-  //             Number(fields["Cost Max"]) >= layerBudget
-  //           );
-  //         })
-  //         ?.sort((a: any, b: any) => {
-  //           const ca = categoryOrder[a.Category] ?? Infinity;
-  //           const cb = categoryOrder[b.Category] ?? Infinity;
-
-  //           if (ca !== cb) return ca - cb;
-
-  //           const pa = a.Priority ?? Infinity;
-  //           const pb = b.Priority ?? Infinity;
-
-  //           return Number(pa) - Number(pb);
-  //         }) ?? [];
+    setLoader(false);
 
 
-  //       if(matching?.length == 0 || layerBudget>=2000000){
-  //         matching = items?.filter((item: any) => {
-  //         const fields = item;
+    const normalize = (val: any) => String(val).trim().toUpperCase();
+    const newReportData: any[] = [];
 
-  //           return (
-  //             baseFilter(fields) &&
-  //             fields["Budget Tier"] == matchedTier
-  //           );
-  //         }).sort((a: any, b: any) => {
-  //           const ca = categoryOrder[a.Category] ?? Infinity;
-  //           const cb = categoryOrder[b.Category] ?? Infinity;
+    const items = data.data;
+    principles?.filter((pf) => pf.checked === true)?.map((p) => {
+      p.layers.filter((lf) => lf.checked === true).map((layer) => {
 
-  //           if (ca !== cb) {
-  //             return ca - cb; // category first
-  //           }
+        const layerBudget = Number(layer.budget || 0);
 
-  //           const pa = a.Priority ?? Infinity;
-  //           const pb = b.Priority ?? Infinity;
+        const matchedTier = budgetTiers.find(
+          (tier: any) =>
+            layerBudget >= Number(tier["Budget Min"]) &&
+            layerBudget <= Number(tier["Budget Max"])
+        )?.["Tier ID"];
 
-  //           return Number(pa) - Number(pb); // then priority
-  //         }) ?? [];
-  //       }
+        let matching =
+          items
+            ?.filter((item: any) => {
+              const fields = item;
 
-  //       newReportData.push({
-  //         principleId: p.id,
-  //         principlePercentage: p.percentage,
-  //         principleBudget: p.budget,
-  //         principleName: p.name,
-  //         principleColor: p.color,
-  //         principleDes: p.description,
-  //         layerName: p.layers.filter((lf) => lf.checked === true).map((l) => l.name),
-  //         layerId: p.layers.filter((lf) => lf.checked === true).map((l) => l.id),
-  //         layerBudget,
-  //         itemRecordId: matching?.length > 0 ? matching.map((m: any) => m.id) : [],
-  //         items: matching?.length ? matching : [],
-  //       });
-  //     });
-  //   });
-  //   userNotes(selectedValues?.notes);
-  //   reportData(newReportData);
-  //   // createInteraction(newReportData);
-  //   onNext(3);
+              return (
+                Number(fields["Cost Min"]) <= layerBudget &&
+                Number(fields["Cost Max"]) >= layerBudget
+              );
+            })
+            ?.sort((a: any, b: any) => {
+              const ca = categoryOrder[a.Category] ?? Infinity;
+              const cb = categoryOrder[b.Category] ?? Infinity;
+
+              if (ca !== cb) return ca - cb;
+
+              const pa = a.Priority ?? Infinity;
+              const pb = b.Priority ?? Infinity;
+
+              return Number(pa) - Number(pb);
+            }) ?? [];
+
+
+        if (matching?.length == 0 || layerBudget >= 2000000) {
+          matching = items?.filter((item: any) => {
+            const fields = item;
+
+            return (
+              fields["Budget Tier"] == matchedTier
+            );
+          }).sort((a: any, b: any) => {
+            const ca = categoryOrder[a.Category] ?? Infinity;
+            const cb = categoryOrder[b.Category] ?? Infinity;
+
+            if (ca !== cb) {
+              return ca - cb; // category first
+            }
+
+            const pa = a.Priority ?? Infinity;
+            const pb = b.Priority ?? Infinity;
+
+            return Number(pa) - Number(pb); // then priority
+          }) ?? [];
+        }
+
+        newReportData.push({
+          principleId: p.id,
+          principlePercentage: p.percentage,
+          principleBudget: p.budget,
+          principleName: p.name,
+          principleColor: p.color,
+          principleDes: p.description,
+          layerName: p.layers.filter((lf) => lf.checked === true).map((l) => l.name),
+          layerId: p.layers.filter((lf) => lf.checked === true).map((l) => l.id),
+          layerBudget,
+          itemRecordId: matching?.length > 0 ? matching.map((m: any) => m.id) : [],
+          items: matching?.length ? matching : [],
+        });
+      });
+    });
+    userNotes(selectedValues?.notes);
+    reportData(newReportData);
+    createInteraction(newReportData);
   }
 
   useEffect(() => {

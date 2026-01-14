@@ -203,7 +203,6 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
             storeSession(1);
         } else {
-            
             storeSession(2);
         }
     }, []);
@@ -346,8 +345,6 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
         return `${m}${m % 1 === 0 ? "" : ""}M`;
     }
 
-
-
     const getBudgetTier = async () => {
         try {
             const res = await fetch("/api/budget-tier");
@@ -355,9 +352,8 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             setBudgetTier(data);
             localStorage.setItem("Tiers", JSON.stringify(data?.map((t: any) => t)));
         } catch (e) {
-            console.log("e", e);
+            console.log("error in fetching budget tiers: ", e);
         }
-
     }
 
     const getPrinciples = async () => {
