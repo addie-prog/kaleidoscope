@@ -12,12 +12,11 @@ export async function POST(request: Request) {
       "Session ID": sessionId,
       "Budget Inputs": budgetInputs,
       "Allocations": Allocations,
-      "Owner Email": email ? email : null,
-      "Created At": Timestamp.now()
+      "Owner Email": email ? email : null
     }
 
     if (existProjectId) {
-
+      fields["Last Updated"] = Timestamp.now();
       const snapshot = await adminDb
       .collection("user_projects")
       .where("Project ID", "==", existProjectId)
@@ -32,14 +31,15 @@ export async function POST(request: Request) {
 
     } else {
       fields["Project ID"] = projectId;
+      fields["Created At"] = Timestamp.now();
+      fields["Last Updated"] = null;
+
       docRef = await adminDb
         .collection("user_projects")
         .add({
           ...fields
         });
     }
-
-
 
     return NextResponse.json({
       success: true,
