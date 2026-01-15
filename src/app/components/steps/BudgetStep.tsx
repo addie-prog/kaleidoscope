@@ -27,6 +27,7 @@ type props = {
     ResetPrinciples: (value: PrincipleProps) => void;
     allValues: objectType;
     utmSource: string;
+    project: any;
 }
 
 type TierObject = {
@@ -38,7 +39,7 @@ type TierObject = {
 };
 
 
-export default function BudgetTool({ onNext, selectedValues, Principles, allValues, utmSource, ResetPrinciples }: props) {
+export default function BudgetTool({ onNext, project, selectedValues, Principles, allValues, utmSource, ResetPrinciples }: props) {
     const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
     const [showStage, setShowStage] = useState<string>("");
@@ -358,48 +359,57 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
             setBudgetTier(data);
             localStorage.setItem("Tiers", JSON.stringify(data?.map((t: any) => t)));
         } catch (e) {
-            console.log("error in fetching budget tiers: ", e);
+            console.log("Error in fetching budget tiers: ", e);
         }
     }
 
+    const mapPrinciples = (data: any[]) =>
+    data.map((prin: any) => ({
+        id: prin["Principle ID"],
+        name: prin["Display Name"],
+        description: prin["Description"],
+        color: prin["Color"],
+        bgcolor: "#FFFDFD",
+        percentage: 0,
+        budget: 0,
+        checked: false,
+        layersVisible: false,
+        layers: prin?.subPrinciples?.map((sp: any) => ({
+            id: sp.executionLayerId,
+            budget: 0,
+            name: sp.displayName,
+            description: sp.description,
+            percentage: 0,
+            checked: false
+        })) || []
+    }));
+
     const getPrinciples = async () => {
-
-        if ((typeof allValues?.principles == "undefined" && !allValues?.principles) || allValues?.principles?.length == 0) {
-
+        let principlesData = allValues?.principles;
+        if (!principlesData || principlesData?.length === 0 || project)
+        {
             setLoader(true);
             const res = await fetch("/api/principles");
             const data = await res.json();
 
-            createReport();
+            
             setLoader(false);
-            const principles: any = data?.map((prin: any) => ({
-                id: prin["Principle ID"],
-                name: prin["Display Name"],
-                description: prin["Description"],
-                color: prin["Color"],
-                bgcolor: "#FFFDFD",
-                percentage: 0,
-                budget: 0,
-                checked: false,
-                layersVisible: false,
-                layers: prin?.subPrinciples.map((sp: any) => ({
-                    id: sp.executionLayerId,
-                    budget: 0,
-                    name: sp.displayName,
-                    description: sp.description,
-                    percentage: 0,
-                    checked: false
-                }))
-            }))
-
-            Principles(principles);
+            const principles: any = mapPrinciples(data);
             ResetPrinciples(principles);
+
+            if (!allValues?.principles || allValues.principles.length === 0) {
+                    Principles(principles);
+                    principlesData = principles;
+                }else{
+                    Principles(principlesData);
+                }
+
+            createReport();
         } else {
             createReport();
-            Principles(allValues?.principles);
+            Principles(principlesData);
         }
-
-
+       
         selectedValues({
             budget: formValues?.budget,
             categoryName: formValues?.categoryName,
@@ -410,7 +420,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 (item: any) => item.checked === true
             )?.["Tier ID"] ?? null,
             email: formValues?.email,
-            principles: allValues?.principles?.length > 0 ? allValues?.principles : [],
+            principles: principlesData?.length > 0 ? principlesData : [],
             notes: allValues?.notes,
         });
     }
@@ -438,9 +448,7 @@ export default function BudgetTool({ onNext, selectedValues, Principles, allValu
                 onClick={() => { 
                     setFormValues({}), 
                     setShowStage(""), 
-                    selectedValues({}), 
-                    localStorage.removeItem("selectedValues");
-                    localStorage.removeItem("principles") 
+                    selectedValues({})
                     }}>
                     <span>Reset</span>
                 </button>

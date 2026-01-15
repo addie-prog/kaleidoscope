@@ -43,6 +43,7 @@ export default function BudgetTool({
     init();
   }, []);
 
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -61,7 +62,7 @@ export default function BudgetTool({
           </div>
         </div>
       </header>
-      {step === 1 && <BudgetStep ResetPrinciples={(principles: any) => setResetPrinciples(principles)} utmSource={utmSource} Principles={(val: any) => { setPrinciples(val), setStep(2) }} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value) => setSelectedValues(value)} />}
+      {step === 1 && <BudgetStep project={project ?? ""} ResetPrinciples={(principles: any) => setResetPrinciples(principles)} utmSource={utmSource} Principles={(val: any) => { setPrinciples(val), setStep(2) }} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value) => setSelectedValues(value)} />}
 
       {step === 2 && (
         <AllocateStep

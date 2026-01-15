@@ -288,11 +288,9 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
       localStorage.setItem("principles",JSON.stringify(principles));
       router.push(`/dashboard?project=${id}`);
     }catch(e){
-      console.log("e",e);
+      console.log("Error in create/edit project: ",e);
     }
     setLoader(false);
-
-    
   }
 
   const createInteraction = async (newReportData: any) => {
@@ -368,11 +366,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     try {
       data = await res.json();
     } catch (e: any) {
-      console.log("error in fetching items: ", e);
+      console.log("Error in fetching items: ", e);
     }
-
-    
-
 
     const newReportData: any[] = [];
 
@@ -449,7 +444,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
       });
     });
     userNotes(selectedValues?.notes);
-    reportData(newReportData);
+    reportData(newReportData); 
     createInteraction(newReportData);
   }
 
@@ -462,8 +457,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
       <div className='w-full flex justify-end sm:px-15 px-[16px] pt-10'>
         <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" 
-        onClick={() => { setPrinciples(ResetPrinciples), userNotes(""), 
-                    localStorage.removeItem("principles")  }}>
+        onClick={() => { setPrinciples(ResetPrinciples), userNotes("")  }}>
           <span>Reset</span>
         </button>
       </div>
