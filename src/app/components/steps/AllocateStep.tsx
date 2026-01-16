@@ -173,7 +173,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
 
   const calculateDollarAmount = (percentage: number) => {
-    const amount = (percentage / 100) * Number(totalBudget.replace(/,/g, ""));
+    const amount = (percentage / 100) * Number(totalBudget?.replace(/,/g, ""));
     return amount.toLocaleString("en-US", { maximumFractionDigits: 1 });
   };
 
@@ -253,8 +253,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     </svg>
   }
 
-  const createProject = async () => {
-    
+  const createProject = async (data: any) => {
     const existProjectId = project ? project : "";
     const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
     const res = await fetch("/api/user-session/store-project", {
@@ -266,6 +265,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
       body: JSON.stringify({
         reportId: localStorage.getItem("reportId")?.split(",").pop(),
         sessionId: localStorage.getItem("sessionId"),
+        interactionIDs: data?.ids,
         Allocations: principles
         ?.filter(pf => pf.checked)
         ?.reduce((acc: any, p) => {
@@ -273,11 +273,14 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           return acc;
         }, {}),
         budgetInputs: {
+          "Project Name": selectedValues?.projectName ? selectedValues?.projectName : null,
           "Stage": selectedValues?.stage,
           "Total cash": Number(selectedValues.budget.replace(/,/g, "")),
-          "Vertical": selectedValues?.categoryName ? selectedValues?.categoryName : "None"
+          "Vertical": selectedValues?.categoryName ? selectedValues?.categoryName : "None",
+          "category": selectedValues?.category ? selectedValues?.category : null,
         },
-        email: null,
+        userNote: selectedValues?.notes ? selectedValues?.notes : null,
+        email: selectedValues?.email ? selectedValues?.email : null,
         projectId: existProjectId ? "" : projectId,
         existProjectId
       })
@@ -294,7 +297,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   }
 
   const createInteraction = async (newReportData: any) => {
-
+    localStorage.setItem("newReportData",JSON.stringify(newReportData));
+   
     const res = await fetch("/api/user-session/store-interaction", {
       method: 'POST',
       headers: {
@@ -306,14 +310,19 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           .getItem("reportId")
           ?.split(",")
           .pop()],
+        principleBudget: newReportData?.map((item: any) => item?.principleBudget),
+        principlePercentage: newReportData?.map((item: any) => item?.principlePercentage),
         itemName: newReportData?.map((item: any) => item?.itemRecordId),
+        executionId: newReportData?.map((item: any) => item?.layerId),
+        principleId: newReportData?.map((item: any) => item?.principleId),
         interactionStatus: "Added to Budget",
         userNotes: selectedValues?.notes ?? "",
         allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget)
       })
     });
     const data = await res.json();
-    createProject();
+
+    createProject(data);
 
   }
 
@@ -368,49 +377,65 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     } catch (e: any) {
       console.log("Error in fetching items: ", e);
     }
+    const normalize = (val: any) => String(val).trim().toUpperCase();
 
     const newReportData: any[] = [];
 
     const items = data.data;
+
+
     principles?.filter((pf) => pf.checked === true)?.map((p) => {
       p.layers.filter((lf) => lf.checked === true).map((layer) => {
 
         const layerBudget = Number(layer.budget || 0);
 
         const matchedTier = budgetTiers.find(
-          (tier: any) =>
-            layerBudget >= Number(tier["Budget Min"]) &&
-            layerBudget <= Number(tier["Budget Max"])
-        )?.["Tier ID"];
+        (tier: any) =>
+          layerBudget >= Number(tier["Budget Min"]) &&
+          layerBudget <= Number(tier["Budget Max"])
+      )?.["Tier ID"];
 
-        let matching =
-          items
-            ?.filter((item: any) => {
-              const fields = item;
-
-              return (
-                Number(fields["Cost Min"]) <= layerBudget &&
-                Number(fields["Cost Max"]) >= layerBudget
-              );
-            })
-            ?.sort((a: any, b: any) => {
-              const ca = categoryOrder[a.Category] ?? Infinity;
-              const cb = categoryOrder[b.Category] ?? Infinity;
-
-              if (ca !== cb) return ca - cb;
-
-              const pa = a.Priority ?? Infinity;
-              const pb = b.Priority ?? Infinity;
-
-              return Number(pa) - Number(pb);
-            }) ?? [];
+        const baseFilter = (fields: any) =>
+          normalize(fields["Principle"]) == normalize(p.id) &&
+          normalize(fields["Execution Layer"]) === normalize(layer.id) &&
+          (
+            selectedValues?.category
+              ? true
+              : fields["Tags"] == "baseline"
+          ) &&
+          fields["Status"] == "Active";
 
 
-        if (matching?.length == 0 || layerBudget >= 2000000) {
-          matching = items?.filter((item: any) => {
+      let matching =
+        items
+          ?.filter((item: any) => {
             const fields = item;
 
             return (
+              baseFilter(fields) &&
+              Number(fields["Cost Min"]) <= layerBudget &&
+              Number(fields["Cost Max"]) >= layerBudget
+            );
+          })
+          ?.sort((a: any, b: any) => {
+            const ca = categoryOrder[a.Category] ?? Infinity;
+            const cb = categoryOrder[b.Category] ?? Infinity;
+
+            if (ca !== cb) return ca - cb;
+
+            const pa = a.Priority ?? Infinity;
+            const pb = b.Priority ?? Infinity;
+
+            return Number(pa) - Number(pb);
+          }) ?? [];
+
+
+        if(matching?.length == 0 || layerBudget>=2000000){
+          matching = items?.filter((item: any) => {
+          const fields = item;
+
+            return (
+              baseFilter(fields) &&
               fields["Budget Tier"] == matchedTier
             );
           }).sort((a: any, b: any) => {
@@ -435,8 +460,8 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           principleName: p.name,
           principleColor: p.color,
           principleDes: p.description,
-          layerName: p.layers.filter((lf) => lf.checked === true).map((l) => l.name),
-          layerId: p.layers.filter((lf) => lf.checked === true).map((l) => l.id),
+          layerName: layer.name,
+          layerId: layer.id,
           layerBudget,
           itemRecordId: matching?.length > 0 ? matching.map((m: any) => m.id) : [],
           items: matching?.length ? matching : [],
@@ -444,7 +469,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
       });
     });
     userNotes(selectedValues?.notes);
-    reportData(newReportData); 
+    reportData(newReportData);
     createInteraction(newReportData);
   }
 
@@ -789,7 +814,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           <button onClick={() => {
             if (!loader) {
               const principlesTotal = getTotalPrinciplesPercentage(principles);
-              const layersValid = areAllLayersValid(principles, Number(totalBudget.replace(/,/g, "")));
+              const layersValid = areAllLayersValid(principles, Number(totalBudget?.replace(/,/g, "")));
 
               if (principlesTotal > 100 || (principlesTotal < 100 && principlesTotal > 0)) {
                 setError(`Total must equal 100% (Allocated: ${principlesTotal}%)`);

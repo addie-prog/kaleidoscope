@@ -3,7 +3,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const { reportId, sessionId, Allocations, budgetInputs, email, projectId, existProjectId } = await request.json()
+  const { reportId, sessionId, interactionIDs, Allocations, userNote, budgetInputs, email, projectId, existProjectId } = await request.json()
   try {
     let docRef: any;
 
@@ -12,7 +12,9 @@ export async function POST(request: Request) {
       "Session ID": sessionId,
       "Budget Inputs": budgetInputs,
       "Allocations": Allocations,
-      "Owner Email": email ? email : null
+      "Owner Email": email ? email : null,
+      "Interaction ID": interactionIDs,
+      "User Notes": userNote
     }
 
     if (existProjectId) {

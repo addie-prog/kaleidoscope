@@ -3,7 +3,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const { reportName, itemName, interactionStatus, userNotes, allocatedCost } = await request.json();
+  const { reportName, itemName, interactionStatus, userNotes, allocatedCost, executionId, principlePercentage, principleId, principleBudget } = await request.json();
   const batch = adminDb.batch();
   const collectionRef = adminDb.collection("interactions");
   const createdIds: string[] = [];
@@ -18,9 +18,13 @@ export async function POST(request: Request) {
         "Interaction ID": `Int_${Date.now()}`,
         "Report Name": reportName ?? null,
         "Item Name": itemN ?? null,
+        "Execution ID": executionId[i],
+        "Principle": principleId[i],
         "Interaction Status": interactionStatus,
         "User Notes": userNotes ? userNotes : null,
         "Allocated Cost": allocatedCost[i],
+        "Principle budget": principleBudget[i],
+        "Principle Percentage": principlePercentage[i],
         "Date Created": Timestamp.now(),
       });
     });

@@ -22,7 +22,7 @@ export default function BudgetTool({
   const [resetPrinciples, setResetPrinciples] = useState([]);
   const [reportData, setReportData] = useState([]);
   const project = use(searchParams)?.project ?? null;
-  
+  const stepUpdated: Number  = use(searchParams)?.step ? Number(use(searchParams)?.step) : 1;
 
   useEffect(() => {
     const init = () => {
@@ -39,9 +39,14 @@ export default function BudgetTool({
         localStorage.removeItem("selectedValues");
         localStorage.removeItem("principles");
       }
+
+      if(stepUpdated){
+        setStep(stepUpdated)
+      }
     }
     init();
   }, []);
+
 
 
   return (
