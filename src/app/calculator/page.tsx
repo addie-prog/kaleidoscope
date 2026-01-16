@@ -35,9 +35,6 @@ export default function BudgetTool({
         if (storedPrinciples) {
           setPrinciples(JSON.parse(storedPrinciples))
         }
-      } else {
-        localStorage.removeItem("selectedValues");
-        localStorage.removeItem("principles");
       }
 
       if(stepUpdated){
