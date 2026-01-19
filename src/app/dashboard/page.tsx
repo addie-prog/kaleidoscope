@@ -565,7 +565,21 @@ export default function Dashboard2Page({
                                                     </svg>
                                                   )}
                                </button>
-                                <div className="flex-1">
+                                <div className="flex-1" role="button" onClick={() =>
+
+                                  setActiveCards((prev) => ({
+                                    ...prev,
+                                    [categoryKey]: prev[categoryKey]?.map((card1: any) =>
+                                      card1.id == card.id
+                                        ? {
+                                          ...card1,
+                                          isExpanded: card?.isExpanded ? false : true,
+
+                                        }
+                                        : card1
+                                    )
+                                  }))
+                                }>
                                   <h3 className="sm:text-base text-sm lg:text-lg font-semibold text-[#323743] leading-[normal]">
                                     {card["Item Name"]}
                                   </h3>
