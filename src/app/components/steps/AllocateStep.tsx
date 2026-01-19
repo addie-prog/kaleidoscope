@@ -298,7 +298,19 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
   const createInteraction = async (newReportData: any) => {
     localStorage.setItem("newReportData",JSON.stringify(newReportData));
-   
+
+    //  need to remove from here
+    const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
+
+   localStorage.setItem("selectedValues",JSON.stringify(selectedValues));
+      localStorage.setItem("principles",JSON.stringify(principles));
+
+            router.push(`/dashboard?project=${projectId}`);
+    return false;
+
+    //
+
+
     const res = await fetch("/api/user-session/store-interaction", {
       method: 'POST',
       headers: {

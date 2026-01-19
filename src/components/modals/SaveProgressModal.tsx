@@ -20,15 +20,15 @@ export default function SaveProgressModal({ isOpen, onClose }: SaveProgressModal
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} className="max-w-[550px] m-4">
-
-        {/* Modal */}
-        <div
-          className="relative w-full bg-white rounded-[20px] p-6"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex justify-center mb-8">
-            <svg
+     <Modal isOpen={isOpen} onClose={onClose} className="max-w-[550px] m-4">
+  {/* Modal */}
+  <div
+    className="relative w-full bg-white rounded-[20px] p-6 sm:p-6"
+    onClick={(e) => e.stopPropagation()}
+  >
+    {/* Icon */}
+    <div className="flex justify-center mb-6 sm:mb-8">
+       <svg
               width="104"
               height="104"
               viewBox="0 0 104 104"
@@ -73,37 +73,42 @@ export default function SaveProgressModal({ isOpen, onClose }: SaveProgressModal
                 </clipPath>
               </defs>
             </svg>
-          </div>
+    </div>
 
-          {/* Title */}
-          <h2 className="text-2xl font-semibold text-gray-900 text-center mb-3">
-            Save Your Progress
-          </h2>
+    {/* Title */}
+    <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 text-center mb-3">
+      Save Your Progress
+    </h2>
 
-          {/* Description */}
-          <p className="text-base text-gray-600 text-center leading-7 mb-8 px-4">
-            Enter your email to save your project. We'll send you a magic link to access it anytime.
-          </p>
+    {/* Description */}
+    <p className="text-sm sm:text-base text-gray-600 text-center leading-6 sm:leading-7 mb-6 sm:mb-8 px-2 sm:px-4">
+      Enter your email to save your project. We'll send you a magic link to access it anytime.
+    </p>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="flex gap-2.5">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter Email"
-              className="flex-1 px-3 py-3 border border-gray-300 rounded-lg text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-            <button
-              type="submit"
-              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base rounded-lg transition-colors"
-            >
-              Save Progress
-            </button>
-          </form>
-        </div>
-      </Modal>
+    {/* Form */}
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col sm:flex-row gap-2.5"
+    >
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter Email"
+        className="flex-1 w-full px-3 py-3 border border-gray-300 rounded-lg text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        required
+      />
+
+      <button
+        type="submit"
+        className="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base rounded-lg transition-colors"
+      >
+        Save Progress
+      </button>
+    </form>
+  </div>
+</Modal>
+
     </>
   );
 }
