@@ -174,9 +174,7 @@ export default function Dashboard2Page({
             : card1
         ),
       },
-    }))
-
-
+    }));
   };
 
   const openNote = (cardId: number, stepId: number, currentNote: string) => {
@@ -336,15 +334,10 @@ export default function Dashboard2Page({
                         "value": chart.percentage,
                         "color": chart.color
                       }
-
                     }
-
                     )}
-
                     segmentsStyle={{ transition: "stroke .3s", cursor: "pointer" }}
-                    // segmentsShift={(index) => (index === selected ? 2 : 0)}
-
-                    lineWidth={20}
+                    lineWidth={30}
                     paddingAngle={4}
                   /></div>
 
