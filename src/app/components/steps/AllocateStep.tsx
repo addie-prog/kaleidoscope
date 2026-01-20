@@ -300,13 +300,13 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     localStorage.setItem("newReportData",JSON.stringify(newReportData));
 
     //  need to remove from here
-    const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
+    // const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
 
-    localStorage.setItem("selectedValues", JSON.stringify(selectedValues));
-    localStorage.setItem("principles", JSON.stringify(principles));
+    // localStorage.setItem("selectedValues", JSON.stringify(selectedValues));
+    // localStorage.setItem("principles", JSON.stringify(principles));
 
-    router.push(`/dashboard?project=${projectId}`);
-    return false;
+    // router.push(`/dashboard?project=${projectId}`);
+    // return false;
 
     //
 
@@ -390,17 +390,11 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
       console.log("Error in fetching items: ", e);
     }
     const normalize = (val: any) => String(val).trim().toUpperCase();
-
     const newReportData: any[] = [];
-
     const items = data.data;
-
-
     principles?.filter((pf) => pf.checked === true)?.map((p) => {
       p.layers.filter((lf) => lf.checked === true).map((layer) => {
-
         const layerBudget = Number(layer.budget || 0);
-
         const matchedTier = budgetTiers.find(
         (tier: any) =>
           layerBudget >= Number(tier["Budget Min"]) &&

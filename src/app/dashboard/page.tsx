@@ -338,7 +338,7 @@ export default function Dashboard2Page({
                     )}
                     segmentsStyle={{ transition: "stroke .3s", cursor: "pointer" }}
                     lineWidth={30}
-                    paddingAngle={4}
+                    paddingAngle={3}
                   /></div>
 
                 {/* <div className="relative w-42 h-42 mx-auto mb-6 mt-2">
@@ -389,15 +389,10 @@ export default function Dashboard2Page({
                     </div>
                   }
                   )}
-
-
-
                 </div>
               </div>
             </div>
           </div>
-
-
         </aside>
 
         {/* Main Content */}
@@ -477,9 +472,6 @@ export default function Dashboard2Page({
           </div><div className="h-px bg-[#E9E9E9]" />
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto no-scrollbar bg-white p-5 pt-0 pb-32 sm:pb-28">
-
-
-
             {currentCards?.[activeSubTab] && Object.keys(currentCards?.[activeSubTab])?.length > 0 ?
               Object.entries(currentCards?.[activeSubTab])
                 .map(([categoryKey, cards]: any) =>
@@ -555,7 +547,7 @@ export default function Dashboard2Page({
                                     //   ? "bg-[#F5F5F5] cursor-not-allowed"
                                     //   : "bg-[#F9FAFB] hover:bg-gray-100"
                                     //   }`}
-                                    className="mt-1 ring ring-[var(--border-color)] cursor-pointer w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0 rounded-[1px] ring flex items-center justify-center hover:opacity-80 transition-colors" >
+                                    className="mt-[6px] ring ring-[var(--border-color)] cursor-pointer w-3 h-3  flex-shrink-0 rounded-[1px] ring flex items-center justify-center hover:opacity-80 transition-colors" >
                                     {card?.cardChecked && (
                                       <svg
                                         width="10"
@@ -773,7 +765,7 @@ export default function Dashboard2Page({
                                   <span className={`text-sm font-medium`}
                                     style={{
                                       color: card?.activeCardTab === "action" ? tabs?.filter((p) => p.id == activeTab)[0]
-                                        ?.color : "",
+                                        ?.color : "#323743",
                                     }}
                                   >
                                     Action
@@ -954,7 +946,7 @@ export default function Dashboard2Page({
                                                       } as React.CSSProperties
                                                     }
 
-                                                    className={`flex justify-center cursor-pointer  w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0 rounded-[1px] ring ring-[var(--border-color)] items-center justify-center transition-colors ${step.skipped
+                                                    className={`flex justify-center cursor-pointer  w-3 h-3  flex-shrink-0 rounded-[1px] ring ring-[var(--border-color)] items-center justify-center transition-colors ${step.skipped
                                                       ? "bg-[#F5F5F5] cursor-not-allowed"
                                                       : "bg-[#F9FAFB] hover:bg-gray-100"
                                                       }`}
@@ -1098,8 +1090,8 @@ export default function Dashboard2Page({
                               {card?.activeCardTab === "context" && (
                                 <div className="px-5 py-7 flex flex-col gap-5">
                                   <div className="flex flex-col gap-1">
-                                    <div className="sm:text-lg text-sm font-semibold text-[#111827]">Why This Matters:</div>
-                                    <p className="text-sm sm:text-[15px] font-medium text-[#6B7280] leading-relaxed">
+                                    <div className="sm:text-lg text-sm font-medium text-[#323743]">Why This Matters:</div>
+                                    <p className="text-sm sm:text-[15px] font-normal text-[#323743] leading-relaxed">
                                       {card["Why This Matters"]}
                                     </p>
                                   </div>
@@ -1150,12 +1142,12 @@ export default function Dashboard2Page({
 
                                   <div className="flex items-start gap-1.5">
                                     <div className="flex flex-col gap-1 w-full">
-                                      <div className="sm:text-lg text-sm font-semibold text-[#111827]">What To Look For:</div>
+                                      <div className="sm:text-lg text-sm font-medium text-[#323743]">What To Look For:</div>
                                       <div className="flex flex-col gap-1">
                                         {card["What To Look For"]?.split("\\n").map((line: string) => line.replace("• ", "")).map((line: any, idx: number) => (
                                           <div key={idx} className="flex items-center gap-2">
                                             <div className="w-1 h-1 rounded-full flex-shrink-0 bg-black" ></div>
-                                            <p className="text-xs sm:text-sm font-medium text-[#6B7280]">
+                                            <p className="text-xs sm:text-sm font-normal text-[#323743]">
                                               {line}
                                             </p>
                                           </div>
@@ -1164,12 +1156,12 @@ export default function Dashboard2Page({
                                     </div>
                                   </div>
                                   <div className="flex flex-col gap-1 w-full">
-                                    <div className="sm:text-lg text-sm font-semibold text-[#111827]">Common Due Diligence Questions</div>
+                                    <div className="sm:text-lg text-sm font-medium text-[#323743]">Common Due Diligence Questions</div>
                                     <div className="flex flex-col gap-1">
 
                                       {card["Due Diligence Questions"]?.split("\\n").map((line: string) => line.replace("• ", "")).map((line2: any, idx2: number) => (
                                         <div key={idx2} className="flex items-center gap-1.5">
-                                          <p className="text-xs sm:text-sm font-medium text-[#6B7280]">
+                                          <p className="text-xs sm:text-sm font-normal text-[#323743]">
                                             {line2}
                                           </p>
                                         </div>
