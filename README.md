@@ -50,10 +50,32 @@ bun dev
 
 6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the `calculator` page by modifying:
+You can start editing the `/calculator` page by modifying:
 
 ```bash
 app/calculator/page.tsx
+```
+
+You can edit the `/calculator` page steps by modifying:
+
+```bash
+src/components/steps/BudgetStep.tsx
+src/components/steps/AllocateStep.tsx
+```
+
+You can start editing the `dashboard` page by modifying:
+
+```bash
+app/dashboard/page.tsx
+```
+
+You can start editing the `Save Progress` `Download PDF` `Download CSV` modals by modifying:
+
+```bash
+src/components/modals/SaveProgressModal.tsx
+src/components/modals/DownloadReportModal.tsx
+src/components/modals/DownloadReportCSVModal.tsx
+
 ```
 
 The page auto-updates as you edit the file.

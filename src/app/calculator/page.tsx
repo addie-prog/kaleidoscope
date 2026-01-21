@@ -1,9 +1,9 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import BudgetStep from "@/app/components/steps/BudgetStep";
-import AllocateStep from "@/app/components/steps/AllocateStep";
-import ReportStep from "@/app/components/steps/ReportStep";
+import BudgetStep from "@/components/steps/BudgetStep";
+import AllocateStep from "@/components/steps/AllocateStep";
+import ReportStep from "@/components/steps/ReportStep";
 import Image from "next/image";
 
 type objectType = {

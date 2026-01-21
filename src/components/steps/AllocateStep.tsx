@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import ToastModal from '../CustomToast';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import ToastModal from '../CustomToast';
 
 type props = {
   onNext: (value: number) => void;
