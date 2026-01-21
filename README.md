@@ -60,7 +60,7 @@ The page auto-updates as you edit the file.
 
 ## Environment Variables Needed
 
-Create a `.env.local` file in the root directory.
+Create a `.env.local` file on the root directory.
 
 Example `.env.local`
 ```bash
@@ -111,9 +111,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ### Vercel will:
 
 - Install dependencies
-
 - Build the app
-
 - Deploy automatically
 
 ## Basic Troubleshooting
@@ -135,19 +133,14 @@ npm install
 ### Environment variables not working
 
 - File must be named `.env.local`
-
 - Restart dev server
-
 - Check spelling of variable names
 
 ### Firestore Database Query Error
 
 - Ensure all Firebase credentials are correctly set in `.env.local`
-
 - Confirm the project is pointing to the correct Firebase `project ID`
-
 - Recheck the Firestore Query
- 
 - Restart the development server after updating environment variables
 
 ## Learn More
