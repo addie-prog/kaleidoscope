@@ -5,16 +5,55 @@ import { FieldPath } from "firebase-admin/firestore";
 export async function POST(req: Request) {
   const { layers, category } = await req.json();
 
-  //  Build items query
-  let query = adminDb.collection("items").where("Budget Tier", "in", layers.map((l: any) => l.budgetTier)).where("Execution Layer", "in", layers.map((l: any) => l.layerId)).where("Status", "==", "Active"); 
-  if (!category) { query = query.where("Tags", "array-contains-any", ["baseline"]); }
-  //  Fetch items
-  const snap = await query.get();
+  const chunk = (arr: string[], size = 10) =>
+    Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+      arr.slice(i * size, i * size + size)
+    );
 
-  const items = snap.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+
+
+  const layerChunks = chunk(layers, 10);
+
+  let items: any[] = [];
+
+  for (const lc of layerChunks) {
+    let q = adminDb
+      .collection("items")
+      .where(
+        "Budget Tier",
+        "in",
+        lc.map((l: any) => l.budgetTier)
+      )
+      .where(
+        "Execution Layer",
+        "in",
+        lc.map((l: any) => l.layerId)
+      )
+      .where("Status", "==", "Active");
+
+    if (!category) {
+      q = q.where("Tags", "array-contains", "baseline");
+    }
+
+    const snap = await q.get();
+
+    items.push(
+      ...snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+    );
+  }
+  //  Build items query
+  // let query = adminDb.collection("items").where("Budget Tier", "in", layers.map((l: any) => l.budgetTier)).where("Execution Layer", "in", layers.map((l: any) => l.layerId)).where("Status", "==", "Active"); 
+  // if (!category) { query = query.where("Tags", "array-contains-any", ["baseline"]); }
+  // //  Fetch items
+  // const snap = await query.get();
+
+  // const items = snap.docs.map(doc => ({
+  //   id: doc.id,
+  //   ...doc.data(),
+  // }));
 
   //  No items → return early
   if (!items?.length) {
@@ -24,16 +63,13 @@ export async function POST(req: Request) {
   //  Fetch matching docs from other collection
   const itemIds = items?.map(item => item.id);
 
-  const chunk = (arr: string[], size = 10) =>
-    Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-      arr.slice(i * size, i * size + size)
-    );
+
 
   let otherDocs: any[] = [];
 
   for (const ids of chunk(itemIds)) {
     const otherSnap = await adminDb
-      .collection("Steps") 
+      .collection("Steps")
       .where(FieldPath.documentId(), "in", ids)
       .get();
 
@@ -52,7 +88,7 @@ export async function POST(req: Request) {
 
   const mergedData = items.map(item => ({
     ...item,
-    ...otherMap.get(item.id), // 👈 merged values
+    ...otherMap.get(item.id), //  merged values
   }));
 
   //  Return final merged data
