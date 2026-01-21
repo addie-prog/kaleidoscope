@@ -110,11 +110,11 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ### Vercel will:
 
-Install dependencies
+- Install dependencies
 
-Build the app
+- Build the app
 
-Deploy automatically
+- Deploy automatically
 
 ## Basic Troubleshooting
 
@@ -134,21 +134,21 @@ npm install
 
 ### Environment variables not working
 
-1. File must be named `.env.local`
+- File must be named `.env.local`
 
-2. Restart dev server
+- Restart dev server
 
-3. Check spelling of variable names
+- Check spelling of variable names
 
 ### Firestore Database Query Error
 
-1. Ensure all Firebase credentials are correctly set in `.env.local`
+- Ensure all Firebase credentials are correctly set in `.env.local`
 
-2. Confirm the project is pointing to the correct Firebase `project ID`
+- Confirm the project is pointing to the correct Firebase `project ID`
 
-3. Recheck the Firestore Query
+- Recheck the Firestore Query
  
-4. Restart the development server after updating environment variables
+- Restart the development server after updating environment variables
 
 ## Learn More
 
