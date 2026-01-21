@@ -120,7 +120,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 Once the project is connected to your Git repository:
 
-1. Any push to the main / production branch will automatically trigger a new deployment
+Any push to the main / production branch will automatically trigger a new deployment
 
 #### Vercel will automatically:
 
