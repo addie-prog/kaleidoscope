@@ -118,9 +118,9 @@ Deploy automatically
 
 ## Basic Troubleshooting
 
-### App not starting:
+### App not starting
 
-#### Check `node` version
+#### Check Node version
 ```bash
 node -v
 
