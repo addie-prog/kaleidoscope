@@ -302,7 +302,7 @@ export default function Dashboard2Page({
                   <div className="flex gap-0 flex-col pb-[5px] border-b mb-0">
                     <div className="text-sm text-[#6B7280]">Tech Type</div>
                     <div className="text-[15px] font-semibold text-[#1C202C]">
-                      {selectedValues?.categoryName ?? "None"}
+                      {selectedValues?.categoryName ? selectedValues?.categoryName : "None"}
                     </div>
                   </div>
                   <div className="bg-[#D4D4D4] opacity-50 mb-[5px]" />
@@ -543,10 +543,7 @@ export default function Dashboard2Page({
                                         ?.color : "",
                                     } as React.CSSProperties
                                   }
-                                    // className={`flex justify-center ring cursor-pointer  w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0 rounded-[1px] ring ring-[var(--border-color)] items-center justify-center transition-colors ${step.skipped
-                                    //   ? "bg-[#F5F5F5] cursor-not-allowed"
-                                    //   : "bg-[#F9FAFB] hover:bg-gray-100"
-                                    //   }`}
+                                   
                                     className="mt-[6px] ring ring-[var(--border-color)] cursor-pointer w-3 h-3  flex-shrink-0 rounded-[1px] ring flex items-center justify-center hover:opacity-80 transition-colors" >
                                     {card?.cardChecked && (
                                       <svg
@@ -581,7 +578,7 @@ export default function Dashboard2Page({
 
                                   }>
                                     <h3 className="sm:text-base text-sm lg:text-lg font-semibold text-[#323743] leading-[normal]">
-                                      {card["Item Name"]}
+                                      {card["Item Name"]} 
                                     </h3>
                                     <div className="mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
                                       <span className="sm:text-base text-sm font-medium text-[#ADADAD]">

@@ -129,9 +129,6 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     return amount;
   };
 
-
-
-
   useEffect(() => {
     const total = Number(totalBudget.replace(/,/g, ""));
 
@@ -300,16 +297,15 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     localStorage.setItem("newReportData",JSON.stringify(newReportData));
 
     //  need to remove from here
-    const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
+    // const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
 
-    localStorage.setItem("selectedValues", JSON.stringify(selectedValues));
-    localStorage.setItem("principles", JSON.stringify(principles));
+    // localStorage.setItem("selectedValues", JSON.stringify(selectedValues));
+    // localStorage.setItem("principles", JSON.stringify(principles));
 
-    router.push(`/dashboard?project=${projectId}`);
-    return false;
+    // router.push(`/dashboard?project=${projectId}`);
+    // return false;
 
     //
-
 
     const res = await fetch("/api/user-session/store-interaction", {
       method: 'POST',
