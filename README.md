@@ -35,7 +35,7 @@ bun install
 cp .env.example .env.local
 ```
 
-4. Update environment variables 
+4. Update Environment Variables (See Environment Variables Needed section below)
 
 5. Start the Local server
 ```bash
@@ -50,14 +50,19 @@ bun dev
 
 6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the calculator page by modifying app/calculator/page.tsx
+You can start editing the `calculator` page by modifying:
+
+```bash
+app/calculator/page.tsx
+```
+
 The page auto-updates as you edit the file.
 
-Environment Variables Needed
+## Environment Variables Needed
 
-Create a .env.local file in the root directory.
+Create a `.env.local` file in the root directory.
 
-Example .env.local
+Example `.env.local`
 ```bash
 # Admin panel 
 ADMIN_NAME=xxxxxxxxxxxxx
@@ -73,12 +78,12 @@ FIREBASE_private_key="-----BEGIN PRIVATE KEY----------END PRIVATE KEY-----\n"
 
 ## Important Notes
 
-❌ Never commit .env.local to Git
+❌ Never commit `.env.local` to Git
 
 🔁 Restart dev server after updating env variables
 
 
-Project Structure (Overview)
+## Project Structure (Overview)
 ```bash
 app/                # App Router pages & layouts
 components/         # Reusable UI components
@@ -86,8 +91,6 @@ lib/                # Utilities & helpers
 public/             # Static assets
 app/globals.css     # Global styles
 ```
-
-How to Deploy
 
 ## Deploy on Vercel
 
@@ -101,8 +104,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 3. Import repository
 
-4. Add environment variables in:
-Vercel → Project Settings → Environment Variables
+4. Add environment variables in: `Vercel → Project Settings → Environment Variables`
 
 5. Click Deploy
 
@@ -116,8 +118,9 @@ Deploy automatically
 
 ## Basic Troubleshooting
 
-1. App not starting
-Check Node version
+1. If App not starting:
+
+Check `node` version
 ```bash
 node -v
 
@@ -131,7 +134,7 @@ npm install
 
 2. Environment variables not working
 
-File must be named .env.local
+File must be named `.env.local`
 
 Restart dev server
 
@@ -139,9 +142,9 @@ Check spelling of variable names
 
 3. Firestore Database Query Error
 
-Ensure all Firebase credentials are correctly set in .env.local
+Ensure all Firebase credentials are correctly set in `.env.local`
 
-Confirm the project is pointing to the correct Firebase project ID
+Confirm the project is pointing to the correct Firebase `project ID`
 
 Recheck the Firestore Query
  
