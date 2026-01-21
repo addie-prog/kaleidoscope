@@ -108,7 +108,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 5. Click Deploy
 
-Vercel will:
+### Vercel will:
 
 Install dependencies
 
@@ -118,37 +118,37 @@ Deploy automatically
 
 ## Basic Troubleshooting
 
-1. If App not starting:
+### App not starting:
 
-Check `node` version
+#### Check `node` version
 ```bash
 node -v
 
 ```
 
-Reinstall dependencies
+#### Reinstall dependencies
 ```bash
 rm -rf node_modules package-lock.json
 npm install
 ```
 
-2. Environment variables not working
+### Environment variables not working
 
-File must be named `.env.local`
+1. File must be named `.env.local`
 
-Restart dev server
+2. Restart dev server
 
-Check spelling of variable names
+3. Check spelling of variable names
 
-3. Firestore Database Query Error
+### Firestore Database Query Error
 
-Ensure all Firebase credentials are correctly set in `.env.local`
+1. Ensure all Firebase credentials are correctly set in `.env.local`
 
-Confirm the project is pointing to the correct Firebase `project ID`
+2. Confirm the project is pointing to the correct Firebase `project ID`
 
-Recheck the Firestore Query
+3. Recheck the Firestore Query
  
-Restart the development server after updating environment variables
+4. Restart the development server after updating environment variables
 
 ## Learn More
 
