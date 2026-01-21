@@ -1,9 +1,43 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+This application uses **Next.js App Router**, **TypeScript**, and integrates with **Firestore database** as a data source.
+
 ## Getting Started
 
-First, run the development server:
+### How to Run Locally
 
+#### Prerequisites
+- Node.js **18+** (LTS recommended)
+- npm / yarn / pnpm / bun (any one)
+
+### Setup Steps
+
+1. Clone the repository
+```bash
+git clone <repository-url>
+cd <project-folder>
+
+```
+
+2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+3. Create environment file
+```bash
+cp .env.example .env.local
+```
+
+4. Update environment variables 
+
+5. Start the development server
 ```bash
 npm run dev
 # or
@@ -14,11 +48,71 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start editing the calculator page by modifying app/calculator/page.tsx
+The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Environment Variables Needed
+
+Create a .env.local file in the root directory.
+
+Example .env.local
+```bash
+# Admin panel 
+ADMIN_NAME=xxxxxxxxxxxxx
+ADMIN_EMAIL=AdminLoginEmail
+ADMIN_PASSWORD=AdminLoginPassword
+NEXTAUTH_SECRET=xxxxxxxxxxxxx
+
+# Firebase Config
+FIREBASE_PROJECT_ID=xxxxxxxxxxxxx
+FIREBASE_CLIENT_EMAIL=xxxxxxxxxxxxx
+FIREBASE_private_key="-----BEGIN PRIVATE KEY----------END PRIVATE KEY-----\n"
+```
+
+## Important Notes
+
+❌ Never commit .env.local to Git
+
+🔁 Restart dev server after updating env variables
+
+
+Project Structure (Overview)
+```bash
+app/                # App Router pages & layouts
+components/         # Reusable UI components
+lib/                # Utilities & helpers
+public/             # Static assets
+app/globals.css     # Global styles
+```
+
+How to Deploy
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+1. Push code to GitHub / GitLab / Bitbucket
+
+2. Go to https://vercel.com/new
+
+3. Import repository
+
+4. Add environment variables in:
+Vercel → Project Settings → Environment Variables
+
+5. Click Deploy
+
+Vercel will:
+
+Install dependencies
+
+Build the app
+
+Deploy automatically
 
 ## Learn More
 
@@ -29,8 +123,4 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
