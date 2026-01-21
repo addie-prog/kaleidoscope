@@ -37,7 +37,7 @@ cp .env.example .env.local
 
 4. Update environment variables 
 
-5. Start the development server
+5. Start the Local server
 ```bash
 npm run dev
 # or
@@ -113,6 +113,39 @@ Install dependencies
 Build the app
 
 Deploy automatically
+
+## Basic Troubleshooting
+
+1. App not starting
+Check Node version
+```bash
+node -v
+
+```
+
+Reinstall dependencies
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+2. Environment variables not working
+
+File must be named .env.local
+
+Restart dev server
+
+Check spelling of variable names
+
+3. Firestore Database Query Error
+
+Ensure all Firebase credentials are correctly set in .env.local
+
+Confirm the project is pointing to the correct Firebase project ID
+
+Recheck the Firestore Query
+ 
+Restart the development server after updating environment variables
 
 ## Learn More
 
