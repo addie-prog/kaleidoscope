@@ -39,7 +39,7 @@ cp .env.example .env.local
 
 Create a `.env.local` file on the root directory.
 
-## Environment Variables Needed
+#### Environment Variables Needed
 
 Example `.env.local`
 ```bash
@@ -55,7 +55,7 @@ FIREBASE_CLIENT_EMAIL=xxxxxxxxxxxxx
 FIREBASE_private_key="-----BEGIN PRIVATE KEY----------END PRIVATE KEY-----\n"
 ```
 
-## Important Notes
+#### Important Notes
 
 ❌ Never commit `.env.local` to Git
 
