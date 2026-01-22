@@ -504,16 +504,14 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   const AllocateMessage = () => {
     return <>
       {remainingPercentage > 0 && remainingPercentage <= 100 ? (
-        <div className="px-7 py-5 rounded-lg border text-center border-gray-200 bg-[#F9FAFB] max-w-100">
-          <div className="sm:text-base text-sm text-[#fff]">
-            <span className="font-semibold">Remaining: </span>
-            <span className="font-normal">
-              {remainingPercentage}% (${remainingDollars})
+        <div className="px-6 py-4 text-center text-[#fff] border-gray-200 max-w-100">
+            <span className="flex items-center gap-2 text-[13px]">
+              Remaining: {remainingPercentage}% (${remainingDollars})
             </span>
-          </div>
+       
         </div>
       ) : shouldShowSuccessMessage(principles) ? (
-        <div className="px-6 py-4 rounded-lg border text-center border-[#10B981] bg-[#CFF1E6] text-[#10B981]">
+        <div className="px-6 py-4 text-center bg-[#CFF1E6] text-[#10B981]">
           <div className="flex items-center gap-2 text-[13px]">
             {/* success icon */}
             Ready to Generate Report
