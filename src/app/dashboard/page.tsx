@@ -7,7 +7,8 @@ import SaveProgressModal from "@/components/modals/SaveProgressModal";
 import { useModal } from "@/hooks/useModal";
 import DownloadReportModal from "@/components/modals/DownloadReportModal";
 import DownloadReportCSVModal from "@/components/modals/DownloadReportCSVModal";
-import { PieChart } from 'react-minimal-pie-chart';
+import { Doughnut } from 'react-chartjs-2';
+import '@/lib/chartjs';
 
 type objectType = {
   [key: string | number]: any
@@ -327,19 +328,35 @@ export default function Dashboard2Page({
                 backgroundClip: 'padding-box, border-box',
               }} className="rounded-xl bg-[#F9FAFB] p-3">
                 <div className="relative w-42 h-42 mx-auto mb-6 mt-2">
-                  <PieChart
-                    data={tabs?.filter((t: objectType) => t.checked === true)?.map((chart: objectType) => {
-                      return {
-                        "title": chart.name,
-                        "value": chart.percentage,
-                        "color": chart.color
-                      }
-                    }
-                    )}
-                    segmentsStyle={{ transition: "stroke .3s", cursor: "pointer" }}
-                    lineWidth={30}
-                    paddingAngle={3}
-                  /></div>
+                  <Doughnut
+                    data={{
+                      labels: tabs
+                        ?.filter((t: objectType) => t.checked)
+                        ?.map((chart: objectType) => chart.name),
+
+                      datasets: [
+                        {
+                          data: tabs
+                            ?.filter((t: objectType) => t.checked)
+                            ?.map((chart: objectType) => Number(chart.percentage) || 0),
+
+                          backgroundColor: tabs
+                            ?.filter((t: objectType) => t.checked)
+                            ?.map((chart: objectType) => chart.color),
+                        },
+                      ],
+                    }}
+                    options={{
+                      plugins: {
+                        legend: {
+                          display: false, //  removes top labels
+                        },
+                      },
+                    }}
+                  />
+
+
+                </div>
 
                 {/* <div className="relative w-42 h-42 mx-auto mb-6 mt-2">
                   <svg className="w-full h-full" viewBox="0 0 168 168">
@@ -543,7 +560,7 @@ export default function Dashboard2Page({
                                         ?.color : "",
                                     } as React.CSSProperties
                                   }
-                                   
+
                                     className="mt-[6px] ring ring-[var(--border-color)] cursor-pointer w-3 h-3  flex-shrink-0 rounded-[1px] ring flex items-center justify-center hover:opacity-80 transition-colors" >
                                     {card?.cardChecked && (
                                       <svg
@@ -578,7 +595,7 @@ export default function Dashboard2Page({
 
                                   }>
                                     <h3 className="sm:text-base text-sm lg:text-lg font-semibold text-[#323743] leading-[normal]">
-                                      {card["Item Name"]} 
+                                      {card["Item Name"]}
                                     </h3>
                                     <div className="mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
                                       <span className="sm:text-base text-sm font-medium text-[#ADADAD]">
