@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import SaveProgressModal from "@/components/modals/SaveProgressModal";
@@ -40,13 +40,18 @@ export default function Dashboard2Page({
   const [activeNoteId, setActiveNoteId] = useState<{ cardId: number; stepId: number } | null>(null);
   const [tempNote, setTempNote] = useState("");
   const [selectedValues, setSelectedValues] = useState<objectType>({});
-
   const [currentCards, setActiveCards] = useState<ActiveCards>([]);
   const [currentSubTabs, setCurrentSubTabs] = useState<Array<SubTab>>([])
   const project = use(searchParams)?.project ?? null;
   const saveProgressModal = useModal();
   const downloadReportModal = useModal();
   const downloadCSVModal = useModal();
+  const navRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // For second tab row
+  const navRef2 = useRef<HTMLDivElement>(null);
+  const tabRefs2 = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Different sub-tabs for different main tabs
   const getSubTabsForTab = (tabId: string): SubTab[] => {
@@ -109,6 +114,29 @@ export default function Dashboard2Page({
     const groupedCards = subCardId && groupedByCategory;
     return groupedCards;
   };
+
+
+  const scrollNextTabIfNeeded = (
+    nav: HTMLDivElement | null,
+    tabRefs: (HTMLButtonElement | null)[],
+    index: number
+  ) => {
+    if (!nav) return;
+    const nextTab = tabRefs[index + 1];
+    if (!nextTab) return;
+
+    const navRight = nav.scrollLeft + nav.offsetWidth;
+    const nextTabRight = nextTab.offsetLeft + nextTab.offsetWidth;
+
+    if (nextTabRight > navRight) {
+      nav.scrollTo({
+        left: nextTabRight - nav.offsetWidth,
+        behavior: "smooth",
+      });
+    }
+  };
+
+
 
   const toggleCheckbox = (cardId: number, stepId: number, category: any) => {
     setActiveCards((prev: any) => ({
@@ -416,7 +444,7 @@ export default function Dashboard2Page({
         <main className="flex-1 flex flex-col w-full lg:w-auto overflow-x-hidden m-2 sm:m-5">
           {/* Category Tabs */}
 
-          <nav className="w-full bg-white flex items-end overflow-x-auto no-scrollbar">
+          <nav ref={navRef} className="w-full bg-white flex items-end overflow-x-auto no-scrollbar">
             {tabs?.map((tab: any, index: any) => {
               const isActive = tab.id === activeTab;
               const textColor = tab.color;
@@ -424,9 +452,18 @@ export default function Dashboard2Page({
               return (
                 <button
                   key={tab.id}
+                  ref={(el: any) => (tabRefs.current[index] = el)}
                   onClick={() => {
                     setActiveTab(tab.id);
-
+                    scrollNextTabIfNeeded(navRef.current, tabRefs.current, index);
+                    const childFirstTab = tabRefs2.current[0];
+                    if (childFirstTab && navRef2.current) {
+                      const nav = navRef2.current;
+                      nav.scrollTo({
+                        left: childFirstTab.offsetLeft, // scroll so first tab is visible
+                        behavior: "smooth",
+                      });
+                    }
                   }}
                   className={`relative flex-1 flex-col px-4 py-[12px] justify-center items-center gap-1.5 transition-colors border-r border-[#EDEDED] flex-shrink-0 min-w-fit ${isActive
                     ? "bg-white border-0"
@@ -464,13 +501,17 @@ export default function Dashboard2Page({
             })}
           </nav>
           {/* Sub-tabs */}
-          <div className="bg-white px-4  w-full flex lg:flex-wrap items-center gap-2 py-5 overflow-x-auto no-scrollbar">
-            {currentSubTabs?.map((subTab: any) => {
+          <div ref={navRef2} className="bg-white px-4  w-full flex lg:flex-wrap items-center gap-2 py-5 overflow-x-auto no-scrollbar">
+            {currentSubTabs?.map((subTab: any, ij: number) => {
               const isActiveSubTab = subTab.id === activeSubTab;
               return (
                 <button
                   key={subTab.id}
-                  onClick={() => setActiveSubTab(subTab.id)}
+                  ref={(el: any) => (tabRefs2.current[ij] = el)}
+                  onClick={() => {
+                    scrollNextTabIfNeeded(navRef2.current, tabRefs2.current, ij);
+                    setActiveSubTab(subTab.id);
+                  }}
                   className={`shrink-0 w-max inline-flex items-center gap-2 px-3 lg:py-1.5 py-2 rounded-lg whitespace-nowrap transition-colors ${isActiveSubTab
                     ? " text-white"
                     : "border border-[#918D8D] text-[#918D8D] hover:bg-gray-50"
@@ -561,7 +602,7 @@ export default function Dashboard2Page({
                                     } as React.CSSProperties
                                   }
 
-                                    className="mt-[6px] ring ring-[var(--border-color)] cursor-pointer w-3 h-3  flex-shrink-0 rounded-[1px] ring flex items-center justify-center hover:opacity-80 transition-colors" >
+                                    className="lg:mt-[5px] mt-[4px] ring ring-[var(--border-color)] cursor-pointer w-3 h-3  flex-shrink-0 rounded-[1px] ring flex items-center justify-center hover:opacity-80 transition-colors" >
                                     {card?.cardChecked && (
                                       <svg
                                         width="10"
@@ -941,7 +982,7 @@ export default function Dashboard2Page({
                                           <React.Fragment key={`${step.step_id}_${index}`}>
                                             <div className="flex flex-col gap-2">
                                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                                                <div className="flex items-center gap-2" role="button" onClick={() => {
+                                                <div className="flex items-start gap-2" role="button" onClick={() => {
                                                   toggleCheckbox(card.id, step.step_id, categoryKey)
                                                 }
 
@@ -960,15 +1001,15 @@ export default function Dashboard2Page({
                                                       } as React.CSSProperties
                                                     }
 
-                                                    className={`flex justify-center cursor-pointer  w-3 h-3  flex-shrink-0 rounded-[1px] ring ring-[var(--border-color)] items-center justify-center transition-colors ${step.skipped
+                                                    className={`lg:mt-[8px] mt-[6px] flex justify-center cursor-pointer   w-2.5 h-2.5  flex-shrink-0 rounded-[1px] ring ring-[var(--border-color)] items-center  transition-colors ${step.skipped
                                                       ? "bg-[#F5F5F5] cursor-not-allowed"
                                                       : "bg-[#F9FAFB] hover:bg-gray-100"
                                                       }`}
                                                   >
                                                     {step.completed && (
                                                       <svg
-                                                        width="10"
-                                                        height="7"
+                                                        width="8"
+                                                        height="5"
                                                         viewBox="0 0 10 7"
                                                         fill="none"
                                                         xmlns="http://www.w3.org/2000/svg"

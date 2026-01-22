@@ -584,7 +584,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             className={`
               transition-all w-auto duration-300 z-50 ${shouldShowSuccessMessage(principles) ? "" : "bg-[#EF4444]"} rounded-lg
               ${showFloatingStatus && !showToast
-                ? "fixed sm:right-6 md:right-6 right-0 top-2"
+                ? "fixed sm:right-6 md:right-6 right-2 top-2"
                 : "relative hidden"}
             `}
           >

@@ -122,25 +122,27 @@ export default function SignInForm() {
                 </div>
                 <div>
                   <button type="submit" disabled={loader} className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600" >
-                    {loader ? "Signing in…" : "Sign in"}
+                    {loader ? "Signing in…" : "Sign In"}
                   </button>
+                 
                 </div>
                                     
-
               </div>
             </form>
 
-            {/* <div className="mt-5">
+            <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Don&apos;t have an account? {""}
+                Don&apos;t have an account? {""}<br/>
+                You can still access our 
                 <Link
-                  href="/signup"
+                  href="/calculator"
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
                 >
-                  Sign Up
+                  {" "}Budget Tool{" "}
                 </Link>
+                 without signing in.
               </p>
-            </div> */}
+            </div>
           </div>
         </div>
       </div>

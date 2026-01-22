@@ -445,17 +445,7 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
     return (
         <>
             <div className='w-full flex gap-1 justify-end sm:px-15 px-[16px] pt-10'>
-                {project && <button className=" px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center"
-                    onClick={() => {
-                        router.push(`/dashboard?project=${project}`);
-                    }}>
-
-                    <svg width="18" height="18" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18.2077 11.5H4.79102" stroke="#ffff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M11.4993 18.2083L4.79102 11.5L11.4993 4.79166" stroke="#ffff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span>Dashboard</span>
-                </button>}
+                
                 <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center"
                     onClick={() => {
                         setFormValues({}),
@@ -464,6 +454,16 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
                     }}>
                     <span>Reset</span>
                 </button>
+                {project && <button className=" px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center"
+                    onClick={() => {
+                        router.push(`/dashboard?project=${project}`);
+                    }}>
+                    <span>Dashboard</span>
+                    <svg width="18" height="18" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4.79102 11.5H18.2077" stroke="#fff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M11.4993 4.79166L18.2077 11.5L11.4993 18.2083" stroke="#fff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </button>}
             </div>
             {/* Main Content */}
             <main className="mx-auto max-w-4xl px-4  lg:px-8 py-8 sm:py-12 lg:py-16">
