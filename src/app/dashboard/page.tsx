@@ -309,7 +309,7 @@ export default function Dashboard2Page({
                   <div className="bg-[#D4D4D4] opacity-50 mb-[5px]" />
                   <div className="flex gap-0 flex-col mb-0">
                     <div className="text-sm text-[#6B7280]">Budget</div>
-                    <div className="text-2xl font-bold text-[#323743] leading-[normal]">{selectedValues?.budget}</div>
+                    <div className="text-xl font-bold text-[#323743] leading-[normal]">${selectedValues?.budget}</div>
                   </div>
                 </div>
               </div>
