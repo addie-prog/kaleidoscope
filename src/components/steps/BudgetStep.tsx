@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import ToastModal from '../CustomToast';
 import { Timestamp } from 'firebase/firestore/lite';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 type PrincipleProps = {
     id: string;
@@ -49,12 +51,12 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
     const [budgetError, setBudgetError] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
     const utm_source = utmSource;
+    const router = useRouter();
 
-
-    useEffect(()=>{
+    useEffect(() => {
         setFormValues({ ...allValues, ["tier"]: allValues?.tier }),
-        setShowStage(allValues?.stage ?? "")
-    },[allValues]);
+            setShowStage(allValues?.stage ?? "")
+    }, [allValues]);
 
     const categories = [
         {
@@ -208,9 +210,9 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
     useEffect(() => {
         if (!localStorage.getItem("sessionId")) {
             localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
-            storeSession(1);
+            // storeSession(1);
         } else {
-            storeSession(2);
+            // storeSession(2);
         }
     }, []);
 
@@ -276,7 +278,7 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
             } else {
                 localStorage.setItem("reportId", newId);
             }
-            storeSession(2);
+            // storeSession(2);
         }
 
     }
@@ -364,52 +366,51 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
     }
 
     const mapPrinciples = (data: any[]) =>
-    data.map((prin: any) => ({
-        id: prin["Principle ID"],
-        name: prin["Display Name"],
-        description: prin["Description"],
-        color: prin["Color"],
-        bgcolor: "#FFFDFD",
-        percentage: 0,
-        budget: 0,
-        checked: false,
-        layersVisible: false,
-        layers: prin?.subPrinciples?.map((sp: any) => ({
-            id: sp.executionLayerId,
-            budget: 0,
-            name: sp.displayName,
-            description: sp.description,
+        data.map((prin: any) => ({
+            id: prin["Principle ID"],
+            name: prin["Display Name"],
+            description: prin["Description"],
+            color: prin["Color"],
+            bgcolor: "#FFFDFD",
             percentage: 0,
-            checked: false
-        })) || []
-    }));
+            budget: 0,
+            checked: false,
+            layersVisible: false,
+            layers: prin?.subPrinciples?.map((sp: any) => ({
+                id: sp.executionLayerId,
+                budget: 0,
+                name: sp.displayName,
+                description: sp.description,
+                percentage: 0,
+                checked: false
+            })) || []
+        }));
 
     const getPrinciples = async () => {
         let principlesData = allValues?.principles;
-        if (!principlesData || principlesData?.length === 0 || project)
-        {
+        if (!principlesData || principlesData?.length === 0 || project) {
             setLoader(true);
             const res = await fetch("/api/principles");
             const data = await res.json();
 
-            
+
             setLoader(false);
             const principles: any = mapPrinciples(data);
             ResetPrinciples(principles);
 
             if (!allValues?.principles || allValues.principles.length === 0) {
-                    Principles(principles);
-                    principlesData = principles;
-                }else{
-                    Principles(principlesData);
-                }
+                Principles(principles);
+                principlesData = principles;
+            } else {
+                Principles(principlesData);
+            }
 
-            createReport();
+            // createReport();
         } else {
-            createReport();
+            // createReport();
             Principles(principlesData);
         }
-       
+
         selectedValues({
             budget: formValues?.budget,
             categoryName: formValues?.categoryName,
@@ -443,12 +444,23 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
 
     return (
         <>
-            <div className='w-full flex justify-end sm:px-15 px-[16px] pt-10'>
-                <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center" 
-                onClick={() => { 
-                    setFormValues({}), 
-                    setShowStage(""), 
-                    selectedValues({})
+            <div className='w-full flex gap-1 justify-end sm:px-15 px-[16px] pt-10'>
+                {project && <button className=" px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center"
+                    onClick={() => {
+                        router.push(`/dashboard?project=${project}`);
+                    }}>
+
+                    <svg width="18" height="18" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.2077 11.5H4.79102" stroke="#ffff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M11.4993 18.2083L4.79102 11.5L11.4993 4.79166" stroke="#ffff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span>Dashboard</span>
+                </button>}
+                <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center"
+                    onClick={() => {
+                        setFormValues({}),
+                            setShowStage(""),
+                            selectedValues({})
                     }}>
                     <span>Reset</span>
                 </button>
