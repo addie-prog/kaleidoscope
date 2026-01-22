@@ -122,21 +122,48 @@ export default function Dashboard2Page({
     index: number
   ) => {
     if (!nav) return;
+
+    const currentTab = tabRefs[index];
     const nextTab = tabRefs[index + 1];
-    if (!nextTab) return;
+    if (!currentTab) return;
 
+    const navLeft = nav.scrollLeft;
     const navRight = nav.scrollLeft + nav.offsetWidth;
-    const nextTabRight = nextTab.offsetLeft + nextTab.offsetWidth;
 
-    if (nextTabRight > navRight) {
+    const currentLeft = currentTab.offsetLeft;
+    const currentRight = currentLeft + currentTab.offsetWidth;
+
+    const isFullyVisible =
+      currentLeft >= navLeft && currentRight <= navRight;
+
+    // Case : clicked tab NOT fully visible
+    if (!isFullyVisible) {
+      let targetLeft = currentLeft;
+
+      // Add a little peek of next tab if exists
+      if (nextTab) {
+        const peek = nextTab.offsetWidth * 0.25; // 25% peek
+        targetLeft = Math.max(
+          0,
+          currentRight - nav.offsetWidth + peek
+        );
+      }
+
       nav.scrollTo({
-        left: nextTabRight - nav.offsetWidth,
+        left: targetLeft,
+        behavior: "smooth",
+      });
+      return;
+    }
+
+    // Case : clicked tab fully visible → show half of next tab
+    if (nextTab) {
+      nav.scrollTo({
+        left: nav.scrollLeft + nextTab.offsetWidth / 2,
         behavior: "smooth",
       });
     }
   };
-
-
 
   const toggleCheckbox = (cardId: number, stepId: number, category: any) => {
     setActiveCards((prev: any) => ({
@@ -519,14 +546,15 @@ export default function Dashboard2Page({
                   style={{ background: isActiveSubTab ? tabs?.filter((p) => p.id == activeTab)[0]?.color : "" }}
                 >
                   <span className="sm:text-base text-sm font-medium">{subTab.name}</span>
-                  <span className="sm:text-base text-sm font-medium">{Number.isInteger(subTab.percentage * 100)
+                  <span className="sm:text-base text-sm font-medium">{tabs.filter((mt: objectType) => { return mt.id == activeTab })[0]?.percentage > 0 ? Number.isInteger(subTab.percentage * 100)
                     ? subTab.percentage
-                    : subTab.percentage.toFixed(1)}%</span>
+                    : subTab.percentage.toFixed(1) : 0}%</span>
+
                 </button>
               );
             })}
 
-
+            { }
           </div><div className="h-px bg-[#E9E9E9]" />
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto no-scrollbar bg-white p-5 pt-0 pb-32 sm:pb-28">
@@ -755,11 +783,11 @@ export default function Dashboard2Page({
                                 }`}
                             >
                               {/* Tabs */}
-                              <div className="w-auto flex items-center border-t border-b border-[#E5E5E5] px-5 overflow-x-auto no-scrollbar">
+                              <div className="w-full flex items-center border-t border-b border-[#E5E5E5] px-5 overflow-x-auto no-scrollbar">
+
+
                                 <button
-                                  onClick={() =>
-
-
+                                  onClick={() => {
                                     setActiveCards((prev: any) => ({
                                       ...prev,
                                       [activeSubTab]: {
@@ -773,10 +801,8 @@ export default function Dashboard2Page({
                                             : card1
                                         ),
                                       },
-                                    }))
-
-
-
+                                    }));
+                                  }
                                   }
                                   className={`relative flex-1 sm:flex-none sm:px-4 flex py-[12px] justify-center items-center gap-1.5 transition-colors flex-shrink-0 min-w-fit bg-white border-0  ${card?.activeCardTab === "action"
                                     ? "border-b-2"
@@ -827,7 +853,8 @@ export default function Dashboard2Page({
                                   </span>
                                 </button>
                                 <button
-                                  onClick={() =>
+
+                                  onClick={() => {
 
                                     setActiveCards((prev: any) => ({
                                       ...prev,
@@ -843,7 +870,7 @@ export default function Dashboard2Page({
                                         ),
                                       },
                                     }))
-
+                                  }
 
                                   }
                                   className={`relative flex-1 sm:flex-none flex sm:ml-0 sm:px-4 ml-4 py-[12px] justify-center items-center gap-1.5 transition-colors flex-shrink-0 min-w-fit bg-white border-0  ${card?.activeCardTab === "context"
@@ -884,7 +911,8 @@ export default function Dashboard2Page({
                                   </span>
                                 </button>
                                 <button
-                                  onClick={() =>
+
+                                  onClick={() => {
                                     setActiveCards((prev: any) => ({
                                       ...prev,
                                       [activeSubTab]: {
@@ -898,7 +926,8 @@ export default function Dashboard2Page({
                                             : card1
                                         ),
                                       },
-                                    }))
+                                    }));
+                                  }
                                   }
                                   className={`relative flex-1 sm:flex-none flex sm:px-4 sm:ml-0 ml-4 py-[12px] justify-center items-center gap-1.5 transition-colors flex-shrink-0 min-w-fit bg-white border-0  ${card?.activeCardTab === "diligence"
                                     ? "border-b-2"
