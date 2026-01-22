@@ -265,7 +265,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   };
 
   const ValidationIcon = (color: string) => {
-    return <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+    return <svg width="15" height="15" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M9.50056 14.3571C9.25902 14.3571 9.02738 14.2612 8.85659 14.0904C8.68579 13.9196 8.58984 13.688 8.58984 13.4464V9.19642C8.58984 8.95488 8.68579 8.72324 8.85659 8.55245C9.02738 8.38166 9.25902 8.28571 9.50056 8.28571C9.74209 8.28571 9.97374 8.38166 10.1445 8.55245C10.3153 8.72324 10.4113 8.95488 10.4113 9.19642V13.4464C10.4113 13.688 10.3153 13.9196 10.1445 14.0904C9.97374 14.2612 9.74209 14.3571 9.50056 14.3571Z" fill={color} />
       <path d="M8.28516 5.85714C8.28516 5.53509 8.41309 5.22623 8.64081 4.99851C8.86854 4.77079 9.17739 4.64285 9.49944 4.64285C9.82149 4.64285 10.1303 4.77079 10.3581 4.99851C10.5858 5.22623 10.7137 5.53509 10.7137 5.85714C10.7137 6.17919 10.5858 6.48804 10.3581 6.71577C10.1303 6.94349 9.82149 7.07142 9.49944 7.07142C9.17739 7.07142 8.86854 6.94349 8.64081 6.71577C8.41309 6.48804 8.28516 6.17919 8.28516 5.85714Z" fill={color} />
       <path fillRule="evenodd" clipRule="evenodd" d="M19 9.5C19 10.7476 18.7543 11.9829 18.2769 13.1355C17.7994 14.2881 17.0997 15.3354 16.2175 16.2175C15.3354 17.0997 14.2881 17.7994 13.1355 18.2769C11.9829 18.7543 10.7476 19 9.5 19C8.25244 19 7.0171 18.7543 5.86451 18.2769C4.71191 17.7994 3.66464 17.0997 2.78249 16.2175C1.90033 15.3354 1.20056 14.2881 0.723145 13.1355C0.245725 11.9829 -1.85901e-08 10.7476 0 9.5C3.75443e-08 6.98044 1.00089 4.56408 2.78249 2.78249C4.56408 1.00089 6.98044 0 9.5 0C12.0196 0 14.4359 1.00089 16.2175 2.78249C17.9991 4.56408 19 6.98044 19 9.5ZM16.9643 9.5C16.9643 11.4797 16.1779 13.3782 14.778 14.778C13.3782 16.1779 11.4797 16.9643 9.5 16.9643C7.52035 16.9643 5.62178 16.1779 4.22195 14.778C2.82213 13.3782 2.03571 11.4797 2.03571 9.5C2.03571 7.52035 2.82213 5.62178 4.22195 4.22195C5.62178 2.82213 7.52035 2.03571 9.5 2.03571C11.4797 2.03571 13.3782 2.82213 14.778 4.22195C16.1779 5.62178 16.9643 7.52035 16.9643 9.5Z" fill={color} />
@@ -504,40 +504,40 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   const AllocateMessage = () => {
     return <>
       {remainingPercentage > 0 && remainingPercentage <= 100 ? (
-        <div className="px-6 py-4 text-center text-[#fff] border-gray-200 max-w-100">
-            <span className="flex items-center gap-2 text-[13px]">
+        <div className="md:px-6 px-4 sm:py-4 md:py-4 py-3 text-center text-[#fff] border-gray-200 max-w-100">
+            <span className="flex items-center gap-2 sm:text-[13px] md:text-[13px] text-[12px]">
               Remaining: {remainingPercentage}% (${remainingDollars})
             </span>
        
         </div>
       ) : shouldShowSuccessMessage(principles) ? (
-        <div className="px-6 py-4 text-center rounded-lg border border-[#10B981] bg-[#CFF1E6] text-[#10B981]">
+        <div className="md:px-6 px-4 sm:py-4 md:py-4 py-3 text-center rounded-lg border border-[#10B981] bg-[#CFF1E6] text-[#10B981]">
           <div className="flex items-center gap-2 text-[13px]">
             {/* success icon */}
             Ready to Generate Report
           </div>
         </div>
       ) : remainingPercentage > 100 ? (
-        <div className="px-6 py-4 text-center text-[#fff]">
+        <div className="md:px-6 px-4 sm:py-4 md:py-4 py-3 text-center text-[#fff]">
           <div className="flex items-center gap-2 text-[13px]">
             {ValidationIcon("#fff")}
             Total must equal 100% (currently: {remainingPercentage}%)
           </div>
         </div>
       ) : getCheckedPrinciples(principles)?.length > 0 ? (
-        <div className="px-6 py-4 text-center text-[#fff]">
+        <div className="py-4 sm:px-4 md:px-4 px-2 text-center text-[#fff]">
           <div className="flex items-center gap-2">
             {ValidationIcon("#fff")}
-            <span className="text-[13px]">
+            <span className="text-[11px] md:text-[12px] lg:text-[13px]  text-left">
               Please ensure all the selected principles have budget allocated!
             </span>
           </div>
         </div>
       ) : (
-        <div className="px-6 py-4 text-center text-[#fff]">
+        <div className="sm:px-4 md:px-4 px-2 py-4 text-center text-[#fff]">
           <div className="flex items-center gap-2">
             {ValidationIcon("#fff")}
-            <span className="text-[13px]">
+            <span className="sm:text-[13px] md:text-[13px] text-[11px]">
               Please ensure execution layers total exactly 100%
             </span>
           </div>
@@ -582,9 +582,9 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
           <div
             className={`
-              transition-all duration-300 z-50 ${shouldShowSuccessMessage(principles) ? "" : "bg-[#EF4444]"} rounded-lg
+              transition-all w-auto duration-300 z-50 ${shouldShowSuccessMessage(principles) ? "" : "bg-[#EF4444]"} rounded-lg
               ${showFloatingStatus && !showToast
-                ? "fixed right-6 top-2"
+                ? "fixed sm:right-6 md:right-6 right-0 top-2"
                 : "relative hidden"}
             `}
           >
@@ -895,7 +895,6 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             if (!loader) {
               const principlesTotal = getTotalPrinciplesPercentage(principles);
               const layersValid = areAllLayersValid(principles, Number(totalBudget?.replace(/,/g, "")));
-              setShowFloatingStatus(false);
               if (principlesTotal > 100 || (principlesTotal < 100 && principlesTotal > 0)) {
                 setError(`Total must equal 100% (Allocated: ${principlesTotal}%)`);
                 setShowToast(true);
