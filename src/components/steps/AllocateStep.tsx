@@ -511,7 +511,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
        
         </div>
       ) : shouldShowSuccessMessage(principles) ? (
-        <div className="px-6 py-4 text-center bg-[#CFF1E6] text-[#10B981]">
+        <div className="px-6 py-4 text-center rounded-lg border border-[#10B981] bg-[#CFF1E6] text-[#10B981]">
           <div className="flex items-center gap-2 text-[13px]">
             {/* success icon */}
             Ready to Generate Report
@@ -582,7 +582,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
           <div
             className={`
-              transition-all duration-300 z-50 bg-[#EF4444] rounded-lg
+              transition-all duration-300 z-50 ${shouldShowSuccessMessage(principles) ? "" : "bg-[#EF4444]"} rounded-lg
               ${showFloatingStatus && !showToast
                 ? "fixed right-6 top-2"
                 : "relative hidden"}
