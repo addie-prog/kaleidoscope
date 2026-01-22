@@ -972,8 +972,8 @@ export default function Dashboard2Page({
                                         ?.color : "#323743",
                                     }}
                                   >
-                                    Diligence Tab
-                                  </span>
+                                    Diligence 
+                                                                      </span>
                                 </button>
                               </div>
 
