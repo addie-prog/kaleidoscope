@@ -1,15 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal } from "../ui/modal";
 
 interface DownloadReportModalProps {
   isOpen: boolean;
   onClose: () => void;
+  selectedEmail: string;
 }
 
-export default function DownloadReportModal({ isOpen, onClose }: DownloadReportModalProps) {
+export default function DownloadReportModal({ isOpen, onClose, selectedEmail }: DownloadReportModalProps) {
   const [email, setEmail] = useState("");
+
+  useEffect(()=>{
+      setEmail(selectedEmail);
+    },[selectedEmail]);
 
   if (!isOpen) return null;
 

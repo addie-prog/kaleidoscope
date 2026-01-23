@@ -1338,9 +1338,9 @@ export default function Dashboard2Page({
               </div>
             }
           </div>
-          <SaveProgressModal isOpen={saveProgressModal.isOpen} onClose={saveProgressModal.closeModal} />
-          <DownloadReportModal isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
-          <DownloadReportCSVModal isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />
+          <SaveProgressModal selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={saveProgressModal.closeModal} />
+          <DownloadReportModal selectedEmail={selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
+          <DownloadReportCSVModal selectedEmail={selectedValues?.email} isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />
         </main>
       </div>
       {/* Sticky Action Buttons */}

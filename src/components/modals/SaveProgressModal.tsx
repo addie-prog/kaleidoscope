@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal } from "../ui/modal";
 interface SaveProgressModalProps {
   isOpen: boolean;
   onClose: () => void;
+  selectedEmail: string;
 }
 
-export default function SaveProgressModal({ isOpen, onClose }: SaveProgressModalProps) {
+export default function SaveProgressModal({ isOpen, onClose, selectedEmail }: SaveProgressModalProps) {
   const [email, setEmail] = useState("");
+
+  useEffect(()=>{
+      setEmail(selectedEmail);
+    },[selectedEmail]);
 
   if (!isOpen) return null;
 

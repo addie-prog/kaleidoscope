@@ -1,15 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal } from "../ui/modal";
 
 interface DownloadReportModalProps {
   isOpen: boolean;
   onClose: () => void;
+  selectedEmail: string;
 }
 
-export default function DownloadReportCSVModal({ isOpen, onClose }: DownloadReportModalProps) {
+export default function DownloadReportCSVModal({ isOpen, onClose, selectedEmail }: DownloadReportModalProps) {
   const [email, setEmail] = useState("");
+
+  useEffect(()=>{
+    setEmail(selectedEmail);
+  },[selectedEmail]);
 
   if (!isOpen) return null;
 
@@ -23,15 +28,15 @@ export default function DownloadReportCSVModal({ isOpen, onClose }: DownloadRepo
   return (
     <>
       {/* Backdrop */}
-     <Modal isOpen={isOpen} onClose={onClose} className="max-w-[550px] m-4">
-  {/* Modal */}
-  <div
-    className="relative w-full bg-white rounded-[20px] p-6 sm:p-6"
-    onClick={(e) => e.stopPropagation()}
-  >
-    {/* Cloud Download Icon */}
-    <div className="flex justify-center mb-6 sm:mb-8">
-      <svg
+      <Modal isOpen={isOpen} onClose={onClose} className="max-w-[550px] m-4">
+        {/* Modal */}
+        <div
+          className="relative w-full bg-white rounded-[20px] p-6 sm:p-6"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Cloud Download Icon */}
+          <div className="flex justify-center mb-6 sm:mb-8">
+            <svg
               width="115"
               height="115"
               viewBox="0 0 115 115"
@@ -71,41 +76,41 @@ export default function DownloadReportCSVModal({ isOpen, onClose }: DownloadRepo
                 </linearGradient>
               </defs>
             </svg>
-    </div>
+          </div>
 
-    {/* Title */}
-    <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 text-center mb-3">
-      Download Your Report
-    </h2>
+          {/* Title */}
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 text-center mb-3">
+            Download Your Report
+          </h2>
 
-    {/* Description */}
-    <p className="text-sm sm:text-base text-gray-600 text-center leading-6 sm:leading-7 mb-6 sm:mb-8 px-2 sm:px-4">
-      Enter your email to download your personalized responsible tech report.
-    </p>
+          {/* Description */}
+          <p className="text-sm sm:text-base text-gray-600 text-center leading-6 sm:leading-7 mb-6 sm:mb-8 px-2 sm:px-4">
+            Enter your email to download your personalized responsible tech report.
+          </p>
 
-    {/* Form */}
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col sm:flex-row gap-2.5"
-    >
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Enter Email"
-        className="flex-1 w-full px-3 py-3 border border-gray-300 rounded-lg text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        required
-      />
+          {/* Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col sm:flex-row gap-2.5"
+          >
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter Email"
+              className="flex-1 w-full px-3 py-3 border border-gray-300 rounded-lg text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
 
-      <button
-        type="submit"
-        className="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base rounded-lg transition-colors whitespace-nowrap"
-      >
-        Download CSV
-      </button>
-    </form>
-  </div>
-</Modal>
+            <button
+              type="submit"
+              className="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base rounded-lg transition-colors whitespace-nowrap"
+            >
+              Download CSV
+            </button>
+          </form>
+        </div>
+      </Modal>
 
     </>
   );

@@ -424,6 +424,7 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
             principles: principlesData?.length > 0 ? principlesData : [],
             notes: allValues?.notes,
         });
+       
     }
 
 
@@ -445,7 +446,7 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
     return (
         <>
             <div className='w-full flex gap-1 justify-end sm:px-15 px-[16px] pt-10'>
-                
+
                 <button className="sm:px-10 px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center"
                     onClick={() => {
                         setFormValues({}),
