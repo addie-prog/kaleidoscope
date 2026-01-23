@@ -5,6 +5,8 @@ import ToastModal from '../CustomToast';
 import { Timestamp } from 'firebase/firestore/lite';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { UnsavedChangesModal } from '../modals/unsavedChangesModal';
+import { useModal } from '@/hooks/useModal';
 
 type PrincipleProps = {
     id: string;
@@ -46,12 +48,14 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
     const [showStage, setShowStage] = useState<string>("");
     const [loader, setLoader] = useState<boolean>(false);
-    const [formValues, setFormValues] = useState<objectType>({});
+    const [formValues, setFormValues] = useState<objectType>({ projectName: "", email: "", budget: "", category: "" });
+    const [storedValues, setStoredValues] = useState<objectType>({});
     const [error, setError] = useState<string | Array<string>>("");
     const [budgetError, setBudgetError] = useState<string>("");
     const [showToast, setShowToast] = useState<boolean>(false);
     const utm_source = utmSource;
     const router = useRouter();
+    const unsavedChanges = useModal();
 
     useEffect(() => {
         setFormValues({ ...allValues, ["tier"]: allValues?.tier }),
@@ -207,14 +211,19 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
         },
     ];
 
+
+
     useEffect(() => {
         if (!localStorage.getItem("sessionId")) {
             localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
-            // storeSession(1);
+            storeSession(1);
         } else {
-            // storeSession(2);
+            storeSession(2);
         }
+
+
     }, []);
+
 
     const storeSession = async (type: number) => {
 
@@ -278,7 +287,7 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
             } else {
                 localStorage.setItem("reportId", newId);
             }
-            // storeSession(2);
+            storeSession(2);
         }
 
     }
@@ -405,33 +414,32 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
                 Principles(principlesData);
             }
 
-            // createReport();
+            createReport();
         } else {
-            // createReport();
+            createReport();
             Principles(principlesData);
         }
 
         selectedValues({
-            budget: formValues?.budget,
-            categoryName: formValues?.categoryName,
-            projectName: formValues?.projectName,
+            budget: formValues?.budget ? formValues?.budget : "",
+            categoryName: formValues?.categoryName ? formValues?.categoryName : "",
+            projectName: formValues?.projectName ? formValues?.projectName : "",
             stage: showStage?.toUpperCase(),
             category: formValues?.category ? formValues?.category : "",
             tier: formValues?.tier ? formValues.tier : budgetTier.find(
                 (item: any) => item.checked === true
             )?.["Tier ID"] ?? null,
-            email: formValues?.email,
+            email: formValues?.email ? formValues?.email : "",
             principles: principlesData?.length > 0 ? principlesData : [],
-            notes: allValues?.notes,
+            notes: allValues?.notes ? allValues?.notes : "",
         });
-       
+
     }
 
 
     useEffect(() => {
         if (budgetTier?.length == 0) { getBudgetTier(); }
     }, [budgetTier]);
-
 
     function formatBudget(num: number) {
         if (num >= 1_000_000) {
@@ -442,6 +450,16 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
         }
         return num.toString();
     }
+
+    useEffect(() => {
+        const values = localStorage.getItem("selectedValues");
+        const storedValues = values ? JSON.parse(values) : {};
+
+        setStoredValues(storedValues);
+    }, []);
+
+
+
 
     return (
         <>
@@ -455,9 +473,13 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
                     }}>
                     <span>Reset</span>
                 </button>
-                {project && <button className=" px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center"
+                {project && <button className={`cursor-pointer px-6  flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center`}
                     onClick={() => {
-                        router.push(`/dashboard?project=${project}`);
+                        if ((formValues?.projectName)?.trim() != storedValues?.projectName?.trim() || (formValues?.email)?.trim() != storedValues?.email?.trim() || (formValues?.category)?.trim() != storedValues?.category?.trim() || (formValues?.budget)?.trim() != storedValues?.budget?.trim()) {
+                            unsavedChanges.openModal();
+                        } else {
+                            router.push(`/dashboard?project=${project}`);
+                        }
                     }}>
                     <span>Dashboard</span>
                     <svg width="18" height="18" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -465,7 +487,10 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
                         <path d="M11.4993 4.79166L18.2077 11.5L11.4993 18.2083" stroke="#fff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                 </button>}
+
             </div>
+            <UnsavedChangesModal isOpen={unsavedChanges.isOpen} onClose={unsavedChanges.closeModal} onProceed={() => router.push(`/dashboard?project=${project}`)} />
+
             {/* Main Content */}
             <main className="mx-auto max-w-4xl px-4  lg:px-8 py-8 sm:py-12 lg:py-16">
                 <ToastModal
@@ -508,6 +533,7 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
                                     value={formValues?.projectName ?? ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
+
                                         if (value.length === 1 && value === " ") return;
                                         setFormValues({ ...formValues, ["projectName"]: value });
                                     }}

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import ToastModal from '../CustomToast';
+import { UnsavedChangesModal } from '../modals/unsavedChangesModal';
+import { useModal } from '@/hooks/useModal';
 
 type props = {
   onNext: (value: number) => void;
@@ -13,7 +15,7 @@ type props = {
   reportData: (value: Array<any>) => void
   userNotes: (value: string) => void
   updatedPrinciples: (value: Array<any>) => void
-  project: any
+  project: any;
 }
 
 type PrincipleProps = {
@@ -38,8 +40,10 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   const router = useRouter();
   const [error, setError] = useState("");
   const [showFloatingStatus, setShowFloatingStatus] = useState(false);
+  const [storedPrinciple, setStoredPrinciple] = useState([]);
+  const [storedValues, setStoredValues] = useState<any>({});
   const topSectionRef = useRef<HTMLDivElement | null>(null);
-
+  const unsavedChanges = useModal();
 
   const togglePrincipleChecked = (principleId: string) => {
     setPrinciples((prev) =>
@@ -57,24 +61,34 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     );
   };
 
-useEffect(() => {
-  if (!topSectionRef.current) return;
+  useEffect(() => {
+    if (!topSectionRef.current) return;
 
-  const observer = new IntersectionObserver(
-    ([entry]) => {
-      // show floating only when element completely scrolled out
-      setShowFloatingStatus(entry.boundingClientRect.bottom <= 0);
-    },
-    {
-      root: null,
-      threshold: 0, // triggers when any part is visible
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // show floating only when element completely scrolled out
+        setShowFloatingStatus(entry.boundingClientRect.bottom <= 0);
+      },
+      {
+        root: null,
+        threshold: 0, // triggers when any part is visible
+      }
+    );
+
+    observer.observe(topSectionRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const init = () => {
+      const items: any = localStorage.getItem("principles");
+      const principles = items ? JSON.parse(items) : [];
+
+      setStoredPrinciple(principles);
     }
-  );
-
-  observer.observe(topSectionRef.current);
-
-  return () => observer.disconnect();
-}, []);
+    init();
+  }, []);
 
 
   const toggleLayer = (principleId: string, layerId: string) => {
@@ -320,13 +334,13 @@ useEffect(() => {
     localStorage.setItem("newReportData", JSON.stringify(newReportData));
 
     //  need to remove from here
-    const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
+    // const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
 
-    localStorage.setItem("selectedValues", JSON.stringify(selectedValues));
-    localStorage.setItem("principles", JSON.stringify(principles));
+    // localStorage.setItem("selectedValues", JSON.stringify(selectedValues));
+    // localStorage.setItem("principles", JSON.stringify(principles));
 
-    router.push(`/dashboard?project=${projectId}`);
-    return false;
+    // router.push(`/dashboard?project=${projectId}`);
+    // return false;
 
     //
 
@@ -506,34 +520,34 @@ useEffect(() => {
     return <>
       {remainingPercentage > 0 && remainingPercentage <= 100 ? (
         <div className="md:px-6 px-4 sm:py-4 md:py-4 py-3 text-center text-[#fff] border-gray-200 max-w-100">
-            <span className="flex items-center gap-2 sm:text-[13px] md:text-[13px] text-[12px]">
-              {ValidationIcon("#fff","0px")}
-              Remaining: {remainingPercentage}% (${remainingDollars})
-            </span>
-       
+          <span className="flex items-center gap-2 sm:text-[13px] md:text-[13px] text-[12px]">
+            {ValidationIcon("#fff", "0px")}
+            Remaining: {remainingPercentage}% (${remainingDollars})
+          </span>
+
         </div>
       ) : shouldShowSuccessMessage(principles) ? (
         <div className="md:px-6 px-4 sm:py-4 md:py-4 py-3 text-center rounded-lg border border-[#10B981] bg-[#CFF1E6] text-[#10B981]">
           <div className="flex items-center gap-2 text-[13px]">
             {/* success icon */}
-             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M12.0292 5.22001C12.1696 5.36064 12.2485 5.55126 12.2485 5.75001C12.2485 5.94876 12.1696 6.13939 12.0292 6.28001L7.52918 10.78C7.38855 10.9205 7.19793 10.9994 6.99918 10.9994C6.80043 10.9994 6.6098 10.9205 6.46918 10.78L4.21918 8.53001C4.14549 8.46135 4.08639 8.37855 4.0454 8.28655C4.0044 8.19455 3.98236 8.09524 3.98059 7.99453C3.97881 7.89383 3.99733 7.7938 4.03505 7.70041C4.07278 7.60703 4.12892 7.52219 4.20014 7.45097C4.27136 7.37975 4.35619 7.32361 4.44958 7.28589C4.54297 7.24817 4.643 7.22964 4.7437 7.23142C4.8444 7.2332 4.94372 7.25524 5.03571 7.29623C5.12771 7.33722 5.21052 7.39632 5.27918 7.47001L6.99918 9.19001L10.9692 5.22001C11.1098 5.07956 11.3004 5.00067 11.4992 5.00067C11.6979 5.00067 11.8886 5.07956 12.0292 5.22001Z" fill="#10B981" />
-                    <circle cx="8" cy="8" r="7.25" stroke="#10B981" strokeWidth="1.5" />
-                  </svg>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" clipRule="evenodd" d="M12.0292 5.22001C12.1696 5.36064 12.2485 5.55126 12.2485 5.75001C12.2485 5.94876 12.1696 6.13939 12.0292 6.28001L7.52918 10.78C7.38855 10.9205 7.19793 10.9994 6.99918 10.9994C6.80043 10.9994 6.6098 10.9205 6.46918 10.78L4.21918 8.53001C4.14549 8.46135 4.08639 8.37855 4.0454 8.28655C4.0044 8.19455 3.98236 8.09524 3.98059 7.99453C3.97881 7.89383 3.99733 7.7938 4.03505 7.70041C4.07278 7.60703 4.12892 7.52219 4.20014 7.45097C4.27136 7.37975 4.35619 7.32361 4.44958 7.28589C4.54297 7.24817 4.643 7.22964 4.7437 7.23142C4.8444 7.2332 4.94372 7.25524 5.03571 7.29623C5.12771 7.33722 5.21052 7.39632 5.27918 7.47001L6.99918 9.19001L10.9692 5.22001C11.1098 5.07956 11.3004 5.00067 11.4992 5.00067C11.6979 5.00067 11.8886 5.07956 12.0292 5.22001Z" fill="#10B981" />
+              <circle cx="8" cy="8" r="7.25" stroke="#10B981" strokeWidth="1.5" />
+            </svg>
             Ready to Generate Report
           </div>
         </div>
       ) : remainingPercentage > 100 ? (
         <div className="md:px-6 px-4 sm:py-4 md:py-4 py-3 text-center text-[#fff]">
           <div className="flex items-start gap-2 text-[13px]">
-            {ValidationIcon("#fff","2px")}
+            {ValidationIcon("#fff", "2px")}
             Total must equal 100% (currently: {remainingPercentage}%)
           </div>
         </div>
       ) : getCheckedPrinciples(principles)?.length > 0 ? (
         <div className="sm:w-[400px] w-[300px] py-4 sm:px-4 md:px-4 px-2 text-center text-[#fff]">
           <div className="flex items-start gap-2">
-            {ValidationIcon("#fff","2px")}
+            {ValidationIcon("#fff", "2px")}
             <span className="text-[12px] lg:text-[13px]  text-left">
               Please ensure all the selected principles have budget allocated!
             </span>
@@ -542,7 +556,7 @@ useEffect(() => {
       ) : (
         <div className="sm:px-4 md:px-4 px-2 py-4 text-center text-[#fff]">
           <div className="flex items-start gap-2">
-            {ValidationIcon("#fff","2px")}
+            {ValidationIcon("#fff", "2px")}
             <span className="sm:text-[13px] md:text-[13px] text-[11px]">
               Please ensure execution layers total exactly 100%
             </span>
@@ -552,6 +566,12 @@ useEffect(() => {
     </>
   }
 
+  useEffect(() => {
+    const values = localStorage.getItem("selectedValues");
+    const storedValues = values ? JSON.parse(values) : {};
+    setStoredValues(storedValues);
+  }, []);
+
   return (
     <>
       <div className='w-full flex gap-1 justify-end sm:px-15 px-[16px] pt-10'>
@@ -560,17 +580,29 @@ useEffect(() => {
           <span>Reset</span>
         </button>
         {project && <button className=" px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center"
-                    onClick={() => {
-                        router.push(`/dashboard?project=${project}`);
-                    }}>
-                    <span>Dashboard</span>
-                    <svg width="18" height="18" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4.79102 11.5H18.2077" stroke="#fff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M11.4993 4.79166L18.2077 11.5L11.4993 18.2083" stroke="#fff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </button>}
-      </div>
+          onClick={() => {
 
+            const hasChanged =
+              (selectedValues?.projectName ?? "") !== (storedValues?.projectName ?? "") ||
+              (selectedValues?.email ?? "").trim() !== (storedValues?.email ?? "").trim() ||
+              (selectedValues?.category ?? "").trim() !== (storedValues?.category ?? "").trim() ||
+              String(selectedValues?.budget ?? "").trim() !==
+              String(storedValues?.budget ?? "").trim();
+
+            if (JSON.stringify(principles) != JSON.stringify(storedPrinciple) || hasChanged) {
+              unsavedChanges.openModal();
+            } else {
+              router.push(`/dashboard?project=${project}`)
+            }
+          }}>
+          <span>Dashboard</span>
+          <svg width="18" height="18" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.79102 11.5H18.2077" stroke="#fff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M11.4993 4.79166L18.2077 11.5L11.4993 18.2083" stroke="#fff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>}
+      </div>
+      <UnsavedChangesModal isOpen={unsavedChanges.isOpen} onClose={unsavedChanges.closeModal} onProceed={() => router.push(`/dashboard?project=${project}`)} />
       {/* Main Content */}
       <main className="mx-auto max-w-4xl px-4 lg:px-8 pb-8 sm:pb-12 lg:pb-16">
         <div className='w-fit flex gap-1 ' onClick={() => onNext(1)}>
@@ -609,7 +641,7 @@ useEffect(() => {
 
           {/* Remaining Budget Card */}
           {remainingPercentage > 0 && remainingPercentage <= 100 ?
-            <div  className="px-7 py-5 inline-block m-auto rounded-xl border text-center border-gray-200 bg-[#F9FAFB] max-w-100">
+            <div className="px-7 py-5 inline-block m-auto rounded-xl border text-center border-gray-200 bg-[#F9FAFB] max-w-100">
 
               <div className="sm:text-base text-sm text-[#323152]">
                 <span className="font-semibold">Remaining: </span>
@@ -630,7 +662,7 @@ useEffect(() => {
                   Ready to Generate Report</div></div>
               :
               remainingPercentage > 100 ?
-                <div  className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
+                <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
                   <div className='flex items-center gap-2 sm:text-[15px] text-[13px]'>
                     {ValidationIcon("#EF4444")}
                     Total must equal 100% (currently: {remainingPercentage}%)</div></div>
@@ -642,7 +674,7 @@ useEffect(() => {
                     </div></div>
 
                   :
-                  <div  className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
+                  <div className="px-7 py-5 inline-block m-auto  text-center max-w-fit text-[#EF4444]">
                     <div className='flex items-center gap-2'>
                       {ValidationIcon("#EF4444")}
                       <span className='sm:text-[15px] text-[13px]'>Please ensure execution layers total exactly 100%</span>
