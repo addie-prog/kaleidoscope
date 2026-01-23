@@ -265,8 +265,8 @@ useEffect(() => {
     return principlesTotal === 100 && layersValid && getCheckedPrinciples(principles)?.length == 0;
   };
 
-  const ValidationIcon = (color: string) => {
-    return <svg width="15" height="15" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+  const ValidationIcon = (color: string, margin: string = "0px") => {
+    return <svg className={margin ? `mt-[${margin}]` : ""} width="15" height="15" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M9.50056 14.3571C9.25902 14.3571 9.02738 14.2612 8.85659 14.0904C8.68579 13.9196 8.58984 13.688 8.58984 13.4464V9.19642C8.58984 8.95488 8.68579 8.72324 8.85659 8.55245C9.02738 8.38166 9.25902 8.28571 9.50056 8.28571C9.74209 8.28571 9.97374 8.38166 10.1445 8.55245C10.3153 8.72324 10.4113 8.95488 10.4113 9.19642V13.4464C10.4113 13.688 10.3153 13.9196 10.1445 14.0904C9.97374 14.2612 9.74209 14.3571 9.50056 14.3571Z" fill={color} />
       <path d="M8.28516 5.85714C8.28516 5.53509 8.41309 5.22623 8.64081 4.99851C8.86854 4.77079 9.17739 4.64285 9.49944 4.64285C9.82149 4.64285 10.1303 4.77079 10.3581 4.99851C10.5858 5.22623 10.7137 5.53509 10.7137 5.85714C10.7137 6.17919 10.5858 6.48804 10.3581 6.71577C10.1303 6.94349 9.82149 7.07142 9.49944 7.07142C9.17739 7.07142 8.86854 6.94349 8.64081 6.71577C8.41309 6.48804 8.28516 6.17919 8.28516 5.85714Z" fill={color} />
       <path fillRule="evenodd" clipRule="evenodd" d="M19 9.5C19 10.7476 18.7543 11.9829 18.2769 13.1355C17.7994 14.2881 17.0997 15.3354 16.2175 16.2175C15.3354 17.0997 14.2881 17.7994 13.1355 18.2769C11.9829 18.7543 10.7476 19 9.5 19C8.25244 19 7.0171 18.7543 5.86451 18.2769C4.71191 17.7994 3.66464 17.0997 2.78249 16.2175C1.90033 15.3354 1.20056 14.2881 0.723145 13.1355C0.245725 11.9829 -1.85901e-08 10.7476 0 9.5C3.75443e-08 6.98044 1.00089 4.56408 2.78249 2.78249C4.56408 1.00089 6.98044 0 9.5 0C12.0196 0 14.4359 1.00089 16.2175 2.78249C17.9991 4.56408 19 6.98044 19 9.5ZM16.9643 9.5C16.9643 11.4797 16.1779 13.3782 14.778 14.778C13.3782 16.1779 11.4797 16.9643 9.5 16.9643C7.52035 16.9643 5.62178 16.1779 4.22195 14.778C2.82213 13.3782 2.03571 11.4797 2.03571 9.5C2.03571 7.52035 2.82213 5.62178 4.22195 4.22195C5.62178 2.82213 7.52035 2.03571 9.5 2.03571C11.4797 2.03571 13.3782 2.82213 14.778 4.22195C16.1779 5.62178 16.9643 7.52035 16.9643 9.5Z" fill={color} />
@@ -507,6 +507,7 @@ useEffect(() => {
       {remainingPercentage > 0 && remainingPercentage <= 100 ? (
         <div className="md:px-6 px-4 sm:py-4 md:py-4 py-3 text-center text-[#fff] border-gray-200 max-w-100">
             <span className="flex items-center gap-2 sm:text-[13px] md:text-[13px] text-[12px]">
+              {ValidationIcon("#fff","0px")}
               Remaining: {remainingPercentage}% (${remainingDollars})
             </span>
        
@@ -515,29 +516,33 @@ useEffect(() => {
         <div className="md:px-6 px-4 sm:py-4 md:py-4 py-3 text-center rounded-lg border border-[#10B981] bg-[#CFF1E6] text-[#10B981]">
           <div className="flex items-center gap-2 text-[13px]">
             {/* success icon */}
+             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12.0292 5.22001C12.1696 5.36064 12.2485 5.55126 12.2485 5.75001C12.2485 5.94876 12.1696 6.13939 12.0292 6.28001L7.52918 10.78C7.38855 10.9205 7.19793 10.9994 6.99918 10.9994C6.80043 10.9994 6.6098 10.9205 6.46918 10.78L4.21918 8.53001C4.14549 8.46135 4.08639 8.37855 4.0454 8.28655C4.0044 8.19455 3.98236 8.09524 3.98059 7.99453C3.97881 7.89383 3.99733 7.7938 4.03505 7.70041C4.07278 7.60703 4.12892 7.52219 4.20014 7.45097C4.27136 7.37975 4.35619 7.32361 4.44958 7.28589C4.54297 7.24817 4.643 7.22964 4.7437 7.23142C4.8444 7.2332 4.94372 7.25524 5.03571 7.29623C5.12771 7.33722 5.21052 7.39632 5.27918 7.47001L6.99918 9.19001L10.9692 5.22001C11.1098 5.07956 11.3004 5.00067 11.4992 5.00067C11.6979 5.00067 11.8886 5.07956 12.0292 5.22001Z" fill="#10B981" />
+                    <circle cx="8" cy="8" r="7.25" stroke="#10B981" strokeWidth="1.5" />
+                  </svg>
             Ready to Generate Report
           </div>
         </div>
       ) : remainingPercentage > 100 ? (
         <div className="md:px-6 px-4 sm:py-4 md:py-4 py-3 text-center text-[#fff]">
-          <div className="flex items-center gap-2 text-[13px]">
-            {ValidationIcon("#fff")}
+          <div className="flex items-start gap-2 text-[13px]">
+            {ValidationIcon("#fff","2px")}
             Total must equal 100% (currently: {remainingPercentage}%)
           </div>
         </div>
       ) : getCheckedPrinciples(principles)?.length > 0 ? (
-        <div className="py-4 sm:px-4 md:px-4 px-2 text-center text-[#fff]">
-          <div className="flex items-center gap-2">
-            {ValidationIcon("#fff")}
-            <span className="text-[11px] md:text-[12px] lg:text-[13px]  text-left">
+        <div className="sm:w-[400px] w-[300px] py-4 sm:px-4 md:px-4 px-2 text-center text-[#fff]">
+          <div className="flex items-start gap-2">
+            {ValidationIcon("#fff","2px")}
+            <span className="text-[12px] lg:text-[13px]  text-left">
               Please ensure all the selected principles have budget allocated!
             </span>
           </div>
         </div>
       ) : (
         <div className="sm:px-4 md:px-4 px-2 py-4 text-center text-[#fff]">
-          <div className="flex items-center gap-2">
-            {ValidationIcon("#fff")}
+          <div className="flex items-start gap-2">
+            {ValidationIcon("#fff","2px")}
             <span className="sm:text-[13px] md:text-[13px] text-[11px]">
               Please ensure execution layers total exactly 100%
             </span>
@@ -554,6 +559,16 @@ useEffect(() => {
           onClick={() => { setPrinciples(ResetPrinciples), userNotes("") }}>
           <span>Reset</span>
         </button>
+        {project && <button className=" px-6 cursor-pointer flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center"
+                    onClick={() => {
+                        router.push(`/dashboard?project=${project}`);
+                    }}>
+                    <span>Dashboard</span>
+                    <svg width="18" height="18" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4.79102 11.5H18.2077" stroke="#fff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M11.4993 4.79166L18.2077 11.5L11.4993 18.2083" stroke="#fff" strokeWidth="1.91667" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </button>}
       </div>
 
       {/* Main Content */}

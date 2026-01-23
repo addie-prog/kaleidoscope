@@ -53,6 +53,10 @@ export default function Dashboard2Page({
   const navRef2 = useRef<HTMLDivElement>(null);
   const tabRefs2 = useRef<(HTMLButtonElement | null)[]>([]);
 
+  // For third tab row
+  const navRef3 = useRef<HTMLDivElement | null>(null);
+  const tabRefs3 = useRef<Record<string, HTMLButtonElement | null>>({});
+
   // Different sub-tabs for different main tabs
   const getSubTabsForTab = (tabId: string): SubTab[] => {
     const principles: any = localStorage.getItem("principles");
@@ -165,6 +169,17 @@ export default function Dashboard2Page({
     }
   };
 
+  const safeScroll = (index: string) => {
+    requestAnimationFrame(() => {
+      tabRefs3.current[index]?.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    });
+  };
+
+
   const toggleCheckbox = (cardId: number, stepId: number, category: any) => {
     setActiveCards((prev: any) => ({
       ...prev,
@@ -205,6 +220,7 @@ export default function Dashboard2Page({
       });
     }
   }, [activeSubTab])
+
 
   const getProgressPercentage = (steps: ActionStep[]) => {
     const completedCount = steps?.filter(step => step.completed && !step.skipped).length;
@@ -539,11 +555,11 @@ export default function Dashboard2Page({
                     scrollNextTabIfNeeded(navRef2.current, tabRefs2.current, ij);
                     setActiveSubTab(subTab.id);
                   }}
-                  className={`shrink-0 w-max inline-flex items-center gap-2 px-3 lg:py-1.5 py-2 rounded-lg whitespace-nowrap transition-colors ${isActiveSubTab
+                  className={`shrink-0 w-max inline-flex items-center gap-2 px-3 lg:py-1.5 py-2 rounded-lg whitespace-nowrap ${isActiveSubTab
                     ? " text-white"
-                    : "border border-[#918D8D] text-[#918D8D] hover:bg-gray-50"
+                    : "border border-[#918D8D] hover:bg-gray-50"
                     }`}
-                  style={{ background: isActiveSubTab ? tabs?.filter((p) => p.id == activeTab)[0]?.color : "" }}
+                  style={{ background: isActiveSubTab ? tabs?.filter((p) => p.id == activeTab)[0]?.color : "", color: isActiveSubTab ? "#fff" : "#918D8D" }}
                 >
                   <span className="sm:text-base text-sm font-medium">{subTab.name}</span>
                   <span className="sm:text-base text-sm font-medium">{tabs.filter((mt: objectType) => { return mt.id == activeTab })[0]?.percentage > 0 ? Number.isInteger(subTab.percentage * 100)
@@ -783,11 +799,12 @@ export default function Dashboard2Page({
                                 }`}
                             >
                               {/* Tabs */}
-                              <div className="w-full flex items-center border-t border-b border-[#E5E5E5] px-5 overflow-x-auto no-scrollbar">
-
-
+                              <div ref={navRef3} className="w-full flex items-center border-t border-b border-[#E5E5E5] px-5 overflow-x-auto no-scrollbar">
                                 <button
+                                  ref={(el: any) => (tabRefs3.current[`${card.id}0`] = el)}
                                   onClick={() => {
+
+                                    safeScroll(`${card.id}0`);
                                     setActiveCards((prev: any) => ({
                                       ...prev,
                                       [activeSubTab]: {
@@ -854,8 +871,10 @@ export default function Dashboard2Page({
                                 </button>
                                 <button
 
+                                  ref={(el: any) => (tabRefs3.current[`${card.id}1`] = el)}
                                   onClick={() => {
 
+                                    safeScroll(`${card.id}1`);
                                     setActiveCards((prev: any) => ({
                                       ...prev,
                                       [activeSubTab]: {
@@ -912,7 +931,10 @@ export default function Dashboard2Page({
                                 </button>
                                 <button
 
+                                  ref={(el: any) => (tabRefs3.current[`${card.id}2`] = el)}
                                   onClick={() => {
+                                    safeScroll(`${card.id}2`);
+
                                     setActiveCards((prev: any) => ({
                                       ...prev,
                                       [activeSubTab]: {
@@ -972,8 +994,8 @@ export default function Dashboard2Page({
                                         ?.color : "#323743",
                                     }}
                                   >
-                                    Diligence 
-                                                                      </span>
+                                    Diligence
+                                  </span>
                                 </button>
                               </div>
 

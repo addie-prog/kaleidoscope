@@ -22,13 +22,13 @@ const ToastModal = ({ message, open, onClose }: ToastModalProps) => {
       />
 
       <div
-        className={`absolute top-6 right-6 transform transition-all duration-300 ease-out
+        className={`absolute lg:w-[400px] w-[340px] lg:top-6 top-4 lg:right-6 right-3 transform transition-all duration-300 ease-out
           ${open ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
         `}
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className="bg-[#EF4444] text-white p-5 rounded-lg shadow-lg min-w-[280px]"
+          className="bg-[#EF4444] text-white p-3 rounded-lg shadow-lg"
         >
           <div className="flex items-start gap-[7px]">
             <Image
@@ -40,14 +40,14 @@ const ToastModal = ({ message, open, onClose }: ToastModalProps) => {
             />
 
             <div className="flex-1">
-              <h4 className="font-semibold">Validation Error</h4>
+              <h4 className="text-sm font-semibold">Validation Error</h4>
               {(typeof message == "object") ? 
               <ul className="list-disc pl-3 text-sm">
                 {message?.map((m, i)=>
                    <li key={i}>{m}</li>
                 )}               
               </ul>
-              :<p className="text-sm">{message}</p>
+              :<p className="sm:text-sm text-xs">{message}</p>
 
               }
               
