@@ -475,7 +475,7 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
                 </button>
                 {project && <button className={`cursor-pointer px-6  flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center`}
                     onClick={() => {
-                        if ((formValues?.projectName)?.trim() != storedValues?.projectName?.trim() || (formValues?.email)?.trim() != storedValues?.email?.trim() || (formValues?.category)?.trim() != storedValues?.category?.trim() || (formValues?.budget)?.trim() != storedValues?.budget?.trim()) {
+                        if ((allValues?.notes)?.trim() != storedValues?.notes?.trim() || (formValues?.projectName)?.trim() != storedValues?.projectName?.trim() || (formValues?.email)?.trim() != storedValues?.email?.trim() || (formValues?.category)?.trim() != storedValues?.category?.trim() || (formValues?.budget)?.trim() != storedValues?.budget?.trim()) {
                             unsavedChanges.openModal();
                         } else {
                             router.push(`/dashboard?project=${project}`);

@@ -585,7 +585,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             const hasChanged =
               (selectedValues?.projectName ?? "") !== (storedValues?.projectName ?? "") ||
               (selectedValues?.email ?? "").trim() !== (storedValues?.email ?? "").trim() ||
-              (selectedValues?.category ?? "").trim() !== (storedValues?.category ?? "").trim() ||
+               (selectedValues?.notes ?? "").trim() !== (storedValues?.notes ?? "").trim() ||
               String(selectedValues?.budget ?? "").trim() !==
               String(storedValues?.budget ?? "").trim();
 
