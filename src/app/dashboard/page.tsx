@@ -205,7 +205,7 @@ export default function Dashboard2Page({
     fetchProjectData();
   }, [])
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (email: string) => {
     const cardIds = Object.values(currentCards)
       .flatMap(category =>
         Object.values(category) // must_have, should_have, skip
@@ -270,7 +270,8 @@ export default function Dashboard2Page({
           skipped_step_ids: result?.skipped_step_ids,
           step_notes: result?.step_notes
         },
-        existProjectId: project
+        existProjectId: project,
+        email 
       })
     });
     try {
@@ -285,7 +286,12 @@ export default function Dashboard2Page({
           step_notes: result?.step_notes
         }
         });
-      setSuccessMessage("Data Stored!");
+
+        setSuccessMessage("Data Stored!");
+        setTimeout(() => {
+            setSuccessMessage("");
+        }, 4000);
+      
     } catch (e) {
       console.log("Error in edit project: ", e);
     }
@@ -1567,7 +1573,7 @@ export default function Dashboard2Page({
             </div>
           </div>) : ""}
           </div>
-          <SaveProgressModal successMessage={successMessage} saveProgess={() => handleSubmit()} selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={saveProgressModal.closeModal} />
+          <SaveProgressModal successMessage={successMessage} saveProgess={(val: string) => handleSubmit(val)} selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={saveProgressModal.closeModal} />
           <DownloadReportModal selectedEmail={selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
           <DownloadReportCSVModal selectedEmail={selectedValues?.email} isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />
         </main>

@@ -21,7 +21,8 @@ export async function POST(request: Request) {
     }
     }else{
       fields = {
-          "interation_data": interation_data
+          "interation_data": interation_data,
+          "Owner Email": email
       }
     }
    

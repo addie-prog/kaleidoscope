@@ -6,7 +6,7 @@ interface SaveProgressModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedEmail: string;
-  saveProgess: () => void;
+  saveProgess: (val: string) => void;
   successMessage: string;
 }
 
@@ -93,7 +93,7 @@ export default function SaveProgressModal({ successMessage, isOpen, onClose, sel
     <form
       onSubmit={(e)=>{
         e.preventDefault();
-        saveProgess();
+        saveProgess(email);
       }}
       className="flex flex-col sm:flex-row gap-2.5"
     >
@@ -112,8 +112,9 @@ export default function SaveProgressModal({ successMessage, isOpen, onClose, sel
       >
         Send Magic Link
       </button>
-      {successMessage}
+      
     </form>
+   {successMessage && <p className="mt-2 text-right w-full text-green-700 text-sm">{successMessage}</p>} 
   </div>
 </Modal>
 
