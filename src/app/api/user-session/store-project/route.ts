@@ -3,21 +3,31 @@ import { Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const { reportId, sessionId, interactionIDs, Allocations, userNote, budgetInputs, email, projectId, existProjectId } = await request.json()
+  const { reportId, sessionId, items, Allocations, userNote, budgetInputs, email, projectId, principles, existProjectId, interation_data } = await request.json()
   try {
     let docRef: any;
-
-    const fields: any = {
+    let fields: any;
+    if(reportId){
+      fields = {
       "Report ID": reportId,
       "Session ID": sessionId,
       "Budget Inputs": budgetInputs,
       "Allocations": Allocations,
       "Owner Email": email ? email : null,
-      "Interaction ID": interactionIDs,
-      "User Notes": userNote
+      "items": items,
+      "User Notes": userNote,
+      "principles": principles,
+      "interation_data": interation_data ? interation_data : null
     }
+    }else{
+      fields = {
+          "interation_data": interation_data
+      }
+    }
+   
 
     if (existProjectId) {
+     
       fields["Last Updated"] = Timestamp.now();
       const snapshot = await adminDb
       .collection("user_projects")

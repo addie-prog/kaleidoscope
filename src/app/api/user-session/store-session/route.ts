@@ -3,20 +3,16 @@ import { Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-    const { recordId, sessionId, userType, type, UTCSource, Email, reportId } = await request.json()
+    const { recordId, userType, type, UTCSource, Email, reportId } = await request.json()
     try {
         let docRef: any;
-
         const fields: any = {
-            "Session ID": sessionId,
             "User Type": userType,
             "UTM Source": UTCSource ?? null,
             "Email": Email ?? null
         }
         if (reportId) {
             fields["Reports"] = reportId.split(",");
-        }else{
-            fields["Reports"] = null;
         }
         if (type == 1) {
             fields["Date Joined"] = Timestamp.now();
@@ -40,14 +36,10 @@ export async function POST(request: Request) {
                     ...fields
                 });
         }
-
-
         return NextResponse.json({
             success: true,
             id: docRef.id,
         });
-
-
     } catch (error: any) {
         return NextResponse.json(
             { error: error.message || "Internal Server Error" },

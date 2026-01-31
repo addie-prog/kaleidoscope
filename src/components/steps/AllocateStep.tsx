@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import ToastModal from '../CustomToast';
 import { UnsavedChangesModal } from '../modals/unsavedChangesModal';
 import { useModal } from '@/hooks/useModal';
+import { fixIfDecimal } from '@/lib/formatDecimat';
 
 type props = {
   onNext: (value: number) => void;
@@ -16,6 +17,7 @@ type props = {
   userNotes: (value: string) => void
   updatedPrinciples: (value: Array<any>) => void
   project: any;
+  projectData: any;
 }
 
 type PrincipleProps = {
@@ -32,7 +34,7 @@ type PrincipleProps = {
   layers: any[];
 }
 
-export default function AllocatePage({ onNext, selectedValues, Principles, reportData, userNotes, updatedPrinciples, ResetPrinciples, project }: props) {
+export default function AllocatePage({ projectData, onNext, selectedValues, Principles, reportData, userNotes, updatedPrinciples, ResetPrinciples, project }: props) {
   const totalBudget = selectedValues.budget;
   const [principles, setPrinciples] = useState<PrincipleProps[]>(selectedValues?.principles?.length > 0 ? selectedValues?.principles : Principles);
   const [showToast, setShowToast] = useState<boolean>(false);
@@ -82,7 +84,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
   useEffect(() => {
     const init = () => {
-      const items: any = localStorage.getItem("principles");
+      const items: any = !project ? localStorage.getItem("principles") : JSON.stringify(projectData?.principles);
       const principles = items ? JSON.parse(items) : [];
 
       setStoredPrinciple(principles);
@@ -122,7 +124,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
         return {
           ...p,
           percentage: clampedValue,
-          budget: clampedValue === 0 ? 0 : p.budget,
+          budget: clampedValue === 0 ? 0 : fixIfDecimal(p.budget),
           layers: p.layers.map((layer) => ({
             ...layer,
             checked: !p.layersAllocated ? clampedValue > 0 : layer.checked,
@@ -180,7 +182,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
         return {
           ...p,
-          budget: principleBudget,
+          budget: fixIfDecimal(principleBudget),
           layers: updatedLayers,
         };
       })
@@ -287,7 +289,57 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     </svg>
   }
 
+  const sanitizeInteractionData = (interactionData: any, validItemIds: Set<any>) => {
+    return {
+      checked_card_ids: interactionData?.checked_card_ids?.filter((id: string) =>
+        validItemIds.has(id)
+      ),
+
+      checked_step_ids: interactionData?.checked_step_ids?.filter((stepId: string) => {
+        const [id] = stepId.split("_");
+        return validItemIds.has(id);
+      }),
+
+      skipped_step_ids: interactionData?.skipped_step_ids?.filter((stepId: string) => {
+        const [id] = stepId.split("_");
+        return validItemIds.has(id);
+      }),
+
+      step_notes: interactionData?.step_notes && Object.fromEntries(
+        Object.entries(interactionData?.step_notes).filter(([key]) => {
+          const [id] = key.split("_");
+          return validItemIds.has(id);
+        })
+      )
+    };
+  };
+
   const createProject = async (data: any) => {
+    const interactionData = !project ? (localStorage.getItem("interactionData") ? localStorage.getItem("interactionData") : "") : JSON.stringify(projectData?.interation_data);
+    let cleanedInteractionData: any;
+    const items = data?.reduce((acc: any, item: any) => {
+      const { layerId, itemRecordId } = item;
+
+      if (!acc[layerId]) {
+        acc[layerId] = [];
+      }
+
+      acc[layerId].push(...itemRecordId);
+      return acc;
+    }, {});
+
+    const validItemIds = new Set(
+      Object.values(items).flat()
+    );
+    if (interactionData) {
+      cleanedInteractionData = sanitizeInteractionData(
+        JSON.parse(interactionData),
+        validItemIds
+      );
+
+    }
+
+
     const existProjectId = project ? project : "";
     const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
     const res = await fetch("/api/user-session/store-project", {
@@ -297,15 +349,20 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        reportId: localStorage.getItem("reportId")?.split(",").pop(),
-        sessionId: localStorage.getItem("sessionId"),
-        interactionIDs: data?.ids,
+        reportId: !project ? (localStorage.getItem("reportId")?.split(",").pop()) : projectData?.["Report ID"],
+        sessionId: !project ? localStorage.getItem("sessionId") : projectData?.["Session ID"],
+        items,
         Allocations: principles
           ?.filter(pf => pf.checked)
           ?.reduce((acc: any, p) => {
-            acc[p.name] = p.budget;
+            acc[p.name] = p.budget
+              ? Number(p.budget) % 1 !== 0
+                ? Number(p.budget).toFixed(2)
+                : String(Number(p.budget))
+              : "";
             return acc;
           }, {}),
+        principles: selectedValues?.principles,
         budgetInputs: {
           "Project Name": selectedValues?.projectName ? selectedValues?.projectName : null,
           "Stage": selectedValues?.stage,
@@ -313,6 +370,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           "Vertical": selectedValues?.categoryName ? selectedValues?.categoryName : "None",
           "category": selectedValues?.category ? selectedValues?.category : null,
         },
+        interation_data: interactionData ? cleanedInteractionData : "",
         userNote: selectedValues?.notes ? selectedValues?.notes : null,
         email: selectedValues?.email ? selectedValues?.email : null,
         projectId: existProjectId ? "" : projectId,
@@ -321,8 +379,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     });
     try {
       const { id } = await res.json();
-      localStorage.setItem("selectedValues", JSON.stringify(selectedValues));
-      localStorage.setItem("principles", JSON.stringify(principles));
+   
       router.push(`/dashboard?project=${id}`);
     } catch (e) {
       console.log("Error in create/edit project: ", e);
@@ -330,46 +387,33 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     setLoader(false);
   }
 
-  const createInteraction = async (newReportData: any) => {
-    localStorage.setItem("newReportData", JSON.stringify(newReportData));
+  // const createInteraction = async (newReportData: any) => {
+  //   const res = await fetch("/api/user-session/store-interaction", {
+  //     method: 'POST',
+  //     headers: {
+  //       'Accept': 'application/json',
+  //       'Content-Type': 'application/json'
+  //     },
+  //     body: JSON.stringify({
+  //       reportName: [localStorage
+  //         .getItem("reportId")
+  //         ?.split(",")
+  //         .pop()],
+  //       principleBudget: newReportData?.map((item: any) => item?.principleBudget),
+  //       principlePercentage: newReportData?.map((item: any) => item?.principlePercentage),
+  //       itemName: newReportData?.map((item: any) => item?.itemRecordId),
+  //       executionId: newReportData?.map((item: any) => item?.layerId),
+  //       principleId: newReportData?.map((item: any) => item?.principleId),
+  //       interactionStatus: "Added to Budget",
+  //       userNotes: selectedValues?.notes ?? "",
+  //       allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget)
+  //     })
+  //   });
+  //   const data = await res.json();
 
-    //  need to remove from here
-    // const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
 
-    // localStorage.setItem("selectedValues", JSON.stringify(selectedValues));
-    // localStorage.setItem("principles", JSON.stringify(principles));
 
-    // router.push(`/dashboard?project=${projectId}`);
-    // return false;
-
-    //
-
-    const res = await fetch("/api/user-session/store-interaction", {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        reportName: [localStorage
-          .getItem("reportId")
-          ?.split(",")
-          .pop()],
-        principleBudget: newReportData?.map((item: any) => item?.principleBudget),
-        principlePercentage: newReportData?.map((item: any) => item?.principlePercentage),
-        itemName: newReportData?.map((item: any) => item?.itemRecordId),
-        executionId: newReportData?.map((item: any) => item?.layerId),
-        principleId: newReportData?.map((item: any) => item?.principleId),
-        interactionStatus: "Added to Budget",
-        userNotes: selectedValues?.notes ?? "",
-        allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget)
-      })
-    });
-    const data = await res.json();
-
-    createProject(data);
-
-  }
+  // }
 
   const categoryOrder: Record<string, number> = {
     must_have: 1,
@@ -382,49 +426,46 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     const budgetTiers = tiers ? JSON.parse(tiers) : [];
     let data: any;
 
-    const layersWithTier =
-      principles
-        ?.filter(pf => pf.checked)
-        ?.flatMap(p =>
-          p.layers
-            ?.filter(lf => lf.checked)
-            ?.map(layer => {
-              const layerBudget = Number(layer.budget || 0);
+    // const layersWithTier =
+    //   principles
+    //     ?.filter(pf => pf.checked)
+    //     ?.flatMap(p =>
+    //       p.layers
+    //         ?.filter(lf => lf.checked)
+    //         ?.map(layer => {
+    //           const layerBudget = Number(layer.budget || 0);
 
-              const matchedTier = budgetTiers.find(
-                (tier: any) =>
-                  layerBudget >= Number(tier["Budget Min"]) &&
-                  layerBudget <= Number(tier["Budget Max"])
-              )?.["Tier ID"];
+    //           const matchedTier = budgetTiers.find(
+    //             (tier: any) =>
+    //               layerBudget >= Number(tier["Budget Min"]) &&
+    //               layerBudget <= Number(tier["Budget Max"])
+    //           )?.["Tier ID"];
 
-              return {
-                layerId: layer.id,
-                budgetTier: matchedTier
-              };
-            })
-        );
+    //           return {
+    //             layerId: layer.id,
+    //             budgetTier: matchedTier
+    //           };
+    //         })
+    //     );
     setLoader(true);
-    const res = await fetch("/api/items", {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        layers: layersWithTier,
-        category: selectedValues?.category,
+    const res = await fetch("/api/items");
+    // body: JSON.stringify({
+    //   layers: layersWithTier,
+    //   category: selectedValues?.category,
 
-      })
-    });
+    // })
+
 
     try {
       data = await res.json();
     } catch (e: any) {
+      setLoader(false);
       console.log("Error in fetching items: ", e);
     }
     const normalize = (val: any) => String(val).trim().toUpperCase();
     const newReportData: any[] = [];
-    const items = data.data;
+    const items = data.records;
+
     principles?.filter((pf) => pf.checked === true)?.map((p) => {
       p.layers.filter((lf) => lf.checked === true).map((layer) => {
         const layerBudget = Number(layer.budget || 0);
@@ -441,7 +482,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             selectedValues?.category
               ? true
               : fields["Tags"] == "baseline"
-          );
+          ) && fields["Status"] == "Active";
 
 
         let matching =
@@ -493,13 +534,6 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
         }
 
         newReportData.push({
-          principleId: p.id,
-          principlePercentage: p.percentage,
-          principleBudget: p.budget,
-          principleName: p.name,
-          principleColor: p.color,
-          principleDes: p.description,
-          layerName: layer.name,
           layerId: layer.id,
           layerBudget,
           itemRecordId: matching?.length > 0 ? matching.map((m: any) => m.id) : [],
@@ -509,7 +543,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
     });
     userNotes(selectedValues?.notes);
     reportData(newReportData);
-    createInteraction(newReportData);
+    createProject(newReportData);
   }
 
   useEffect(() => {
@@ -567,7 +601,17 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
   }
 
   useEffect(() => {
-    const values = localStorage.getItem("selectedValues");
+    const values = !project ? localStorage.getItem("selectedValues") : JSON.stringify({
+              budget: projectData["Budget Inputs"]?.["Total cash"].toLocaleString("en-US"),
+              category: projectData["Budget Inputs"]?.["category"],
+              categoryName: projectData["Budget Inputs"]?.["Vertical"],
+              email: projectData["Owner Email"],
+              notes: projectData["User Notes"],
+              principles:projectData.principles,
+              projectName: projectData["Budget Inputs"]?.["Project Name"],
+              stage: projectData["Budget Inputs"]?.["Stage"],
+              tier: null,
+            });
     const storedValues = values ? JSON.parse(values) : {};
     setStoredValues(storedValues);
   }, []);
@@ -585,11 +629,11 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
             const hasChanged =
               (selectedValues?.projectName ?? "") !== (storedValues?.projectName ?? "") ||
               (selectedValues?.email ?? "").trim() !== (storedValues?.email ?? "").trim() ||
-               (selectedValues?.notes ?? "").trim() !== (storedValues?.notes ?? "").trim() || (selectedValues?.category)?.trim() != storedValues?.category?.trim() ||
+              (selectedValues?.notes ?? "").trim() !== (storedValues?.notes ?? "").trim() || (selectedValues?.category)?.trim() != storedValues?.category?.trim() ||
               String(selectedValues?.budget ?? "").trim() !==
               String(storedValues?.budget ?? "").trim();
 
-            if (JSON.stringify(principles) != JSON.stringify(storedPrinciple) || hasChanged) {
+            if (JSON.stringify(principles) != JSON.stringify(storedPrinciple) || (hasChanged && Object.values(storedValues).length >0)) {
               unsavedChanges.openModal();
             } else {
               router.push(`/dashboard?project=${project}`)
@@ -923,7 +967,7 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
 
               <div className="relative w-full">
                 <textarea
-                  value={selectedValues?.notes}
+                  value={selectedValues?.notes ?? ""}
                   onChange={(e) => {
                     const value = e.target.value;
                     if (value.length === 1 && value === " ") return;
@@ -971,7 +1015,6 @@ export default function AllocatePage({ onNext, selectedValues, Principles, repor
           } className="cursor-pointer w-full px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6] text-center">
             <span className="text-base font-semibold text-white">
               {loader ? "Processing..." : "View Strategy"}
-
             </span>
           </button>
         </div>

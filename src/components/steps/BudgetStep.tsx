@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import ToastModal from '../CustomToast';
-import { Timestamp } from 'firebase/firestore/lite';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { UnsavedChangesModal } from '../modals/unsavedChangesModal';
 import { useModal } from '@/hooks/useModal';
+import getBudgetTier from '@/lib/budgetTiers';
 
 type PrincipleProps = {
     id: string;
@@ -25,13 +24,13 @@ type objectType = {
 }
 
 type props = {
-    onNext: (value: number) => void;
     selectedValues: (value: any) => void;
     Principles: (value: PrincipleProps) => void;
     ResetPrinciples: (value: PrincipleProps) => void;
     allValues: objectType;
     utmSource: string;
     project: any;
+    projectData: objectType;
 }
 
 type TierObject = {
@@ -43,7 +42,7 @@ type TierObject = {
 };
 
 
-export default function BudgetTool({ onNext, project, selectedValues, Principles, allValues, utmSource, ResetPrinciples }: props) {
+export default function BudgetTool({ projectData, project, selectedValues, Principles, allValues, utmSource, ResetPrinciples }: props) {
     const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
     const [showStage, setShowStage] = useState<string>("");
@@ -211,19 +210,13 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
         },
     ];
 
-
-
     useEffect(() => {
-        if (!localStorage.getItem("sessionId")) {
-            localStorage.setItem("kaleido_sessionId", `guest_${Date.now()}`);
+        if (!localStorage.getItem("sessionId") && !project) {
             storeSession(1);
         } else {
             storeSession(2);
         }
-
-
     }, []);
-
 
     const storeSession = async (type: number) => {
 
@@ -234,18 +227,17 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                sessionId: localStorage.getItem("kaleido_sessionId"),
-                recordId: localStorage.getItem("sessionId") ?? "",
+                recordId: !project ? localStorage.getItem("sessionId") : projectData?.["Session ID"],
                 userType: 'Anonymous Guest',
                 type,
                 UTCSource: utm_source,
                 Email: formValues?.email,
-                reportId: localStorage.getItem("reportId") ? localStorage.getItem("reportId") : ""
+                reportId: !project ? (localStorage.getItem("reportId") ? localStorage.getItem("reportId") : "") : ""
             })
         });
         const data = await res.json();
 
-        if (data && data?.success && data?.id) {
+        if (data && data?.success && data?.id && !project) {
             const newId = data?.id;
             localStorage.setItem("sessionId", newId);
         }
@@ -363,16 +355,6 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
         return `${m}${m % 1 === 0 ? "" : ""}M`;
     }
 
-    const getBudgetTier = async () => {
-        try {
-            const res = await fetch("/api/budget-tier");
-            const data = await res.json();
-            setBudgetTier(data);
-            localStorage.setItem("Tiers", JSON.stringify(data?.map((t: any) => t)));
-        } catch (e) {
-            console.log("Error in fetching budget tiers: ", e);
-        }
-    }
 
     const mapPrinciples = (data: any[]) =>
         data.map((prin: any) => ({
@@ -413,10 +395,13 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
             } else {
                 Principles(principlesData);
             }
-
-            createReport();
+            if (!project) {
+                createReport();
+            }
         } else {
-            createReport();
+            if (!project) {
+                createReport();
+            }
             Principles(principlesData);
         }
 
@@ -433,12 +418,15 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
             principles: principlesData?.length > 0 ? principlesData : [],
             notes: allValues?.notes ? allValues?.notes : "",
         });
-
     }
-
-
     useEffect(() => {
-        if (budgetTier?.length == 0) { getBudgetTier(); }
+        const init = async () => {
+            if (budgetTier?.length == 0) {
+                const tiers: any = await getBudgetTier();
+                setBudgetTier(tiers);
+            }
+        }
+        init();
     }, [budgetTier]);
 
     function formatBudget(num: number) {
@@ -452,14 +440,10 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
     }
 
     useEffect(() => {
-        const values = localStorage.getItem("selectedValues");
+        const values = !project ? localStorage.getItem("selectedValues") : JSON.stringify(allValues);
         const storedValues = values ? JSON.parse(values) : {};
-
         setStoredValues(storedValues);
     }, []);
-
-
-
 
     return (
         <>
@@ -475,7 +459,8 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
                 </button>
                 {project && <button className={`cursor-pointer px-6  flex items-center gap-[5px] text-white border-2 bg-[#3B82F6] px-5 sm:py-3 py-2 rounded-lg text-center`}
                     onClick={() => {
-                        if ((allValues?.notes)?.trim() != storedValues?.notes?.trim() || (formValues?.projectName)?.trim() != storedValues?.projectName?.trim() || (formValues?.email)?.trim() != storedValues?.email?.trim() || (formValues?.category)?.trim() != storedValues?.category?.trim() || (formValues?.budget)?.trim() != storedValues?.budget?.trim()) {
+
+                        if ((formValues?.projectName)?.trim() != storedValues?.projectName?.trim() || (formValues?.email)?.trim() != storedValues?.email?.trim() || (formValues?.category)?.trim() != storedValues?.category?.trim() || (formValues?.budget)?.trim() != storedValues?.budget?.trim()) {
                             unsavedChanges.openModal();
                         } else {
                             router.push(`/dashboard?project=${project}`);
@@ -591,10 +576,7 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
                                             id="budget"
                                             value={formValues?.budget ? formValues.budget : ""}
                                             onChange={(e) => {
-
-
                                                 handleChange(e);
-
                                             }}
                                             className="flex-1 text-sm font-medium text-[#323152] outline-none bg-transparent"
                                             placeholder="50,000"
@@ -737,30 +719,19 @@ export default function BudgetTool({ onNext, project, selectedValues, Principles
 
                         if (formValues?.budget && (typeof formValues?.email != "undefined" && formValues?.email && isValidEmail(formValues?.email) || !formValues?.email) && !loader) {
                             getPrinciples();
-                        } else if (formValues?.email && !isValidEmail(formValues?.email)) {
+                        } 
+                        else if (formValues?.email && !isValidEmail(formValues?.email)) {
                             setError("Please enter valid email address");
                             setShowToast(true);
                         }
-                        // else if (!formValues?.budget) {
-                        //     setError([
-                        //         "Please select tech budget",
-                        //         "What type of tech are you building?"
-                        //         ]);
-                        //     setShowToast(true);
-                        // }
                         else if (!formValues?.budget) {
                             setError("Please select tech budget");
                             setShowToast(true);
                         }
-                        // else if (formValues?.budget && !formValues?.category) {
-                        //     setError("What type of tech are you building?");
-                        //     setShowToast(true);
-                        // }
                         else {
                             setError("Please select tech budget");
                             setShowToast(true);
                         }
-
                     }
                     } className={`cursor-pointer flex items-center justify-center gap-2.5 px-10 sm:py-4 py-3 rounded-lg bg-[#3B82F6]`}>
                         {!loader ? <>

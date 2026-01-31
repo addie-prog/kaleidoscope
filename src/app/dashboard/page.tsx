@@ -9,6 +9,7 @@ import DownloadReportModal from "@/components/modals/DownloadReportModal";
 import DownloadReportCSVModal from "@/components/modals/DownloadReportCSVModal";
 import { Doughnut } from 'react-chartjs-2';
 import '@/lib/chartjs';
+import getBudgetTier from "@/lib/budgetTiers";
 
 type objectType = {
   [key: string | number]: any
@@ -35,7 +36,7 @@ export default function Dashboard2Page({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tabs, setTabs] = useState<Array<any>>([]);
-  const [activeTab, setActiveTab] = useState("FAIRNESS");
+  const [activeTab, setActiveTab] = useState("");
   const [activeSubTab, setActiveSubTab] = useState<string>("");
   const [activeNoteId, setActiveNoteId] = useState<{ cardId: number; stepId: number } | null>(null);
   const [tempNote, setTempNote] = useState("");
@@ -48,6 +49,9 @@ export default function Dashboard2Page({
   const downloadCSVModal = useModal();
   const navRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [projectData, setProjectData] = useState<objectType>({});
+  const [loader, setLoader] = useState<boolean>(false);
+  const [storedValues, setStoredValues] = useState<objectType>({});
 
   // For second tab row
   const navRef2 = useRef<HTMLDivElement>(null);
@@ -59,10 +63,9 @@ export default function Dashboard2Page({
 
   // Different sub-tabs for different main tabs
   const getSubTabsForTab = (tabId: string): SubTab[] => {
-    const principles: any = localStorage.getItem("principles");
-    const selectedFormValues: string = localStorage.getItem("selectedValues") ?? "";
-
-    const mainTabs = principles ? JSON.parse(principles) : [];
+    const principles: any = storedValues?.selectedValues?.principles;
+    const selectedFormValues: objectType = storedValues?.selectedValues ?? "";
+    const mainTabs = principles ?? [];
     if (mainTabs?.length > 0) {
       setTabs(mainTabs);
     }
@@ -71,53 +74,265 @@ export default function Dashboard2Page({
       return acc;
     }, {});
 
-    setSelectedValues(selectedFormValues ? JSON.parse(selectedFormValues) : {});
+    setSelectedValues(selectedFormValues ?? {});
 
     return subTabsMap[tabId] || [];
   };
 
-  // Different cards for different sub-tabs
-  const getCardsForSubTab = (subCardId: string): any => {
-    const items: any = localStorage.getItem("newReportData");
-    const cards = items ? JSON.parse(items) : [];
+  const fetchProjectData = async () => {
+    const tiers = localStorage.getItem("Tiers");
+    setLoader(true);
+    const res = await fetch(`/api/user-session/get-project?project=${project}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+    try {
+      const { data } = await res.json();
+      const arr: any = Object.values(data[0]?.items).flat();
+      if (data?.length > 0) {
+        setActiveTab("FAIRNESS");
+        setProjectData(data[0]);
+        if(!tiers){
+          getBudgetTier();
+        }
+      
+        setStoredValues({
+          selectedValues:{
+            budget: data[0]["Budget Inputs"]?.["Total cash"].toLocaleString("en-US"),
+            category: data[0]["Budget Inputs"]?.["category"],
+            categoryName: data[0]["Budget Inputs"]?.["Vertical"],
+            email: data[0]["Owner Email"],
+            notes: data[0]["User Notes"],
+            principles: data[0].principles,
+            projectName: data[0]["Budget Inputs"]?.["Project Name"],
+            stage: data[0]["Budget Inputs"]?.["Stage"],
+            tier: null,
+          },
+          sessionId: data[0]["Session ID"],
+          reportId: data[0]["Report ID"],
+          interactionData: data[0]["interation_data"]
+        })
+       
+        if (arr.length > 0) {
+          fetchItems(arr, data);
+        }
+      }
+      
+    } catch (e) {
+      console.log("Error in edit project: ", e);
+    }
+  }
 
-    const cardsMap: Record<string, SubTab[]> = cards.reduce((acc: any, tab: any) => {
-      acc[tab.layerId] = tab?.items ?? [];
-      return acc;
-    }, {});
 
-    const groupedByCategory = (cardsMap[subCardId] || []).reduce(
-      (acc: any, card: any) => {
-        const category =
-          Array.isArray(card["Category"])
-            ? card["Category"][0]
-            : card["Category"] || "Uncategorized";
+  const fetchItems = async (itms: Array<string>, projectData: objectType) => {
+    const interation_data = projectData[0]?.interation_data ?? {};
+    const res = await fetch(`/api/fetch-matching-items`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ itemIds: itms })
+    });
+    try {
+      const { records } = await res.json();
+      const checkedCardsSet = new Set(interation_data.checked_card_ids);
+      const checkedStepsSet = new Set(interation_data.checked_step_ids);
+      const skippedStepsSet = new Set(interation_data.skipped_step_ids);
+      const step_notes = interation_data.step_notes;
 
-        if (!acc[category]) {
-          acc[category] = [];
+      const enrichedItems = records?.map((item: objectType) => {
+        const itemId = (item.id);
+
+        const enrichedSteps = item?.steps?.map((step: objectType) => {
+          const stepKey = `${itemId}_${step.step_id}`;
+
+          return {
+            ...step,
+            completed: checkedStepsSet && checkedStepsSet?.has(stepKey),
+            skipped: skippedStepsSet && skippedStepsSet?.has(stepKey),
+            note: step_notes && step_notes[stepKey] || ""
+          };
+        });
+
+        return {
+          ...item,
+          cardChecked: checkedCardsSet?.has(itemId),
+          steps: enrichedSteps,
+          activeCardTab: "action"
+        };
+      });
+    
+
+      const groupedData = enrichedItems.reduce((acc: any, item: any) => {
+        const executionLayer = item["Execution Layer"];
+        const categories = item.Category || [];
+
+        // Ensure execution layer exists
+        if (!acc[executionLayer]) {
+          acc[executionLayer] = {};
         }
 
-        acc[category].push({
-          ...card,
-          activeCardTab: "action",
-          isExpanded: false,
-          cardChecked: false,
-          steps: card?.steps?.map((step: any) => ({
-            ...step,
-            completed: step.completed ?? false,
-            skipped: step.skipped ?? false,
-            note: step.note ?? "",
-          })),
+        categories.forEach((category: any) => {
+          // Ensure category array exists
+          if (!acc[executionLayer][category]) {
+            acc[executionLayer][category] = [];
+          }
+
+          acc[executionLayer][category].push(item);
         });
 
         return acc;
-      },
-      []
-    );
+      }, {});
+      setLoader(false);
+      setActiveCards(groupedData);
+    } catch (e) {
+      console.log("Error in edit project: ", e);
+    }
+  }
 
-    const groupedCards = subCardId && groupedByCategory;
-    return groupedCards;
-  };
+
+  useEffect(() => {
+    setCurrentSubTabs(getSubTabsForTab(activeTab));
+    setActiveSubTab(getSubTabsForTab(activeTab)[0]?.id);
+  }, [activeTab]);
+
+  useEffect(() => {
+    fetchProjectData();
+  }, [])
+
+  const handleSubmit = async () => {
+    const cardIds = Object.values(currentCards)
+      .flatMap(category =>
+        Object.values(category) // must_have, should_have, skip
+          .flatMap((items: any) =>
+            items
+              .filter((item: objectType) => item?.cardChecked)
+              .map((item: objectType) => item.id)
+          )
+      );
+
+    const result = Object.values(currentCards)
+      .flatMap(layer =>
+        Object.values(layer)
+          .flatMap((items: any) =>
+            items.flatMap((item: objectType) =>
+              item.steps?.map((step: objectType) => ({
+                stepId: `${item.id}_${step.step_id}`,
+                completed: step.completed,
+                skipped: step.skipped,
+                stepNote: step.note?.trim() || ""
+              })) || []
+            )
+          )
+      )
+      .reduce(
+        (acc: any, { stepId, completed, skipped, stepNote }) => {
+          // only completed steps go here
+          if (completed) {
+            acc.checked_step_ids.push(stepId);
+          }
+
+          // only skipped steps go here
+          if (skipped) {
+            acc.skipped_step_ids.push(stepId);
+          }
+
+          // notes saved regardless of completion
+          if (stepNote) {
+            acc.step_notes[stepId] = stepNote;
+          }
+
+          return acc;
+        },
+        {
+          skipped_step_ids: [] as string[],
+          checked_step_ids: [] as string[],
+          step_notes: {} as Record<string, string>
+        }
+      );
+
+
+    const res = await fetch("/api/user-session/store-project", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        interation_data: {
+          checked_card_ids: cardIds,
+          checked_step_ids: result?.checked_step_ids,
+          skipped_step_ids: result?.skipped_step_ids,
+          step_notes: result?.step_notes
+        },
+        existProjectId: project
+      })
+    });
+    try {
+      const { id } = await res.json();
+
+      setStoredValues({
+          ...storedValues,
+        interactionData: {
+          checked_card_ids: cardIds,
+          checked_step_ids: result?.checked_step_ids,
+          skipped_step_ids: result?.skipped_step_ids,
+          step_notes: result?.step_notes
+        }
+        });
+      
+    } catch (e) {
+      console.log("Error in edit project: ", e);
+    }
+  }
+
+
+  // Different cards for different sub-tabs
+  // const getCardsForSubTab = (subCardId: string): any => {
+  //   const items: any = localStorage.getItem("newReportData");
+  //   const cards = items ? JSON.parse(items) : [];
+
+  //   const cardsMap: Record<string, SubTab[]> = cards.reduce((acc: any, tab: any) => {
+  //     acc[tab.layerId] = tab?.items ?? [];
+  //     return acc;
+  //   }, {});
+
+  //   const groupedByCategory = (cardsMap[subCardId] || []).reduce(
+  //     (acc: any, card: any) => {
+  //       const category =
+  //         Array.isArray(card["Category"])
+  //           ? card["Category"][0]
+  //           : card["Category"] || "Uncategorized";
+
+  //       if (!acc[category]) {
+  //         acc[category] = [];
+  //       }
+
+  //       acc[category].push({
+  //         ...card,
+  //         activeCardTab: "action",
+  //         isExpanded: false,
+  //         cardChecked: false,
+  //         steps: card?.steps?.map((step: any) => ({
+  //           ...step,
+  //           completed: step.completed ?? false,
+  //           skipped: step.skipped ?? false,
+  //           note: step.note ?? "",
+  //         })),
+  //       });
+
+  //       return acc;
+  //     },
+  //     []
+  //   );
+
+  //   const groupedCards = subCardId && groupedByCategory;
+  //   return groupedCards;
+  // };
 
 
   const scrollNextTabIfNeeded = (
@@ -201,25 +416,22 @@ export default function Dashboard2Page({
     }));
   };
 
-  useEffect(() => {
-    setCurrentSubTabs(getSubTabsForTab(activeTab));
-    setActiveSubTab(getSubTabsForTab(activeTab)[0]?.id);
-  }, [activeTab]);
 
-  useEffect(() => {
-    if (activeSubTab) {
-      setActiveCards((prev: any) => {
-        if (prev[activeSubTab]) {
-          return prev; // already exists → do nothing
-        }
 
-        return {
-          ...prev,
-          [activeSubTab]: getCardsForSubTab(activeSubTab),
-        };
-      });
-    }
-  }, [activeSubTab])
+  // useEffect(() => {
+  //   if (activeSubTab) {
+  //     setActiveCards((prev: any) => {
+  //       if (prev[activeSubTab]) {
+  //         return prev; // already exists → do nothing
+  //       }
+
+  //       return {
+  //         ...prev,
+  //         [activeSubTab]: getCardsForSubTab(activeSubTab),
+  //       };
+  //     });
+  //   }
+  // }, [activeSubTab])
 
 
   const getProgressPercentage = (steps: ActionStep[]) => {
@@ -365,7 +577,7 @@ export default function Dashboard2Page({
                     <div className="flex gap-0 flex-col pb-[5px] border-b mb-0">
                       <div className="text-sm text-[#6B7280]">Project Name</div>
                       <div className="text-[15px] font-semibold text-[#1C202C]">
-                        {selectedValues?.projectName}
+                        {projectData["Budget Inputs"]?.["Project Name"] ? projectData["Budget Inputs"]?.["Project Name"] : selectedValues?.projectName}
                       </div>
                     </div>
                   }
@@ -374,13 +586,16 @@ export default function Dashboard2Page({
                   <div className="flex gap-0 flex-col pb-[5px] border-b mb-0">
                     <div className="text-sm text-[#6B7280]">Tech Type</div>
                     <div className="text-[15px] font-semibold text-[#1C202C]">
-                      {selectedValues?.categoryName ? selectedValues?.categoryName : "None"}
+                      {projectData["Budget Inputs"]?.["Vertical"] ? projectData["Budget Inputs"]?.["Vertical"] : selectedValues?.categoryName ? selectedValues?.categoryName : "None"}
+
                     </div>
                   </div>
                   <div className="bg-[#D4D4D4] opacity-50 mb-[5px]" />
                   <div className="flex gap-0 flex-col mb-0">
                     <div className="text-sm text-[#6B7280]">Budget</div>
-                    <div className="text-xl font-bold text-[#323743] leading-[normal]">${selectedValues?.budget}</div>
+                    <div className="text-xl font-bold text-[#323743] leading-[normal]">
+                      ${projectData["Budget Inputs"]?.["Total cash"] ? (projectData["Budget Inputs"]?.["Total cash"]).toLocaleString("en-US") : selectedValues?.budget}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -574,7 +789,7 @@ export default function Dashboard2Page({
           </div><div className="h-px bg-[#E9E9E9]" />
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto no-scrollbar bg-white p-5 pt-0 pb-32 sm:pb-28">
-            {currentCards?.[activeSubTab] && Object.keys(currentCards?.[activeSubTab])?.length > 0 ?
+            {!loader && currentCards && currentCards?.[activeSubTab] && Object.keys(currentCards?.[activeSubTab])?.length > 0 ?
               Object.entries(currentCards?.[activeSubTab])
                 .map(([categoryKey, cards]: any) =>
                   <div key={categoryKey}>
@@ -1057,7 +1272,7 @@ export default function Dashboard2Page({
                                                       : "bg-[#F9FAFB] hover:bg-gray-100"
                                                       }`}
                                                   >
-                                                    {step.completed && (
+                                                    {step?.completed && (
                                                       <svg
                                                         width="8"
                                                         height="5"
@@ -1297,7 +1512,7 @@ export default function Dashboard2Page({
                     </div>
                   </div>
                 )
-              :
+              : !loader && (typeof currentCards[activeSubTab] == "undefined" || currentCards[activeSubTab]?.length == 0) &&
               <div className="py-5 px-6 flex flex-col items-center justify-center">
                 {/* Illustration */}
                 <div className="mb-10 opacity-80">
@@ -1336,9 +1551,22 @@ export default function Dashboard2Page({
                   Edit Budget Allocation
                 </button>
               </div>
+             
             }
+            {loader ?  (
+            <div className="h-full flex bg-white p-5 flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="relative w-16 h-16">
+                <div className="absolute inset-0 rounded-full border-4 border-[#F0F0F0]"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-[#3B82F6] border-t-transparent animate-spin"></div>
+              </div>
+              <p className="text-lg font-medium text-[#6B7280]">
+                Loading recommendations...
+              </p>
+            </div>
+          </div>) : ""}
           </div>
-          <SaveProgressModal selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={saveProgressModal.closeModal} />
+          <SaveProgressModal saveProgess={() => handleSubmit()} selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={saveProgressModal.closeModal} />
           <DownloadReportModal selectedEmail={selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
           <DownloadReportCSVModal selectedEmail={selectedValues?.email} isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />
         </main>

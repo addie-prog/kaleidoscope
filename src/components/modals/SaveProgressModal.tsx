@@ -6,22 +6,20 @@ interface SaveProgressModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedEmail: string;
+  saveProgess: () => void;
 }
 
-export default function SaveProgressModal({ isOpen, onClose, selectedEmail }: SaveProgressModalProps) {
+export default function SaveProgressModal({ isOpen, onClose, selectedEmail, saveProgess }: SaveProgressModalProps) {
   const [email, setEmail] = useState("");
 
   useEffect(()=>{
+    if(selectedEmail){
       setEmail(selectedEmail);
+    }
     },[selectedEmail]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Saving progress for:", email);
-    onClose();
-  };
 
   return (
     <>
@@ -92,7 +90,10 @@ export default function SaveProgressModal({ isOpen, onClose, selectedEmail }: Sa
 
     {/* Form */}
     <form
-      onSubmit={handleSubmit}
+      onSubmit={(e)=>{
+        e.preventDefault();
+        saveProgess();
+      }}
       className="flex flex-col sm:flex-row gap-2.5"
     >
       <input
@@ -108,7 +109,7 @@ export default function SaveProgressModal({ isOpen, onClose, selectedEmail }: Sa
         type="submit"
         className="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base rounded-lg transition-colors"
       >
-        Save Progress
+        Send Magic Link
       </button>
     </form>
   </div>

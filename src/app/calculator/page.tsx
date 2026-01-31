@@ -3,7 +3,6 @@
 import { use, useEffect, useState } from "react";
 import BudgetStep from "@/components/steps/BudgetStep";
 import AllocateStep from "@/components/steps/AllocateStep";
-import ReportStep from "@/components/steps/ReportStep";
 import Image from "next/image";
 
 type objectType = {
@@ -16,34 +15,62 @@ export default function BudgetTool({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const utmSource: any = use(searchParams)?.utm_source ?? null;
-  const [step, setStep] = useState<Number>(1);
+  const [step, setStep] = useState<Number>();
   const [selectedValues, setSelectedValues] = useState<objectType>({});
   const [principles, setPrinciples] = useState<Array<any>>([]);
   const [resetPrinciples, setResetPrinciples] = useState([]);
   const [reportData, setReportData] = useState([]);
+  const [projectData, setProjectData] = useState<objectType>({});
   const project = use(searchParams)?.project ?? null;
   const stepUpdated: Number = use(searchParams)?.step ? Number(use(searchParams)?.step) : 1;
 
   useEffect(() => {
-    const init = () => {
-      if (project && localStorage.getItem("selectedValues")) {
-        const storedSelectedValues = localStorage.getItem("selectedValues");
-        const storedPrinciples = localStorage.getItem("principles");
-        if (storedSelectedValues) {
-          setSelectedValues(JSON.parse(storedSelectedValues));
-        }
-        if (storedPrinciples) {
-          setPrinciples(JSON.parse(storedPrinciples))
+    const init = async () => {
+      if (project) {
+        const res = await fetch(`/api/user-session/get-project?project=${project}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        try {
+          const { data } = await res.json();
+          if (data?.length > 0) {
+            setProjectData(data[0]);
+            setStep(1);
+            const storedSelectedValues = {
+              budget: data[0]["Budget Inputs"]?.["Total cash"].toLocaleString("en-US"),
+              category: data[0]["Budget Inputs"]?.["category"],
+              categoryName: data[0]["Budget Inputs"]?.["Vertical"],
+              email: data[0]["Owner Email"],
+              notes: data[0]["User Notes"],
+              principles: data[0].principles,
+              projectName: data[0]["Budget Inputs"]?.["Project Name"],
+              stage: data[0]["Budget Inputs"]?.["Stage"],
+              tier: null,
+            };
+            if (storedSelectedValues) {
+              setSelectedValues(storedSelectedValues);
+            }
+            const storedPrinciples = storedSelectedValues?.principles;
+
+            if (storedPrinciples) {
+              setPrinciples(storedPrinciples)
+            }
+
+          }
+
+        } catch (e) {
+          console.log("Error in edit project: ", e);
         }
       }
-
       if (stepUpdated) {
         setStep(stepUpdated)
       }
     }
     init();
   }, []);
-
 
   return (
     <div className="min-h-screen bg-white">
@@ -63,10 +90,11 @@ export default function BudgetTool({
           </div>
         </div>
       </header>
-      {step === 1 && <BudgetStep project={project ?? ""} ResetPrinciples={(principles: any) => setResetPrinciples(principles)} utmSource={utmSource} Principles={(val: any) => { setPrinciples(val), setStep(2) }} onNext={(value: number) => setStep(value)} allValues={selectedValues} selectedValues={(value) => setSelectedValues(value)} />}
+      {step === 1 && <BudgetStep project={project ?? ""} projectData={projectData} ResetPrinciples={(principles: any) => setResetPrinciples(principles)} utmSource={utmSource} Principles={(val: any) => { setPrinciples(val), setStep(2) }} allValues={selectedValues} selectedValues={(value) => setSelectedValues(value)} />}
 
       {step === 2 && (
         <AllocateStep
+          projectData={projectData}
           updatedPrinciples={(val: any) => setSelectedValues({ ...selectedValues, ['principles']: val })}
           userNotes={(val: any) => setSelectedValues({ ...selectedValues, ["notes"]: val })}
           selectedValues={selectedValues}
@@ -78,7 +106,7 @@ export default function BudgetTool({
         />
       )}
 
-      {step === 3 && <ReportStep onBack={(value: number) => setStep(value)} reportData={reportData} selectedValues={selectedValues} />}
+      {/* {step === 3 && <ReportStep onBack={(value: number) => setStep(value)} reportData={reportData} selectedValues={selectedValues} />} */}
     </div>
   );
 }
