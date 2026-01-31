@@ -7,9 +7,10 @@ interface SaveProgressModalProps {
   onClose: () => void;
   selectedEmail: string;
   saveProgess: () => void;
+  successMessage: string;
 }
 
-export default function SaveProgressModal({ isOpen, onClose, selectedEmail, saveProgess }: SaveProgressModalProps) {
+export default function SaveProgressModal({ successMessage, isOpen, onClose, selectedEmail, saveProgess }: SaveProgressModalProps) {
   const [email, setEmail] = useState("");
 
   useEffect(()=>{
@@ -111,6 +112,7 @@ export default function SaveProgressModal({ isOpen, onClose, selectedEmail, save
       >
         Send Magic Link
       </button>
+      {successMessage}
     </form>
   </div>
 </Modal>

@@ -52,6 +52,7 @@ export default function Dashboard2Page({
   const [projectData, setProjectData] = useState<objectType>({});
   const [loader, setLoader] = useState<boolean>(false);
   const [storedValues, setStoredValues] = useState<objectType>({});
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   // For second tab row
   const navRef2 = useRef<HTMLDivElement>(null);
@@ -284,7 +285,7 @@ export default function Dashboard2Page({
           step_notes: result?.step_notes
         }
         });
-      
+      setSuccessMessage("Data Stored!");
     } catch (e) {
       console.log("Error in edit project: ", e);
     }
@@ -1566,7 +1567,7 @@ export default function Dashboard2Page({
             </div>
           </div>) : ""}
           </div>
-          <SaveProgressModal saveProgess={() => handleSubmit()} selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={saveProgressModal.closeModal} />
+          <SaveProgressModal successMessage={successMessage} saveProgess={() => handleSubmit()} selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={saveProgressModal.closeModal} />
           <DownloadReportModal selectedEmail={selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
           <DownloadReportCSVModal selectedEmail={selectedValues?.email} isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />
         </main>
