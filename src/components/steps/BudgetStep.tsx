@@ -31,6 +31,7 @@ type props = {
     utmSource: string;
     project: any;
     projectData: objectType;
+    latestReportID: (val: string)=>void;
 }
 
 type TierObject = {
@@ -42,7 +43,7 @@ type TierObject = {
 };
 
 
-export default function BudgetTool({ projectData, project, selectedValues, Principles, allValues, utmSource, ResetPrinciples }: props) {
+export default function BudgetTool({ latestReportID, projectData, project, selectedValues, Principles, allValues, utmSource, ResetPrinciples }: props) {
     const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
     const [budgetTier, setBudgetTier] = useState<TierObject[]>([]);
     const [showStage, setShowStage] = useState<string>("");
@@ -212,13 +213,13 @@ export default function BudgetTool({ projectData, project, selectedValues, Princ
 
     useEffect(() => {
         if (!localStorage.getItem("sessionId") && !project) {
-            storeSession(1);
+            storeSession(1,"");
         } else {
-            storeSession(2);
+            storeSession(2,"");
         }
     }, []);
 
-    const storeSession = async (type: number) => {
+    const storeSession = async (type: number, reportID: string) => {
 
         const res = await fetch("/api/user-session/store-session", {
             method: 'POST',
@@ -232,7 +233,7 @@ export default function BudgetTool({ projectData, project, selectedValues, Princ
                 type,
                 UTCSource: utm_source,
                 Email: formValues?.email,
-                reportId: !project ? (localStorage.getItem("reportId") ? localStorage.getItem("reportId") : "") : ""
+                reportId: reportID ? reportID : null
             })
         });
         const data = await res.json();
@@ -266,20 +267,20 @@ export default function BudgetTool({ projectData, project, selectedValues, Princ
         if (data && data?.success && data?.id) {
 
             const newId = data?.id;
+            console.log("newId",newId);
+            // const existing = localStorage.getItem("reportId");
+            latestReportID(newId);
+            // if (existing) {
+            //     const ids = existing.split(",");
 
-            const existing = localStorage.getItem("reportId");
-
-            if (existing) {
-                const ids = existing.split(",");
-
-                if (!ids.includes(newId)) {
-                    ids.push(newId);
-                    localStorage.setItem("reportId", ids.join(","));
-                }
-            } else {
-                localStorage.setItem("reportId", newId);
-            }
-            storeSession(2);
+            //     if (!ids.includes(newId)) {
+            //         ids.push(newId);
+            //         localStorage.setItem("reportId", ids.join(","));
+            //     }
+            // } else {
+            //     localStorage.setItem("reportId", newId);
+            // }
+            storeSession(2,newId);
         }
 
     }
@@ -395,11 +396,11 @@ export default function BudgetTool({ projectData, project, selectedValues, Princ
             } else {
                 Principles(principlesData);
             }
-            if (!project) {
+            if (!project || ((formValues?.projectName)?.trim() != storedValues?.projectName?.trim() || (formValues?.email)?.trim() != storedValues?.email?.trim() || (formValues?.category)?.trim() != storedValues?.category?.trim() || (formValues?.budget)?.trim() != storedValues?.budget?.trim())) {
                 createReport();
             }
         } else {
-            if (!project) {
+            if (!project || ((formValues?.projectName)?.trim() != storedValues?.projectName?.trim() || (formValues?.email)?.trim() != storedValues?.email?.trim() || (formValues?.category)?.trim() != storedValues?.category?.trim() || (formValues?.budget)?.trim() != storedValues?.budget?.trim())) {
                 createReport();
             }
             Principles(principlesData);
@@ -440,7 +441,17 @@ export default function BudgetTool({ projectData, project, selectedValues, Princ
     }
 
     useEffect(() => {
-        const values = !project ? localStorage.getItem("selectedValues") : JSON.stringify(allValues);
+        const values = !project ? localStorage.getItem("selectedValues") : JSON.stringify({
+              budget: projectData["Budget Inputs"]?.["Total cash"].toLocaleString("en-US"),
+              category: projectData["Budget Inputs"]?.["category"],
+              categoryName: projectData["Budget Inputs"]?.["Vertical"],
+              email: projectData["Owner Email"],
+              notes: projectData["User Notes"],
+              principles:projectData.principles,
+              projectName: projectData["Budget Inputs"]?.["Project Name"],
+              stage: projectData["Budget Inputs"]?.["Stage"],
+              tier: null,
+            });;
         const storedValues = values ? JSON.parse(values) : {};
         setStoredValues(storedValues);
     }, []);

@@ -19,14 +19,17 @@ export default function BudgetTool({
   const [selectedValues, setSelectedValues] = useState<objectType>({});
   const [principles, setPrinciples] = useState<Array<any>>([]);
   const [resetPrinciples, setResetPrinciples] = useState([]);
-  const [reportData, setReportData] = useState([]);
+  const [reportID, setReportID] = useState<string>("");
   const [projectData, setProjectData] = useState<objectType>({});
+  const [loader, setLoader] = useState<boolean>(false);
+
   const project = use(searchParams)?.project ?? null;
   const stepUpdated: Number = use(searchParams)?.step ? Number(use(searchParams)?.step) : 1;
 
   useEffect(() => {
     const init = async () => {
       if (project) {
+        setLoader(true);
         const res = await fetch(`/api/user-session/get-project?project=${project}`, {
           method: 'GET',
           headers: {
@@ -36,6 +39,7 @@ export default function BudgetTool({
         });
         try {
           const { data } = await res.json();
+          setLoader(false);
           if (data?.length > 0) {
             setProjectData(data[0]);
             setStep(1);
@@ -62,6 +66,7 @@ export default function BudgetTool({
           }
 
         } catch (e) {
+          setLoader(false);
           console.log("Error in edit project: ", e);
         }
       }
@@ -90,7 +95,21 @@ export default function BudgetTool({
           </div>
         </div>
       </header>
-      {step === 1 && <BudgetStep project={project ?? ""} projectData={projectData} ResetPrinciples={(principles: any) => setResetPrinciples(principles)} utmSource={utmSource} Principles={(val: any) => { setPrinciples(val), setStep(2) }} allValues={selectedValues} selectedValues={(value) => setSelectedValues(value)} />}
+      {loader ? 
+        <div className="min-h-inherit h-full flex bg-white p-5 flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="relative w-16 h-16">
+                <div className="absolute inset-0 rounded-full border-4 border-[#F0F0F0]"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-[#3B82F6] border-t-transparent animate-spin"></div>
+              </div>
+              <p className="text-lg font-medium text-[#6B7280]">
+                Loading ...
+              </p>
+            </div>
+          </div>
+      : 
+      <>
+      {step === 1 && <BudgetStep latestReportID={(val: string)=>setReportID(val)} project={project ?? ""} projectData={projectData} ResetPrinciples={(principles: any) => setResetPrinciples(principles)} utmSource={utmSource} Principles={(val: any) => { setPrinciples(val), setStep(2) }} allValues={selectedValues} selectedValues={(value) => setSelectedValues(value)} />}
 
       {step === 2 && (
         <AllocateStep
@@ -101,10 +120,13 @@ export default function BudgetTool({
           onNext={(value: number) => setStep(value)}
           Principles={principles}
           ResetPrinciples={resetPrinciples}
-          reportData={(value: any) => { setReportData(value) }}
+          reportID={reportID}
           project={project ?? ""}
         />
       )}
+      </>
+      }
+      
 
       {/* {step === 3 && <ReportStep onBack={(value: number) => setStep(value)} reportData={reportData} selectedValues={selectedValues} />} */}
     </div>

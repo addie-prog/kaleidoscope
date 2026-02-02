@@ -13,11 +13,11 @@ type props = {
   selectedValues: any,
   Principles: PrincipleProps[],
   ResetPrinciples: PrincipleProps[],
-  reportData: (value: Array<any>) => void
   userNotes: (value: string) => void
   updatedPrinciples: (value: Array<any>) => void
   project: any;
   projectData: any;
+  reportID: string;
 }
 
 type PrincipleProps = {
@@ -34,7 +34,7 @@ type PrincipleProps = {
   layers: any[];
 }
 
-export default function AllocatePage({ projectData, onNext, selectedValues, Principles, reportData, userNotes, updatedPrinciples, ResetPrinciples, project }: props) {
+export default function AllocatePage({ reportID, projectData, onNext, selectedValues, Principles,  userNotes, updatedPrinciples, ResetPrinciples, project }: props) {
   const totalBudget = selectedValues.budget;
   const [principles, setPrinciples] = useState<PrincipleProps[]>(selectedValues?.principles?.length > 0 ? selectedValues?.principles : Principles);
   const [showToast, setShowToast] = useState<boolean>(false);
@@ -315,6 +315,7 @@ export default function AllocatePage({ projectData, onNext, selectedValues, Prin
   };
 
   const createProject = async (data: any) => {
+
     const interactionData = !project ? (localStorage.getItem("interactionData") ? localStorage.getItem("interactionData") : "") : JSON.stringify(projectData?.interation_data);
     let cleanedInteractionData: any;
     const items = data?.reduce((acc: any, item: any) => {
@@ -349,7 +350,7 @@ export default function AllocatePage({ projectData, onNext, selectedValues, Prin
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        reportId: !project ? (localStorage.getItem("reportId")?.split(",").pop()) : projectData?.["Report ID"],
+        reportId: reportID ? reportID : projectData?.["Report ID"],
         sessionId: !project ? localStorage.getItem("sessionId") : projectData?.["Session ID"],
         items,
         Allocations: principles
@@ -542,7 +543,6 @@ export default function AllocatePage({ projectData, onNext, selectedValues, Prin
       });
     });
     userNotes(selectedValues?.notes);
-    reportData(newReportData);
     createProject(newReportData);
   }
 

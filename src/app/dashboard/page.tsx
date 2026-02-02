@@ -584,7 +584,7 @@ export default function Dashboard2Page({
                     <div className="flex gap-0 flex-col pb-[5px] border-b mb-0">
                       <div className="text-sm text-[#6B7280]">Project Name</div>
                       <div className="text-[15px] font-semibold text-[#1C202C]">
-                        {projectData["Budget Inputs"]?.["Project Name"] ? projectData["Budget Inputs"]?.["Project Name"] : selectedValues?.projectName}
+                        {!loader ? (projectData["Budget Inputs"]?.["Project Name"] ? projectData["Budget Inputs"]?.["Project Name"] : selectedValues?.projectName) : "Loading..."}
                       </div>
                     </div>
                   }
@@ -593,7 +593,7 @@ export default function Dashboard2Page({
                   <div className="flex gap-0 flex-col pb-[5px] border-b mb-0">
                     <div className="text-sm text-[#6B7280]">Tech Type</div>
                     <div className="text-[15px] font-semibold text-[#1C202C]">
-                      {projectData["Budget Inputs"]?.["Vertical"] ? projectData["Budget Inputs"]?.["Vertical"] : selectedValues?.categoryName ? selectedValues?.categoryName : "None"}
+                      {!loader ? (projectData["Budget Inputs"]?.["Vertical"] ? projectData["Budget Inputs"]?.["Vertical"] : selectedValues?.categoryName ? selectedValues?.categoryName : "None") : "Loading..."}
 
                     </div>
                   </div>
@@ -601,7 +601,7 @@ export default function Dashboard2Page({
                   <div className="flex gap-0 flex-col mb-0">
                     <div className="text-sm text-[#6B7280]">Budget</div>
                     <div className="text-xl font-bold text-[#323743] leading-[normal]">
-                      ${projectData["Budget Inputs"]?.["Total cash"] ? (projectData["Budget Inputs"]?.["Total cash"]).toLocaleString("en-US") : selectedValues?.budget}
+                    {!loader ?  `$${projectData["Budget Inputs"]?.["Total cash"] ? (projectData["Budget Inputs"]?.["Total cash"]).toLocaleString("en-US") : selectedValues?.budget}` : "Loading..."}
                     </div>
                   </div>
                 </div>
@@ -609,7 +609,7 @@ export default function Dashboard2Page({
             </div>
 
             {/* Allocation */}
-
+          {!loader && tabs?.filter((t: objectType) => t.checked === true)?.length >0 &&
             <div>
               <h2 className="text-lg font-semibold text-[#323743] mb-2">
                 Allocation
@@ -701,7 +701,7 @@ export default function Dashboard2Page({
                   )}
                 </div>
               </div>
-            </div>
+            </div>}
           </div>
         </aside>
 

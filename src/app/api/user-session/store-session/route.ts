@@ -1,5 +1,5 @@
 import { adminDb } from "@/lib/firebase-auth";
-import { Timestamp } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
             "Email": Email ?? null
         }
         if (reportId) {
-            fields["Reports"] = reportId.split(",");
+            fields["Reports"] = FieldValue.arrayUnion(reportId);
         }
         if (type == 1) {
             fields["Date Joined"] = Timestamp.now();
