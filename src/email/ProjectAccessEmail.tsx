@@ -14,11 +14,13 @@ const ProjectAccessEmail = ({
       <Head />
       <Body style={styles.body}>
         {/* Email Client Card */}
-         
+           <Text style={styles.text}>
+              Hi User,
+            </Text>
           {/* Email Content */}
           <div style={styles.content}>
             <Text style={styles.text}>
-              On behalf of <strong>The Kaleidoscope Project</strong>, thank you for
+              On behalf of <strong>The Kaleidoscope Project</strong>, We would like to thank you for
               using our budgeting tool for responsible AI deployments.
             </Text>
 
@@ -156,7 +158,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: "12px",
   },
   button: {
-    display: "inline-block",
     padding: "12px 24px", 
     backgroundColor: "#465fff",
     color: "#fff",
@@ -164,7 +165,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "8px",
     fontSize: "14px",
     fontWeight: 600,
-    margin: "16px 0",
+    margin: "auto",
+    display: "block",
+    width: "fit-content",
     textAlign: "center",
   },
   hr: {
