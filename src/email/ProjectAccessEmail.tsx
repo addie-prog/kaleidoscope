@@ -14,11 +14,12 @@ const ProjectAccessEmail = ({
       <Head />
       <Body style={styles.body}>
         {/* Email Client Card */}
-           <Text style={styles.text}>
-              Hi User,
-            </Text>
+         
           {/* Email Content */}
           <div style={styles.content}>
+            <Text style={styles.text}>
+              Hi User,
+            </Text>
             <Text style={styles.text}>
               On behalf of <strong>The Kaleidoscope Project</strong>, We would like to thank you for
               using our budgeting tool for responsible AI deployments.
@@ -28,10 +29,11 @@ const ProjectAccessEmail = ({
               Here is the secure access link for your {projectName ? "Project" : ""} <strong>{projectName ? projectName : "Project"}</strong>.
             </Text>
 
-            <Link href={accessLink} style={styles.button}>
-              Open Project
-            </Link>
-
+            <div style={{ textAlign: "center" }}>
+              <Link href={accessLink} style={styles.button}>
+                Open Project
+              </Link>
+            </div>
             <Hr style={styles.hr} />
 
             <Text style={styles.warning}>
@@ -166,8 +168,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "14px",
     fontWeight: 600,
     margin: "auto",
-    display: "block",
-    width: "fit-content",
+    display: "inline-block",
     textAlign: "center",
   },
   hr: {
