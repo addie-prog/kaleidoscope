@@ -157,7 +157,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   button: {
     display: "inline-block",
-    padding: "12px 24px",
+    padding: "12px 24px", 
     backgroundColor: "#465fff",
     color: "#fff",
     textDecoration: "none",
