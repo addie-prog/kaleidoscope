@@ -14,17 +14,17 @@ export function UnsavedChangesModal({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-[420px] m-4">
+    <Modal isOpen={isOpen} onClose={onClose} className="max-w-[500px] m-4">
       <div
         className="bg-white rounded-2xl p-6 text-center mt-[15px]"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-3">
-          Unsaved changes detected
+          Generate report to save your changes
         </h3>
 
         <p className="text-sm text-gray-600 mb-6">
-          Please save your changes before leaving this page.
+          Please generate the report before leaving this page to avoid losing your updates.
         </p>
 
         <div className="flex gap-3 justify-center">

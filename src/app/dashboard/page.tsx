@@ -52,7 +52,7 @@ export default function Dashboard2Page({
   const [projectData, setProjectData] = useState<objectType>({});
   const [loader, setLoader] = useState<boolean>(false);
   const [storedValues, setStoredValues] = useState<objectType>({});
-  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<boolean>(false);
 
   // For second tab row
   const navRef2 = useRef<HTMLDivElement>(null);
@@ -275,8 +275,8 @@ export default function Dashboard2Page({
       })
     });
     try {
-      const { id } = await res.json();
-
+      const {id} = await res.json();
+      sendEmail(email);
       setStoredValues({
           ...storedValues,
         interactionData: {
@@ -287,60 +287,36 @@ export default function Dashboard2Page({
         }
         });
 
-        setSuccessMessage("Data Stored!");
-        setTimeout(() => {
-            setSuccessMessage("");
-        }, 4000);
-      
     } catch (e) {
       console.log("Error in edit project: ", e);
     }
   }
 
-
-  // Different cards for different sub-tabs
-  // const getCardsForSubTab = (subCardId: string): any => {
-  //   const items: any = localStorage.getItem("newReportData");
-  //   const cards = items ? JSON.parse(items) : [];
-
-  //   const cardsMap: Record<string, SubTab[]> = cards.reduce((acc: any, tab: any) => {
-  //     acc[tab.layerId] = tab?.items ?? [];
-  //     return acc;
-  //   }, {});
-
-  //   const groupedByCategory = (cardsMap[subCardId] || []).reduce(
-  //     (acc: any, card: any) => {
-  //       const category =
-  //         Array.isArray(card["Category"])
-  //           ? card["Category"][0]
-  //           : card["Category"] || "Uncategorized";
-
-  //       if (!acc[category]) {
-  //         acc[category] = [];
-  //       }
-
-  //       acc[category].push({
-  //         ...card,
-  //         activeCardTab: "action",
-  //         isExpanded: false,
-  //         cardChecked: false,
-  //         steps: card?.steps?.map((step: any) => ({
-  //           ...step,
-  //           completed: step.completed ?? false,
-  //           skipped: step.skipped ?? false,
-  //           note: step.note ?? "",
-  //         })),
-  //       });
-
-  //       return acc;
-  //     },
-  //     []
-  //   );
-
-  //   const groupedCards = subCardId && groupedByCategory;
-  //   return groupedCards;
-  // };
-
+  const sendEmail = async (email: string) => {
+   
+    const res = await fetch("/api/mail", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        projectName: projectData["Budget Inputs"]?.["Project Name"] ? `${projectData["Budget Inputs"]?.["Project Name"]}` : "",
+        email: email,
+        link: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?project=${projectData["Project ID"]}`
+      })
+    });
+    try {
+      const { id } = await res.json();
+        setSuccessMessage(true);
+        setTimeout(() => {
+            setSuccessMessage(false);
+        }, 6000);
+      
+    } catch (e) {
+      console.log("Error in edit project: ", e);
+    }
+  }
 
   const scrollNextTabIfNeeded = (
     nav: HTMLDivElement | null,
@@ -423,22 +399,6 @@ export default function Dashboard2Page({
     }));
   };
 
-
-
-  // useEffect(() => {
-  //   if (activeSubTab) {
-  //     setActiveCards((prev: any) => {
-  //       if (prev[activeSubTab]) {
-  //         return prev; // already exists → do nothing
-  //       }
-
-  //       return {
-  //         ...prev,
-  //         [activeSubTab]: getCardsForSubTab(activeSubTab),
-  //       };
-  //     });
-  //   }
-  // }, [activeSubTab])
 
 
   const getProgressPercentage = (steps: ActionStep[]) => {

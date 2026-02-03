@@ -2,10 +2,21 @@ import { adminDb } from "@/lib/firebase-auth";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
+
+// Function to upsert a session document
+async function upsertSession(sessionID: string, sessionData: any) {
+    const sessionRef = sessionID
+    ? adminDb.collection("sessions").doc(sessionID)
+    : adminDb.collection("sessions").doc();
+
+    await sessionRef.set(sessionData, { merge: true });
+
+    return sessionRef.id;
+}
+
 export async function POST(request: Request) {
     const { recordId, userType, type, UTCSource, Email, reportId } = await request.json()
     try {
-        let docRef: any;
         const fields: any = {
             "User Type": userType,
             "UTM Source": UTCSource ?? null,
@@ -16,29 +27,12 @@ export async function POST(request: Request) {
         }
         if (type == 1) {
             fields["Date Joined"] = Timestamp.now();
-            fields["Date Updated"] = null;
         }
+        const docId = await upsertSession(recordId, fields);
 
-        if (recordId) {
-
-            docRef = adminDb.collection("sessions").doc(recordId);
-
-            // Update document (only fields you pass will be updated)
-            await docRef.update({
-                ...fields,
-                "Date Updated": Timestamp.now() // track update time
-            });
-        }
-        else {
-            docRef = await adminDb
-                .collection("sessions")
-                .add({
-                    ...fields
-                });
-        }
         return NextResponse.json({
             success: true,
-            id: docRef.id,
+            id: docId,
         });
     } catch (error: any) {
         return NextResponse.json(

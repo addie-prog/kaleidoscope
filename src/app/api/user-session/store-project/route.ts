@@ -56,7 +56,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      id: existProjectId ? existProjectId : projectId,
+      id: existProjectId ? existProjectId : projectId
     });
 
 
