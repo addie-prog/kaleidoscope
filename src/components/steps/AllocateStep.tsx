@@ -380,8 +380,11 @@ export default function AllocatePage({ reportID, projectData, onNext, selectedVa
     });
     try {
       const { id } = await res.json();
-   
-      router.push(`/dashboard?project=${id}`);
+      if(!project){
+        localStorage.setItem("copyModal","true");
+      }
+        router.push(`/dashboard?project=${id}`);
+
     } catch (e) {
       console.log("Error in create/edit project: ", e);
     }

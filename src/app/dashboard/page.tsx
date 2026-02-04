@@ -10,6 +10,7 @@ import DownloadReportCSVModal from "@/components/modals/DownloadReportCSVModal";
 import { Doughnut } from 'react-chartjs-2';
 import '@/lib/chartjs';
 import getBudgetTier from "@/lib/budgetTiers";
+import { CopyLinkModal } from "@/components/modals/copyModal";
 
 type objectType = {
   [key: string | number]: any
@@ -45,14 +46,17 @@ export default function Dashboard2Page({
   const [currentSubTabs, setCurrentSubTabs] = useState<Array<SubTab>>([])
   const project = use(searchParams)?.project ?? null;
   const saveProgressModal = useModal();
+  const copyModal = useModal();
   const downloadReportModal = useModal();
   const downloadCSVModal = useModal();
   const navRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [projectData, setProjectData] = useState<objectType>({});
-  const [loader, setLoader] = useState<boolean>(false);
+  const [loader, setLoader] = useState<boolean>(true);
   const [storedValues, setStoredValues] = useState<objectType>({});
   const [successMessage, setSuccessMessage] = useState<boolean>(false);
+  const [pending, setPending] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
 
   // For second tab row
   const navRef2 = useRef<HTMLDivElement>(null);
@@ -96,12 +100,12 @@ export default function Dashboard2Page({
       if (data?.length > 0) {
         setActiveTab("FAIRNESS");
         setProjectData(data[0]);
-        if(!tiers){
+        if (!tiers) {
           getBudgetTier();
         }
-      
+
         setStoredValues({
-          selectedValues:{
+          selectedValues: {
             budget: data[0]["Budget Inputs"]?.["Total cash"].toLocaleString("en-US"),
             category: data[0]["Budget Inputs"]?.["category"],
             categoryName: data[0]["Budget Inputs"]?.["Vertical"],
@@ -116,12 +120,12 @@ export default function Dashboard2Page({
           reportId: data[0]["Report ID"],
           interactionData: data[0]["interation_data"]
         })
-       
+
         if (arr.length > 0) {
           fetchItems(arr, data);
         }
       }
-      
+
     } catch (e) {
       console.log("Error in edit project: ", e);
     }
@@ -166,7 +170,7 @@ export default function Dashboard2Page({
           activeCardTab: "action"
         };
       });
-    
+
 
       const groupedData = enrichedItems.reduce((acc: any, item: any) => {
         const executionLayer = item["Execution Layer"];
@@ -203,20 +207,14 @@ export default function Dashboard2Page({
 
   useEffect(() => {
     fetchProjectData();
-  }, [])
+    if (localStorage?.getItem("copyModal") == "true") {
+      copyModal.openModal();
+    }
 
-  const handleSubmit = async (email: string) => {
-    const cardIds = Object.values(currentCards)
-      .flatMap(category =>
-        Object.values(category) // must_have, should_have, skip
-          .flatMap((items: any) =>
-            items
-              .filter((item: objectType) => item?.cardChecked)
-              .map((item: objectType) => item.id)
-          )
-      );
+  }, []);
 
-    const result = Object.values(currentCards)
+  const stepsAction = (currentCards: objectType) => {
+    return Object.values(currentCards)
       .flatMap(layer =>
         Object.values(layer)
           .flatMap((items: any) =>
@@ -255,8 +253,71 @@ export default function Dashboard2Page({
           step_notes: {} as Record<string, string>
         }
       );
+  }
+
+  useEffect(() => {
+    const compareData = () => {
+      const cardIds: any = Object.values(currentCards)
+        .flatMap(category =>
+          Object.values(category) // must_have, should_have, skip
+            .flatMap((items: any) =>
+              items
+                .filter((item: objectType) => item?.cardChecked)
+                .map((item: objectType) => item.id)
+            )
+        );
+
+      const result: any = stepsAction(currentCards)
+      let interation_data= null;
+      if(cardIds?.length != 0 || result?.checked_step_ids?.length != 0  || result?.skipped_step_ids?.length != 0 || Object.values(result?.step_notes)?.length != 0){
+         interation_data = {
+        checked_card_ids: cardIds,
+        checked_step_ids: result?.checked_step_ids,
+        skipped_step_ids: result?.skipped_step_ids,
+        step_notes: result?.step_notes
+      }
+      }
+      
+      console.log(JSON.stringify(interation_data),JSON.stringify(projectData["interation_data"]) )
+      if (JSON.stringify(interation_data) != JSON.stringify(projectData["interation_data"])) {
+        setPending(true);
+      } else {
+        setPending(false);
+      }
+    }
+    compareData();
+  }, [currentCards])
+
+  useEffect(() => {
+    if (!pending) return;
+
+    const beforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+      saveProgressModal.openModal();
+    };
+
+    window.addEventListener('beforeunload', beforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnload);
+    };
+  }, [pending]);
 
 
+
+  const handleSubmit = async (email: string, type: number) => {
+    const cardIds = Object.values(currentCards)
+      .flatMap(category =>
+        Object.values(category) // must_have, should_have, skip
+          .flatMap((items: any) =>
+            items
+              .filter((item: objectType) => item?.cardChecked)
+              .map((item: objectType) => item.id)
+          )
+      );
+
+    const result: any = stepsAction(currentCards);
     const res = await fetch("/api/user-session/store-project", {
       method: 'POST',
       headers: {
@@ -270,22 +331,27 @@ export default function Dashboard2Page({
           skipped_step_ids: result?.skipped_step_ids,
           step_notes: result?.step_notes
         },
+        type,
         existProjectId: project,
-        email 
+        email
       })
     });
     try {
-      const {id} = await res.json();
-      sendEmail(email);
+      const { id } = await res.json();
+      if(type == 1)
+      {
+        sendEmail(email);
+      }
+      setPending(false);
       setStoredValues({
-          ...storedValues,
+        ...storedValues,
         interactionData: {
           checked_card_ids: cardIds,
           checked_step_ids: result?.checked_step_ids,
           skipped_step_ids: result?.skipped_step_ids,
           step_notes: result?.step_notes
         }
-        });
+      });
 
     } catch (e) {
       console.log("Error in edit project: ", e);
@@ -293,7 +359,7 @@ export default function Dashboard2Page({
   }
 
   const sendEmail = async (email: string) => {
-   
+
     const res = await fetch("/api/mail", {
       method: 'POST',
       headers: {
@@ -308,11 +374,12 @@ export default function Dashboard2Page({
     });
     try {
       const { id } = await res.json();
-        setSuccessMessage(true);
-        setTimeout(() => {
-            setSuccessMessage(false);
-        }, 6000);
-      
+      setSuccessMessage(true);
+      setLinkSent(true);
+      setTimeout(() => {
+        setSuccessMessage(false);
+      }, 4000);
+
     } catch (e) {
       console.log("Error in edit project: ", e);
     }
@@ -561,7 +628,7 @@ export default function Dashboard2Page({
                   <div className="flex gap-0 flex-col mb-0">
                     <div className="text-sm text-[#6B7280]">Budget</div>
                     <div className="text-xl font-bold text-[#323743] leading-[normal]">
-                    {!loader ?  `$${projectData["Budget Inputs"]?.["Total cash"] ? (projectData["Budget Inputs"]?.["Total cash"]).toLocaleString("en-US") : selectedValues?.budget}` : "Loading..."}
+                      {!loader ? `$${projectData["Budget Inputs"]?.["Total cash"] ? (projectData["Budget Inputs"]?.["Total cash"]).toLocaleString("en-US") : selectedValues?.budget}` : "Loading..."}
                     </div>
                   </div>
                 </div>
@@ -569,49 +636,49 @@ export default function Dashboard2Page({
             </div>
 
             {/* Allocation */}
-          {!loader && tabs?.filter((t: objectType) => t.checked === true)?.length >0 &&
-            <div>
-              <h2 className="text-lg font-semibold text-[#323743] mb-2">
-                Allocation
-              </h2>
-              <div style={{
-                border: '2.5px solid transparent',
-                backgroundImage: 'linear-gradient(#FFFFFF, #FFFFFF), linear-gradient(135deg, #8B5CF5 0%, #EF4444 50%, #05B5D4 75%, #0C9668 87.5%, #D68908 93.75%, #3B81F5 100%)',
-                backgroundOrigin: 'border-box',
-                backgroundClip: 'padding-box, border-box',
-              }} className="rounded-xl bg-[#F9FAFB] p-3">
-                <div className="relative w-42 h-42 mx-auto mb-6 mt-2">
-                  <Doughnut
-                    data={{
-                      labels: tabs
-                        ?.filter((t: objectType) => t.checked)
-                        ?.map((chart: objectType) => chart.name),
+            {!loader && tabs?.filter((t: objectType) => t.checked === true)?.length > 0 &&
+              <div>
+                <h2 className="text-lg font-semibold text-[#323743] mb-2">
+                  Allocation
+                </h2>
+                <div style={{
+                  border: '2.5px solid transparent',
+                  backgroundImage: 'linear-gradient(#FFFFFF, #FFFFFF), linear-gradient(135deg, #8B5CF5 0%, #EF4444 50%, #05B5D4 75%, #0C9668 87.5%, #D68908 93.75%, #3B81F5 100%)',
+                  backgroundOrigin: 'border-box',
+                  backgroundClip: 'padding-box, border-box',
+                }} className="rounded-xl bg-[#F9FAFB] p-3">
+                  <div className="relative w-42 h-42 mx-auto mb-6 mt-2">
+                    <Doughnut
+                      data={{
+                        labels: tabs
+                          ?.filter((t: objectType) => t.checked)
+                          ?.map((chart: objectType) => chart.name),
 
-                      datasets: [
-                        {
-                          data: tabs
-                            ?.filter((t: objectType) => t.checked)
-                            ?.map((chart: objectType) => Number(chart.percentage) || 0),
+                        datasets: [
+                          {
+                            data: tabs
+                              ?.filter((t: objectType) => t.checked)
+                              ?.map((chart: objectType) => Number(chart.percentage) || 0),
 
-                          backgroundColor: tabs
-                            ?.filter((t: objectType) => t.checked)
-                            ?.map((chart: objectType) => chart.color),
+                            backgroundColor: tabs
+                              ?.filter((t: objectType) => t.checked)
+                              ?.map((chart: objectType) => chart.color),
+                          },
+                        ],
+                      }}
+                      options={{
+                        plugins: {
+                          legend: {
+                            display: false, //  removes top labels
+                          },
                         },
-                      ],
-                    }}
-                    options={{
-                      plugins: {
-                        legend: {
-                          display: false, //  removes top labels
-                        },
-                      },
-                    }}
-                  />
+                      }}
+                    />
 
 
-                </div>
+                  </div>
 
-                {/* <div className="relative w-42 h-42 mx-auto mb-6 mt-2">
+                  {/* <div className="relative w-42 h-42 mx-auto mb-6 mt-2">
                   <svg className="w-full h-full" viewBox="0 0 168 168">
                     <path
                       d="M152.254 35.0365C140.561 18.7378 123.423 7.16122 103.937 2.40037C84.4512 -2.36049 63.9051 0.00874235 46.0143 9.07957C28.1236 18.1504 14.0694 33.324 6.39356 51.8561C-1.28232 70.3882 -2.07312 91.0553 4.16416 110.12C10.4014 129.184 23.255 145.387 40.4003 155.799C57.5455 166.21 77.8505 170.143 97.6431 166.885C117.436 163.627 135.409 153.394 148.313 138.036C161.216 122.679 168.198 103.21 167.996 83.1526L144.477 83.3899C144.623 97.8316 139.596 111.849 130.305 122.906C121.014 133.964 108.074 141.331 93.823 143.677C79.5724 146.023 64.9528 143.191 52.6082 135.695C40.2636 128.199 31.009 116.533 26.5182 102.806C22.0273 89.0799 22.5967 74.1995 28.1234 60.8564C33.65 47.5133 43.769 36.5883 56.6503 30.0573C69.5316 23.5263 84.3249 21.8205 98.3546 25.2483C112.384 28.6761 124.724 37.0113 133.143 48.7463L152.254 35.0365Z"
@@ -637,31 +704,31 @@ export default function Dashboard2Page({
                   </svg>
                 </div> */}
 
-                <div className="space-y-0 border-t border-[#E5E7EB] pb-2">
-                  {tabs?.filter((t: objectType) => t.checked === true)?.map((tb: objectType, ij: number) => {
-                    const totalTabs = tabs?.filter((t: objectType) => t.checked === true).length;
-                    return <div key={ij} className={`flex justify-between items-center py-2  ${Number(totalTabs) - 1 > ij ? "border-b" : ""} border-[#E5E7EB]`}>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full" style={{
-                          background:
-                            tb.color
-                        }} />
-                        <span className="text-sm font-medium" style={{
-                          color:
-                            tb.color
-                        }}>
-                          {tb?.name}
+                  <div className="space-y-0 border-t border-[#E5E7EB] pb-2">
+                    {tabs?.filter((t: objectType) => t.checked === true)?.map((tb: objectType, ij: number) => {
+                      const totalTabs = tabs?.filter((t: objectType) => t.checked === true).length;
+                      return <div key={ij} className={`flex justify-between items-center py-2  ${Number(totalTabs) - 1 > ij ? "border-b" : ""} border-[#E5E7EB]`}>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full" style={{
+                            background:
+                              tb.color
+                          }} />
+                          <span className="text-sm font-medium" style={{
+                            color:
+                              tb.color
+                          }}>
+                            {tb?.name}
+                          </span>
+                        </div>
+                        <span className="text-[15px] font-medium text-[#323743]">
+                          {tb?.percentage}%
                         </span>
                       </div>
-                      <span className="text-[15px] font-medium text-[#323743]">
-                        {tb?.percentage}%
-                      </span>
-                    </div>
-                  }
-                  )}
+                    }
+                    )}
+                  </div>
                 </div>
-              </div>
-            </div>}
+              </div>}
           </div>
         </aside>
 
@@ -1502,7 +1569,14 @@ export default function Dashboard2Page({
                 </p>
 
                 {/* Action Button */}
-                <button onClick={() => redirect(`/calculator?project=${project}&step=2`)} className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold sm:text-base text-sm rounded-lg transition-colors">
+                <button onClick={() =>{
+                  
+                  if (pending) {
+                    saveProgressModal.openModal();
+                  } else {
+                    redirect(`/calculator?project=${project}&step=2`);
+                  }
+                  }} className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold sm:text-base text-sm rounded-lg transition-colors">
                   <svg
                     width="20"
                     height="20"
@@ -1518,22 +1592,26 @@ export default function Dashboard2Page({
                   Edit Budget Allocation
                 </button>
               </div>
-             
+
             }
-            {loader ?  (
-            <div className="h-full flex bg-white p-5 flex items-center justify-center">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div className="relative w-16 h-16">
-                <div className="absolute inset-0 rounded-full border-4 border-[#F0F0F0]"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-[#3B82F6] border-t-transparent animate-spin"></div>
-              </div>
-              <p className="text-lg font-medium text-[#6B7280]">
-                Loading recommendations...
-              </p>
-            </div>
-          </div>) : ""}
+            {loader ? (
+              <div className="h-full flex bg-white p-5 flex items-center justify-center">
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <div className="relative w-16 h-16">
+                    <div className="absolute inset-0 rounded-full border-4 border-[#F0F0F0]"></div>
+                    <div className="absolute inset-0 rounded-full border-4 border-[#3B82F6] border-t-transparent animate-spin"></div>
+                  </div>
+                  <p className="text-lg font-medium text-[#6B7280]">
+                    Loading recommendations...
+                  </p>
+                </div>
+              </div>) : ""}
           </div>
-          <SaveProgressModal successMessage={successMessage} saveProgess={(val: string) => handleSubmit(val)} selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={saveProgressModal.closeModal} />
+          <CopyLinkModal isOpen={copyModal.isOpen} onClose={copyModal.closeModal} link={`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?project=${project}`} />
+          <SaveProgressModal linkSent={projectData["Magic Link Sent"] || linkSent} successMessage={successMessage} saveProgess={(val: string, type: number) => handleSubmit(val, type)} selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={()=>{
+            saveProgressModal.closeModal();
+            setPending(false);
+            }} />
           <DownloadReportModal selectedEmail={selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
           <DownloadReportCSVModal selectedEmail={selectedValues?.email} isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />
         </main>
@@ -1542,7 +1620,14 @@ export default function Dashboard2Page({
       <div className="fixed z-90 w-full left-0 right-0 bottom-0 bg-white border-t border-[#E5E5E5] p-2 sm:p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-2.5 sm:items-center sm:justify-between">
           <div className="flex gap-2 sm:gap-2.5">
-            <button onClick={() => redirect(`/calculator?project=${project}`)} className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-2 sm:px-3 py-2 border border-[#E5E7EB] bg-[#F9FAFB] rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors">
+            <button onClick={() => {
+              if (pending) {
+                saveProgressModal.openModal();
+              } else {
+                redirect(`/calculator?project=${project}`);
+              }
+
+            }} className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-2 sm:px-3 py-2 border border-[#E5E7EB] bg-[#F9FAFB] rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors">
               <svg
                 width="20"
                 height="20"
@@ -1557,7 +1642,11 @@ export default function Dashboard2Page({
               </svg>
               <span className="text-sm sm:text-base font-semibold text-[#3B82F6]">Edit</span>
             </button>
-            <button onClick={saveProgressModal.openModal} className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-2 sm:px-3 py-2 border border-[#E5E7EB] bg-[#F9FAFB] rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors">
+            <button onClick={()=>{
+              setSuccessMessage(false);
+              saveProgressModal.openModal()
+              }
+              } className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-2 sm:px-3 py-2 border border-[#E5E7EB] bg-[#F9FAFB] rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors">
               <svg
                 width="20"
                 height="20"

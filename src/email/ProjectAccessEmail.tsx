@@ -1,27 +1,30 @@
-import { Html, Head, Body, Container, Text, Link, Hr } from "@react-email/components";
+import { Html, Head, Body, Text, Link, Hr, Container, Section } from "@react-email/components";
 
 type ProjectAccessEmailProps = {
   projectName?: string;
   accessLink: string;
+  userName?: string;
 };
 
-const ProjectAccessEmail = ({
+const KaleidoscopeEmail = ({
   projectName = "Project",
   accessLink,
+  userName = "User",
 }: ProjectAccessEmailProps) => {
   return (
     <Html>
       <Head />
       <Body style={styles.body}>
-        {/* Email Client Card */}
-         
-          {/* Email Content */}
-          <div style={styles.content}>
-            <Text style={styles.text}>
-              Hi User,
+        <Container style={styles.container}>
+       
+          {/* Main Content */}
+          <Section style={styles.content}>
+            <Text style={styles.greeting}>
+              Hi {userName},
             </Text>
+            
             <Text style={styles.text}>
-              On behalf of <strong>The Kaleidoscope Project</strong>, We would like to thank you for
+              On behalf of <strong>The Kaleidoscope Project</strong>, we would like to thank you for
               using our budgeting tool for responsible AI deployments.
             </Text>
 
@@ -29,29 +32,40 @@ const ProjectAccessEmail = ({
               Here is the secure access link for your {projectName ? "Project" : ""} <strong>{projectName ? projectName : "Project"}</strong>.
             </Text>
 
-            <div style={{ textAlign: "center" }}>
+            {/* CTA Button */}
+            <div style={styles.buttonContainer}>
               <Link href={accessLink} style={styles.button}>
-                Open Project
+                Access Your Project
               </Link>
             </div>
+
             <Hr style={styles.hr} />
 
-            <Text style={styles.warning}>
-              ⚠️ <strong>Important Note on Sharing</strong><br />
-              This is a live edit link. Anyone with this URL can adjust the budget
-              and strategy settings.
-            </Text>
+            {/* Warning Box */}
+            <Section style={styles.warningBox}>
+              <Text style={styles.warningTitle}>
+                ⚠️ <strong>Important Note on Sharing</strong>
+              </Text>
+              <Text style={styles.warningText}>
+                This is a live edit link. Anyone with this URL can adjust the budget
+                and strategy settings.
+              </Text>
+              <Text style={styles.text}>
+                • <strong>To Collaborate:</strong> Share this email with your team.<br />
+                • <strong>To Report:</strong>  If you need a static, read-only view, please use the "Download PDF" button 
+inside the tool.
+              </Text>
+            </Section>
 
-            <Text style={styles.text}>
-              • <strong>To Collaborate:</strong> Share this email with your team.<br />
-              • <strong>To Report:</strong> Use the “Download PDF” button inside the tool.
-            </Text>
+            {/* Privacy Promise */}
+            <Section style={styles.privacyBox}>
+              <Text style={styles.privacyText}>
+                🔒 <strong>Our Privacy Promise:</strong> We do not share this link without
+                your explicit permission.
+              </Text>
+            </Section>
 
-            <Text style={styles.text}>
-              <strong>Our Privacy Promise:</strong> We do not share this link without
-              your explicit permission.
-            </Text>
-
+            {/* Mission Statement */}
             <Text style={styles.text}>
               Our mission is to equip changemakers with the resources to navigate
               the AI age. Check out{" "}
@@ -65,123 +79,149 @@ const ProjectAccessEmail = ({
               Please reach out with any questions or feedback so we can improve our tool!
             </Text>
 
+            <Hr style={styles.divider} />
+
+            {/* Signature */}
             <Text style={styles.signature}>
               <strong>Addie Achan</strong><br />
               Founder, The Kaleidoscope Project<br/>
-              projectkaleidoscope.org
+              <Link href="https://projectkaleidoscope.org" style={styles.signatureLink}>
+                projectkaleidoscope.org
+              </Link>
             </Text>
-          </div>
+
+           
+          </Section>
+        </Container>
       </Body>
     </Html>
   );
 };
 
-export default ProjectAccessEmail;
+export default KaleidoscopeEmail;
 
 const styles: { [key: string]: React.CSSProperties } = {
   body: {
     backgroundColor: "#f6f9fc",
-    fontFamily: "Arial, sans-serif",
-    padding: "16px",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif",
+    padding: "40px 20px",
   },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    border: "1px solid #e5e7eb",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.05)",
-    maxWidth: "600px",
+  container: {
+    width: "100%",
     margin: "0 auto",
+    backgroundColor: "#ffffff",
+    borderRadius: "0",
     overflow: "hidden",
+    maxWidth: "700px",
   },
   header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    background: "linear-gradient(to right, #f9fafb, #f3f4f6)",
-    padding: "16px",
-    borderBottom: "1px solid #e5e7eb",
-  },
-  headerLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  statusDot: {
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    backgroundColor: "#22c55e",
-  },
-  headerText: {
-    fontSize: "14px",
-    fontWeight: 500,
-    color: "#111827",
-  },
-  closeButton: {
-    background: "none",
-    border: "none",
-    fontSize: "16px",
-    cursor: "pointer",
-    color: "#6b7280",
-  },
-  emailInfo: {
-    padding: "0 16px 16px 16px",
-  },
-  emailRow: {
-    backgroundColor: "#fff",
-    borderRadius: "6px",
-    padding: "8px 12px",
-    marginBottom: "6px",
-    fontSize: "14px",
-  },
-  label: {
-    color: "#6b7280",
-  },
-  info: {
-    fontWeight: 500,
-    color: "#111827",
-  },
-  content: {
-    background: "linear-gradient(to bottom, #f9fafb, #fff)",
-    padding: "24px 16px",
-  },
-  text: {
-    fontSize: "14px",
-    color: "#111827",
-    lineHeight: 1.6,
-    marginBottom: "12px",
-  },
-  warning: {
-    fontSize: "13px",
-    color: "#b45309",
-    backgroundColor: "#fffbeb",
-    padding: "12px",
-    borderRadius: "8px",
-    marginBottom: "12px",
-  },
-  button: {
-    padding: "12px 24px", 
-    backgroundColor: "#465fff",
-    color: "#fff",
-    textDecoration: "none",
-    borderRadius: "8px",
-    fontSize: "14px",
-    fontWeight: 600,
-    margin: "auto",
-    display: "inline-block",
+    background: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+    padding: "32px 24px",
     textAlign: "center",
   },
+  brandName: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#ffffff",
+    margin: "0 0 8px 0",
+    lineHeight: "1.2",
+  },
+  brandTagline: {
+    fontSize: "14px",
+    color: "rgba(255,255,255,0.95)",
+    margin: "0",
+    lineHeight: "1.2",
+  },
+  content: {
+    padding: "40px 32px",
+  },
+  greeting: {
+    fontSize: "18px",
+    color: "#1a202c",
+    fontWeight: "600",
+    margin: "0 0 20px 0",
+  },
+  text: {
+    fontSize: "15px",
+    color: "#2d3748",
+    lineHeight: "1.7",
+    margin: "0 0 16px 0",
+  },
+  buttonContainer: {
+    textAlign: "center",
+    margin: "32px 0",
+  },
+  button: {
+    display: "inline-block",
+    padding: "14px 32px",
+    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    color: "#ffffff",
+    textDecoration: "none",
+    borderRadius: "8px",
+    fontSize: "16px",
+    fontWeight: "600",
+  },
   hr: {
-    margin: "24px 0",
-    borderColor: "#e5e7eb",
+    margin: "32px 0",
+    borderColor: "#e2e8f0",
+  },
+  warningBox: {
+    backgroundColor: "#fffbeb",
+    border: "1px solid #fcd34d",
+    borderRadius: "8px",
+    padding: "20px",
+    margin: "0 0 24px 0",
+  },
+  warningTitle: {
+    fontSize: "15px",
+    color: "#b45309",
+    margin: "0 0 12px 0",
+  },
+  warningText: {
+    fontSize: "14px",
+    color: "#92400e",
+    margin: "0 0 12px 0",
+    lineHeight: "1.6",
+  },
+  privacyBox: {
+    backgroundColor: "#eff6ff",
+    border: "1px solid #93c5fd",
+    borderRadius: "8px",
+    padding: "16px 20px",
+    margin: "0 0 24px 0",
+  },
+  privacyText: {
+    fontSize: "14px",
+    color: "#1e40af",
+    margin: "0",
+    lineHeight: "1.6",
+  },
+  divider: {
+    margin: "32px 0 24px 0",
+    borderColor: "#e2e8f0",
   },
   link: {
-    color: "#465fff",
-    textDecoration: "underline",
+    color: "#667eea",
+    textDecoration: "none",
+    fontWeight: "600",
   },
   signature: {
-    fontSize: "13px",
-    color: "#6b7280",
-    marginTop: "24px",
+    fontSize: "14px",
+    color: "#4a5568",
+    margin: "0 0 24px 0",
+    lineHeight: "1.6",
+  },
+  signatureLink: {
+    fontSize: "14px",
+    color: "#667eea",
+    textDecoration: "none",
+  },
+  footer: {
+    fontSize: "12px",
+    color: "#a0aec0",
+    textAlign: "center",
+    margin: "0",
+    paddingTop: "20px",
+    borderTop: "1px solid #e2e8f0",
   },
 };

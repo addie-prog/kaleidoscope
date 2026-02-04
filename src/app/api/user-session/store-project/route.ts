@@ -3,7 +3,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const { reportId, sessionId, items, Allocations, userNote, budgetInputs, email, projectId, principles, existProjectId, interation_data } = await request.json()
+  const { reportId, sessionId, type, items, Allocations, userNote, budgetInputs, email, projectId, principles, existProjectId, interation_data } = await request.json()
   try {
     let docRef: any;
     let fields: any;
@@ -23,7 +23,10 @@ export async function POST(request: Request) {
       fields = {
           "interation_data": interation_data,
           "Owner Email": email
-      }
+        }
+    }
+    if(type == 1){
+        fields["Magic Link Sent"] = true;
     }
    
 
