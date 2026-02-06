@@ -269,17 +269,25 @@ export default function Dashboard2Page({
 
       const result: any = stepsAction(currentCards)
       let interation_data= null;
+      let pinteration_data= null;
       if(cardIds?.length != 0 || result?.checked_step_ids?.length != 0  || result?.skipped_step_ids?.length != 0 || Object.values(result?.step_notes)?.length != 0){
-         interation_data = {
+        interation_data = {
         checked_card_ids: cardIds,
         checked_step_ids: result?.checked_step_ids,
         skipped_step_ids: result?.skipped_step_ids,
         step_notes: result?.step_notes
       }
       }
+      if(projectData["interation_data"] != undefined && (projectData["interation_data"]?.checked_card_ids?.length != 0 || projectData["interation_data"]?.checked_step_ids?.length != 0 || projectData["interation_data"]?.skipped_step_ids?.length != 0 || Object.values(projectData["interation_data"]?.step_notes)?.length != 0)){
+        pinteration_data = {
+        checked_card_ids: projectData["interation_data"]?.checked_card_ids,
+        checked_step_ids: projectData["interation_data"]?.checked_step_ids,
+        skipped_step_ids: projectData["interation_data"]?.skipped_step_ids,
+        step_notes: projectData["interation_data"]?.step_notes
+      }
+      }
       
-      console.log(JSON.stringify(interation_data),JSON.stringify(projectData["interation_data"]) )
-      if (JSON.stringify(interation_data) != JSON.stringify(projectData["interation_data"])) {
+      if (JSON.stringify(interation_data) != JSON.stringify(pinteration_data)) {
         setPending(true);
       } else {
         setPending(false);

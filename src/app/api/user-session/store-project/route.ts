@@ -40,8 +40,11 @@ export async function POST(request: Request) {
       .get();
 
       const docRef = snapshot.docs[0].ref;
-      await docRef.set(fields, { merge: true }); //  update()
-     
+
+      await docRef.update({
+        ...fields
+      });
+
     } else {
       fields["Project ID"] = projectId;
       fields["Created At"] = Timestamp.now();
