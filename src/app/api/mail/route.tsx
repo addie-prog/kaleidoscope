@@ -20,7 +20,6 @@ export async function POST(request: Request) {
       html: html,
     },
   });
-  console.log("Mail document created with ID:", snap.id);
 
   return NextResponse.json({ success: true, snap }, { status: 200 });
 }

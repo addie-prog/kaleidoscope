@@ -1620,7 +1620,12 @@ export default function Dashboard2Page({
             saveProgressModal.closeModal();
             setPending(false);
             }} />
-          <DownloadReportModal selectedEmail={selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
+          <DownloadReportModal downloadPDf={()=>{
+            localStorage.setItem("currentCards", JSON.stringify(currentCards));
+            localStorage.setItem("selectedValues", JSON.stringify((projectData["Budget Inputs"])));
+            localStorage.setItem("principles", JSON.stringify((projectData["principles"].filter((k: objectType)=>  k.checked == true))));
+            redirect("/pdf");
+         }} selectedEmail={selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
           <DownloadReportCSVModal selectedEmail={selectedValues?.email} isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />
         </main>
       </div>

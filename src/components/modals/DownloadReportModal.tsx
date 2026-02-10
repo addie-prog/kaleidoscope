@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { Modal } from "../ui/modal";
+import { redirect } from "next/navigation";
 
 interface DownloadReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedEmail: string;
+  downloadPDf: () => void
 }
 
-export default function DownloadReportModal({ isOpen, onClose, selectedEmail }: DownloadReportModalProps) {
+export default function DownloadReportModal({ isOpen, onClose, selectedEmail, downloadPDf }: DownloadReportModalProps) {
   const [email, setEmail] = useState("");
 
   useEffect(()=>{
@@ -20,9 +22,10 @@ export default function DownloadReportModal({ isOpen, onClose, selectedEmail }: 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    downloadPDf();
     // Handle download report logic here
     console.log("Downloading report for:", email);
-    onClose();
+   
   };
 
   return (
@@ -90,7 +93,7 @@ export default function DownloadReportModal({ isOpen, onClose, selectedEmail }: 
 
     {/* Form */}
     <form
-      onSubmit={handleSubmit}
+      onSubmit={(e)=>handleSubmit(e)}
       className="flex flex-col sm:flex-row gap-2.5"
     >
       <input
