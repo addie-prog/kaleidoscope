@@ -166,9 +166,11 @@
   --z-index-99999: 99999;
   --z-index-999999: 999999;
 }
-.min-h-inherit{
+
+.min-h-inherit {
   min-height: inherit;
 }
+
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -178,6 +180,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -185,10 +188,12 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
   }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
   body {
     font-family: var(--font-inter), -apple-system, Roboto, Helvetica, sans-serif;
   }
@@ -255,12 +260,16 @@
 }
 
 @utility no-scrollbar {
+
   /* Chrome, Safari and Opera */
   &::-webkit-scrollbar {
     display: none;
   }
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 @utility custom-scrollbar {
@@ -284,6 +293,7 @@
 
 
 @layer utilities {
+
   /* For Remove Date Icon */
   input[type="date"]::-webkit-inner-spin-button,
   input[type="time"]::-webkit-inner-spin-button,
@@ -375,3 +385,39 @@ input[type="range"].slider::-moz-range-thumb:active {
 }
 
 
+.page-break-avoid {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-top: 24px;
+}
+
+.print-logo {
+  display: none !important;
+}
+
+@media print {
+
+  .print-page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  /* remove break after last page */
+  .print-page-break:last-child {
+    page-break-after: auto;
+  }
+
+  .print-logo {
+    display: block !important;
+
+  }
+
+  .page-break-avoid {
+    margin-top: 0px;
+  }
+
+  .print-logo img {
+    width: 100%;
+  }
+}
