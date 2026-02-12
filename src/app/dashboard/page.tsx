@@ -57,6 +57,7 @@ export default function Dashboard2Page({
   const [successMessage, setSuccessMessage] = useState<boolean>(false);
   const [pending, setPending] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
+  const [pdfLoader, setPdfLoader] = useState(false);
 
   // For second tab row
   const navRef2 = useRef<HTMLDivElement>(null);
@@ -1620,11 +1621,27 @@ export default function Dashboard2Page({
             saveProgressModal.closeModal();
             setPending(false);
             }} />
-          <DownloadReportModal downloadPDf={()=>{
-            localStorage.setItem("currentCards", JSON.stringify(currentCards));
-            localStorage.setItem("selectedValues", JSON.stringify((projectData["Budget Inputs"])));
-            localStorage.setItem("principles", JSON.stringify((projectData["principles"].filter((k: objectType)=>  k.checked == true))));
-            redirect("/pdf");
+          <DownloadReportModal pdfLoader={pdfLoader} downloadPDf={async ()=>{
+            setPdfLoader(true);
+             const res = await fetch("/api/generate-report", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    selectedValues: JSON.stringify((projectData["Budget Inputs"])),
+                    principles: JSON.stringify((projectData["principles"].filter((k: objectType)=>  k.checked == true))),
+                    currentCards: JSON.stringify(currentCards),
+                  }),
+                });
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "report.pdf";
+                a.click();
+                setPdfLoader(false);
          }} selectedEmail={selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
           <DownloadReportCSVModal selectedEmail={selectedValues?.email} isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />
         </main>

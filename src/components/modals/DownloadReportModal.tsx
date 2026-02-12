@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { Modal } from "../ui/modal";
-import { redirect } from "next/navigation";
 
 interface DownloadReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedEmail: string;
   downloadPDf: () => void
+  pdfLoader: boolean
 }
 
-export default function DownloadReportModal({ isOpen, onClose, selectedEmail, downloadPDf }: DownloadReportModalProps) {
+export default function DownloadReportModal({ isOpen, onClose, selectedEmail, downloadPDf, pdfLoader }: DownloadReportModalProps) {
   const [email, setEmail] = useState("");
 
   useEffect(()=>{
@@ -22,10 +22,7 @@ export default function DownloadReportModal({ isOpen, onClose, selectedEmail, do
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    downloadPDf();
-    // Handle download report logic here
-    console.log("Downloading report for:", email);
-   
+    downloadPDf();   
   };
 
   return (
@@ -107,9 +104,10 @@ export default function DownloadReportModal({ isOpen, onClose, selectedEmail, do
 
       <button
         type="submit"
+        disabled={pdfLoader}
         className="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base rounded-lg transition-colors whitespace-nowrap"
       >
-        Download PDF
+        {pdfLoader ? "Downloading..." : "Download PDF"}
       </button>
     </form>
   </div>
