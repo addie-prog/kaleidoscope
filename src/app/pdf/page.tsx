@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { Fragment, useEffect, useRef, useState } from "react";
-import { useReactToPrint } from "react-to-print";
 import { Doughnut } from "react-chartjs-2";
 import "@/lib/chartjs";
 
