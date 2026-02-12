@@ -11,6 +11,7 @@
   "dependencies": {
     "@react-email/components": "^1.0.6",
     "@react-email/render": "^2.0.4",
+    "@sparticuz/chromium": "^143.0.4",
     "@tailwindcss/postcss": "^4.1.17",
     "@vercel/blob": "^2.0.0",
     "chart.js": "^4.5.1",
@@ -19,6 +20,7 @@
     "next": "16.0.10",
     "next-auth": "^4.24.13",
     "puppeteer": "^24.37.2",
+    "puppeteer-core": "^24.37.2",
     "react": "^19.2.0",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.0",

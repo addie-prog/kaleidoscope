@@ -1,15 +1,26 @@
 import puppeteer from "puppeteer";
+import puppeteerCore from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const browser = await puppeteer.launch();
+  const isProd = process.env.NODE_ENV === "production";
+
+  const browser = isProd
+    ? await puppeteerCore.launch({
+        args: chromium.args,
+        executablePath: await chromium.executablePath(),
+        headless: true,
+      })
+    : await puppeteer.launch({
+        headless: true,
+      });
 
   const page = await browser.newPage();
 
-  // Inject data BEFORE page loads
-  await page.evaluateOnNewDocument((data) => {
-    window.__PDF_DATA__ = data;
+  await page.evaluateOnNewDocument((data: any) => {
+    (window as any).__PDF_DATA__ = data;
   }, body);
 
   await page.goto(`${process.env.NEXT_PUBLIC_APP_URL}/pdf`, {
