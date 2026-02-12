@@ -3,9 +3,7 @@ import puppeteer from "puppeteer";
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const browser = await puppeteer.launch({
-    headless: "new",
-  });
+  const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
 
