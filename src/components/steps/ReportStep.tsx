@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useRef } from "react";
-import { useReactToPrint } from "react-to-print";
 
 export default function ReportPage({ reportData, selectedValues, onBack }: { reportData: Array<any>, selectedValues: any, onBack: (value: number) => void }) {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -17,7 +16,6 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
     day: "numeric",
   });
 
-  const reactToPrintFn = useReactToPrint({ contentRef });
 
   const groupedByPrinciple = uniqueByPrinciple.map((principle) => {
     const principleItems = reportData.filter(
@@ -56,10 +54,10 @@ export default function ReportPage({ reportData, selectedValues, onBack }: { rep
           <div className="w-full flex-row flex justify-between">
             <div className="flex gap-1 cursor-pointer items-center" onClick={() => onBack(2)}><Image src="/arrow-left.svg" width={18} height={18} alt='icon' /><span >Edit</span></div>
 
-            <button className="cursor-pointer flex items-center gap-[5px] text-white px-5 sm:py-2 py-2 rounded-lg bg-[#3B82F6] text-center" onClick={reactToPrintFn}>
+            {/* <button className="cursor-pointer flex items-center gap-[5px] text-white px-5 sm:py-2 py-2 rounded-lg bg-[#3B82F6] text-center" onClick={reactToPrintFn}>
 
               <span className="text-sm">Download PDF</span>
-            </button>
+            </button> */}
           </div>
           {/* <div className="mt-[15px] w-full border border-[#E5E7EB] rounded-lg p-5 bg-[#FAFAFA]"><div className="flex flex-col gap-2"><div className="relative">
             <input type="email" placeholder="Enter your email address" className="text-sm w-full px-3 py-2 border border-gray-200/50 rounded-md  text-gray-500/80 placeholder:text-gray-500/80 focus:outline-none focus:border-gray-300" />
