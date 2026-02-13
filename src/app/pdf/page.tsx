@@ -130,7 +130,6 @@ export default function ReportPage() {
                             },
                         ],
                     }} options={{
-                        cutout: "60%",
                         plugins: {
                             tooltip: { enabled: false },
                             legend: { display: false },
@@ -324,7 +323,7 @@ export default function ReportPage() {
 
                                         </div>
                                         <div className="flex items-start gap-1.5">
-                                            <Image src="/warning.svg" width={15} height={15} alt="Icon" className="mt-1" />
+                                            <img src="/warning.svg" width={15} height={15} alt="Icon" className="mt-1" />
                                             <div className="flex flex-col gap-3.5 w-full">
                                                 <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">Why This Matters:</div>
                                                 <p className="text-xs sm:text-sm font-medium text-[#6B7280] leading-relaxed">
@@ -338,7 +337,7 @@ export default function ReportPage() {
                                         <div className="flex gap-1.5">
 
                                             <div className="flex items-start gap-1.5">
-                                                <Image src="/quesmark.svg" width={15} height={15} alt="Icon" className="mt-1" />
+                                                <img src="/quesmark.svg" width={15} height={15} alt="Icon" className="mt-1" />
                                                 <div className="flex flex-col gap-3.5 w-full">
                                                     <div className="sm:text-[15px] text-[13px] font-semibold text-[#111827]">What To Look For:</div>
                                                     <div className="flex flex-col gap-3">
@@ -397,7 +396,7 @@ export default function ReportPage() {
 
                                                         {card["Red Flags"]?.split("\\n").map((line: string) => line.replace("• ", "")).map((flag1: any, idx3: number) => (
                                                             <div key={idx3} className="flex items-center gap-2">
-                                                                <Image src="/cross.svg" width={9} height={9} alt="Icon" />
+                                                                <img src="/cross.svg" width={9} height={9} alt="Icon" />
                                                                 <p className="sm:text-sm text-xs font-medium text-[#EF4444]">
                                                                     {flag1}
                                                                 </p>
@@ -418,7 +417,7 @@ export default function ReportPage() {
 
                                                         {card["Green Flags"]?.split("\\n").map((line: string) => line.replace("• ", "")).map((flag2: any, idx4: number) => (
                                                             <div key={idx4} className="flex items-center gap-2">
-                                                                <Image src="/tick.svg" width={9} height={9} alt="Icon" />
+                                                                <img src="/tick.svg" width={9} height={9} alt="Icon" />
                                                                 <p className="sm:text-sm text-xs font-medium text-[#10B981]">
                                                                     {flag2}
                                                                 </p>
