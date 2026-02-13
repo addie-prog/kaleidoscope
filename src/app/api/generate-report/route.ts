@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const isProd = process.env.NODE_ENV === "production";
+  const isProd = process.env.NODE_ENV != "development";
 
   const browser = isProd
     ? await puppeteerCore.launch({
