@@ -2,6 +2,8 @@ import puppeteer from "puppeteer";
 import puppeteerCore from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
 
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
   const body = await req.json();
 

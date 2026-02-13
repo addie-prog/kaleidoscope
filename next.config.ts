@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    "/api/generate-report": [
+      "./node_modules/@sparticuz/chromium/**",
+    ],
+  },
   /* config options here */
   webpack(config) {
     config.module.rules.push({
