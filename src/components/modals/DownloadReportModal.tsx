@@ -7,36 +7,57 @@ interface DownloadReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedEmail: string;
-  downloadPDf: () => void
-  pdfLoader: boolean
+  downloadPDf: () => void;
+  saveProgess: (val: string, type: number) => Promise<void>;
+  pdfLoader: boolean,
+  successMessage: boolean;
+  linkSent: boolean;
+
 }
 
-export default function DownloadReportModal({ isOpen, onClose, selectedEmail, downloadPDf, pdfLoader }: DownloadReportModalProps) {
+export default function DownloadReportModal({ linkSent, saveProgess, successMessage, isOpen, onClose, selectedEmail, downloadPDf, pdfLoader }: DownloadReportModalProps) {
   const [email, setEmail] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  useEffect(()=>{
-      setEmail(selectedEmail);
-    },[selectedEmail]);
+  const [type, setType] = useState<number>(1);
+
+  useEffect(() => {
+    setEmail(selectedEmail);
+  }, [selectedEmail]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    downloadPDf();   
+    type === 1 ? setIsSending(true) : setIsDownloading(true);
+
+    try {
+      await saveProgess(email, type);
+      if (type == 2) {
+        await downloadPDf();
+        onClose();
+      }
+
+    } finally {
+      setIsSending(false);
+      setIsDownloading(false);
+    }
+
   };
 
   return (
     <>
       {/* Backdrop */}
-     <Modal isOpen={isOpen} onClose={onClose} className="max-w-[550px] m-4">
-  {/* Modal */}
-  <div
-    className="relative w-full bg-white rounded-[20px] p-6 sm:p-6"
-    onClick={(e) => e.stopPropagation()}
-  >
-    {/* Cloud Download Icon */}
-    <div className="flex justify-center mb-6 sm:mb-8">
-      <svg
+      <Modal isOpen={isOpen} onClose={onClose} className="max-w-[550px] m-4">
+        {/* Modal */}
+        <div
+          className="relative w-full bg-white rounded-[20px] p-6 sm:p-6"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Cloud Download Icon */}
+          <div className="flex justify-center mb-6 sm:mb-8">
+            {!successMessage ? <svg
               width="115"
               height="115"
               viewBox="0 0 115 115"
@@ -75,43 +96,85 @@ export default function DownloadReportModal({ isOpen, onClose, selectedEmail, do
                   <stop offset="0.997" stopColor="#F4F8FF" />
                 </linearGradient>
               </defs>
-            </svg>
-    </div>
+            </svg> : <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-100">
+              <svg
+                className="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>}
 
-    {/* Title */}
-    <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 text-center mb-3">
-      Download Your Report
-    </h2>
+          </div>
 
-    {/* Description */}
-    <p className="text-sm sm:text-base text-gray-600 text-center leading-6 sm:leading-7 mb-6 sm:mb-8 px-2 sm:px-4">
-      Enter your email to download your personalized responsible tech report.
-    </p>
+          {/* Title */}
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 text-center mb-3">
+            {successMessage ? "Email sent!" : "Download Your Report"}
+          </h2>
 
-    {/* Form */}
-    <form
-      onSubmit={(e)=>handleSubmit(e)}
-      className="flex flex-col sm:flex-row gap-2.5"
-    >
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Enter Email"
-        className="flex-1 w-full px-3 py-3 border border-gray-300 rounded-lg text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        required
-      />
+          {/* Description */}
+          {!successMessage ? (
+            <p className="text-sm sm:text-base text-gray-600 text-center leading-6 sm:leading-7 mb-6 sm:mb-8 px-2 sm:px-4">
+              {linkSent ? "Your project is already linked to this email, you can download your personalized responsible tech report." : "Enter your email to download your personalized responsible tech report."}
+            </p>)
+            : (
+              <p className="text-sm text-gray-600 text-center leading-6 max-w-sm mx-auto">
+                We've sent a secure magic link to
+                <span className="block font-medium text-gray-900 mt-1">
+                  {email}
+                </span>
+                <span className="block text-xs text-gray-500 mt-2">
+                  Check your inbox (and spam folder).
+                </span>
+              </p>
+            )}
 
-      <button
-        type="submit"
-        disabled={pdfLoader}
-        className="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base rounded-lg transition-colors whitespace-nowrap"
-      >
-        {pdfLoader ? "Downloading..." : "Download PDF"}
-      </button>
-    </form>
-  </div>
-</Modal>
+          {/* Form */}
+          {!successMessage && (
+            <form
+              onSubmit={(e) => handleSubmit(e)}
+               className="space-y-3"
+            >
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter Email"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required
+              />
+              <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+                 <button
+                type="submit"
+                onClick={() => setType(2)}
+                disabled={isDownloading}
+                className="whitespace-nowrap px-5 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                {isDownloading ? "Downloading..." : "Download PDF"}
+              </button>
+              <button
+                type="submit"
+                disabled={isSending}
+                onClick={() => setType(1)}
+                className="whitespace-nowrap px-5 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                {isSending
+                  ? "Sending..."
+                  : linkSent
+                    ? "Resend Magic Link"
+                    : "Send Magic Link"}
+              </button>
+             </div>
+            </form>)}
+        </div>
+      </Modal>
     </>
   );
 }

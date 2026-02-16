@@ -63,11 +63,11 @@ export default function ReportPage() {
     const logoHTML = (paddingTop: string = "pt-6") => {
         return <div className="print-logo">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className={`flex  items-center justify-center ${paddingTop} pb-6`}>
+                <div className={`flex  items-center justify-center ${paddingTop} pb-6 h-[70px]`}>
                     <img
-                        src="/logo.svg"
+                        src="/kaleido_Logo.png"
+                        style={{width: "300px"}}
                         alt="The Kaleidoscope Project"
-                        className="h-5 w-auto"
                     />
                 </div>
             </div>
@@ -474,7 +474,7 @@ export default function ReportPage() {
                                                 Execution Steps
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                {card["steps"]?.filter((s: objectType) => s.skipped == true)?.length > 0 &&
+                                                {card["steps"]?.filter((s: objectType) => s.completed == true)?.length > 0 &&
                                                     <>
                                                         <div className="flex items-center gap-1">
                                                             <svg

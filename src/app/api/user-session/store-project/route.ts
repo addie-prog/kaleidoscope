@@ -3,65 +3,82 @@ import { Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const { reportId, sessionId, type, items, Allocations, userNote, budgetInputs, email, projectId, principles, existProjectId, interation_data } = await request.json()
   try {
-    let docRef: any;
-    let fields: any;
-    if(reportId){
-      fields = {
-      "Report ID": reportId,
-      "Session ID": sessionId,
-      "Budget Inputs": budgetInputs,
-      "Allocations": Allocations,
-      "Owner Email": email ? email : null,
-      "items": items,
-      "User Notes": userNote,
-      "principles": principles,
-      "interation_data": interation_data ? interation_data : null
-    }
-    }else{
-      fields = {
-          "interation_data": interation_data,
-          "Owner Email": email
-        }
-    }
-    if(type == 1){
-        fields["Magic Link Sent"] = true;
-    }
-   
+    const {
+      reportId,
+      sessionId,
+      type,
+      items,
+      Allocations,
+      userNote,
+      budgetInputs,
+      email,
+      projectId,
+      principles,
+      interation_data
+    } = await request.json();
 
-    if (existProjectId) {
-     
-      fields["Last Updated"] = Timestamp.now();
-      const snapshot = await adminDb
+    if (!projectId) {
+      return NextResponse.json(
+        { error: "projectId is required" },
+        { status: 400 }
+      );
+    }
+
+    const docRef = adminDb
       .collection("user_projects")
-      .where("Project ID", "==", existProjectId)
-      .limit(1)
-      .get();
+      .doc(projectId);
 
-      const docRef = snapshot.docs[0].ref;
+    const docSnap = await docRef.get();
+    const isExisting = docSnap.exists;
 
-      await docRef.update({
-        ...fields
-      });
+    let fields: any = {};
 
+    if (reportId) {
+      fields = {
+        "Report ID": reportId,
+        "Session ID": sessionId,
+        "Budget Inputs": budgetInputs,
+        "Allocations": Allocations,
+        "Owner Email": email ? email : null,
+        "items": items,
+        "User Notes": userNote,
+        "principles": principles,
+        "interation_data": interation_data ? interation_data : null
+      };
     } else {
-      fields["Project ID"] = projectId;
-      fields["Created At"] = Timestamp.now();
-      fields["Last Updated"] = null;
-
-      docRef = await adminDb
-        .collection("user_projects")
-        .add({
-          ...fields
-        });
+      fields = {
+        "interation_data": interation_data ? interation_data : null,
+        "Owner Email": email ? email : null
+      };
     }
+
+    if (type == 1) {
+      fields["Magic Link Sent"] = true;
+    }
+
+    fields["Project ID"] = projectId;
+    fields["Last Updated"] = Timestamp.now();
+
+    // Created At if new document
+    if (!isExisting) {
+      fields["Created At"] = Timestamp.now();
+    }
+
+    //  Upsert using merge
+    await docRef.set(fields, { merge: true });
+
+    // Fetch updated document
+    const updatedDoc = await docRef.get();
+
+    const projectData = updatedDoc.exists
+      ? { id: updatedDoc.id, ...updatedDoc.data() }
+      : null;
 
     return NextResponse.json({
       success: true,
-      id: existProjectId ? existProjectId : projectId
+      data: projectData
     });
-
 
   } catch (error: any) {
     return NextResponse.json(

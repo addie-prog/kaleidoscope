@@ -11,6 +11,7 @@ import { Doughnut } from 'react-chartjs-2';
 import '@/lib/chartjs';
 import getBudgetTier from "@/lib/budgetTiers";
 import { CopyLinkModal } from "@/components/modals/copyModal";
+import { CSVLink, CSVDownload } from "react-csv";
 
 type objectType = {
   [key: string | number]: any
@@ -84,6 +85,7 @@ export default function Dashboard2Page({
 
     return subTabsMap[tabId] || [];
   };
+
 
   const fetchProjectData = async () => {
     const tiers = localStorage.getItem("Tiers");
@@ -269,25 +271,25 @@ export default function Dashboard2Page({
         );
 
       const result: any = stepsAction(currentCards)
-      let interation_data= null;
-      let pinteration_data= null;
-      if(cardIds?.length != 0 || result?.checked_step_ids?.length != 0  || result?.skipped_step_ids?.length != 0 || Object.values(result?.step_notes)?.length != 0){
+      let interation_data = null;
+      let pinteration_data = null;
+      if (cardIds?.length != 0 || result?.checked_step_ids?.length != 0 || result?.skipped_step_ids?.length != 0 || Object.values(result?.step_notes)?.length != 0) {
         interation_data = {
-        checked_card_ids: cardIds,
-        checked_step_ids: result?.checked_step_ids,
-        skipped_step_ids: result?.skipped_step_ids,
-        step_notes: result?.step_notes
+          checked_card_ids: cardIds,
+          checked_step_ids: result?.checked_step_ids,
+          skipped_step_ids: result?.skipped_step_ids,
+          step_notes: result?.step_notes
+        }
       }
-      }
-      if(projectData["interation_data"] != undefined && (projectData["interation_data"]?.checked_card_ids?.length != 0 || projectData["interation_data"]?.checked_step_ids?.length != 0 || projectData["interation_data"]?.skipped_step_ids?.length != 0 || Object.values(projectData["interation_data"]?.step_notes)?.length != 0)){
+      if (projectData["interation_data"] != undefined && (projectData["interation_data"]?.checked_card_ids?.length != 0 || projectData["interation_data"]?.checked_step_ids?.length != 0 || projectData["interation_data"]?.skipped_step_ids?.length != 0 || Object.values(projectData["interation_data"]?.step_notes)?.length != 0)) {
         pinteration_data = {
-        checked_card_ids: projectData["interation_data"]?.checked_card_ids,
-        checked_step_ids: projectData["interation_data"]?.checked_step_ids,
-        skipped_step_ids: projectData["interation_data"]?.skipped_step_ids,
-        step_notes: projectData["interation_data"]?.step_notes
+          checked_card_ids: projectData["interation_data"]?.checked_card_ids,
+          checked_step_ids: projectData["interation_data"]?.checked_step_ids,
+          skipped_step_ids: projectData["interation_data"]?.skipped_step_ids,
+          step_notes: projectData["interation_data"]?.step_notes
+        }
       }
-      }
-      
+
       if (JSON.stringify(interation_data) != JSON.stringify(pinteration_data)) {
         setPending(true);
       } else {
@@ -312,7 +314,6 @@ export default function Dashboard2Page({
       window.removeEventListener('beforeunload', beforeUnload);
     };
   }, [pending]);
-
 
 
   const handleSubmit = async (email: string, type: number) => {
@@ -341,14 +342,14 @@ export default function Dashboard2Page({
           step_notes: result?.step_notes
         },
         type,
-        existProjectId: project,
+        projectId: project,
         email
       })
     });
     try {
-      const { id } = await res.json();
-      if(type == 1)
-      {
+      const { data } = await res.json();
+      setProjectData(data);
+      if (type == 1) {
         sendEmail(email);
       }
       setPending(false);
@@ -543,7 +544,7 @@ export default function Dashboard2Page({
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F0F0]">
       {/* Header */}
-      <header className="sticky top-0 h-16 bg-white border-b border-[#E5E5E5] flex items-center px-4 lg:px-8 z-50 shadow-sm">
+      <header className="sticky top-0 h-16 bg-white border-b border-[#E5E5E5] flex items-center  z-50 shadow-sm">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="lg:hidden p-2 mr-4"
@@ -565,13 +566,14 @@ export default function Dashboard2Page({
             />
           </svg>
         </button>
-        <Image
-          src="/logo.svg"
-          width={256}
-          height={21}
+        <div className="flex  items-center justify-center sm:h-[70px] h-[60px]">
+        <img
+          src="/kaleido_Logo.png"
+          
           alt="The Kaleidoscope Project"
-          className="h-5 w-auto"
+          className="sm:w-[400px] w-[300px] h-full object-cover"
         />
+        </div>
       </header>
 
       {/* Sidebar overlay for mobile */}
@@ -582,6 +584,7 @@ export default function Dashboard2Page({
         />
       )}
       {/* Prevent scrolling of body when sidebar is open */}
+
 
       {sidebarOpen && (
 
@@ -1560,7 +1563,7 @@ export default function Dashboard2Page({
                 {/* Illustration */}
                 <div className="mb-10 opacity-80">
                   <img
-                    src="https://api.builder.io/api/v1/image/assets/TEMP/c3a4c1abed61c9cb562422fc7ec26fc93f2c0325?width=596"
+                    src="/no-budget.png"
                     alt="No budget allocated illustration"
                     className="w-64 h-64 sm:w-72 sm:h-72 object-contain"
                   />
@@ -1578,14 +1581,14 @@ export default function Dashboard2Page({
                 </p>
 
                 {/* Action Button */}
-                <button onClick={() =>{
-                  
+                <button onClick={() => {
+
                   if (pending) {
                     saveProgressModal.openModal();
                   } else {
                     redirect(`/calculator?project=${project}&step=2`);
                   }
-                  }} className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold sm:text-base text-sm rounded-lg transition-colors">
+                }} className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold sm:text-base text-sm rounded-lg transition-colors">
                   <svg
                     width="20"
                     height="20"
@@ -1617,33 +1620,33 @@ export default function Dashboard2Page({
               </div>) : ""}
           </div>
           <CopyLinkModal isOpen={copyModal.isOpen} onClose={copyModal.closeModal} link={`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?project=${project}`} />
-          <SaveProgressModal linkSent={projectData["Magic Link Sent"] || linkSent} successMessage={successMessage} saveProgess={(val: string, type: number) => handleSubmit(val, type)} selectedEmail={selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={()=>{
+          <SaveProgressModal linkSent={projectData["Magic Link Sent"] || linkSent} successMessage={successMessage} saveProgess={(val: string, type: number) => handleSubmit(val, type)} selectedEmail={projectData["Owner Email"] ? projectData["Owner Email"] : selectedValues?.email} isOpen={saveProgressModal.isOpen} onClose={() => {
             saveProgressModal.closeModal();
             setPending(false);
-            }} />
-          <DownloadReportModal pdfLoader={pdfLoader} downloadPDf={async ()=>{
+          }} />
+          <DownloadReportModal saveProgess={(val: string, type: number) => handleSubmit(val, type)} linkSent={projectData["Magic Link Sent"] || linkSent} successMessage={successMessage} pdfLoader={pdfLoader} downloadPDf={async () => {
             setPdfLoader(true);
-             const res = await fetch("/api/generate-report", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    selectedValues: JSON.stringify((projectData["Budget Inputs"])),
-                    principles: JSON.stringify((projectData["principles"].filter((k: objectType)=>  k.checked == true))),
-                    currentCards: JSON.stringify(currentCards),
-                  }),
-                });
+            const res = await fetch("/api/generate-report", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                selectedValues: JSON.stringify((projectData["Budget Inputs"])),
+                principles: JSON.stringify((projectData["principles"].filter((k: objectType) => k.checked == true))),
+                currentCards: JSON.stringify(currentCards),
+              }),
+            });
 
-                const blob = await res.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "report.pdf";
-                a.click();
-                setPdfLoader(false);
-         }} selectedEmail={selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
-          <DownloadReportCSVModal selectedEmail={selectedValues?.email} isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "report.pdf";
+            a.click();
+            setPdfLoader(false);
+          }} selectedEmail={projectData["Owner Email"] ? projectData["Owner Email"] : selectedValues?.email} isOpen={downloadReportModal.isOpen} onClose={downloadReportModal.closeModal} />
+         {currentCards && <DownloadReportCSVModal saveProgess={(val: string, type: number) => handleSubmit(val, type)} CSVData={currentCards}  selectedEmail={projectData["Owner Email"] ? projectData["Owner Email"] : selectedValues?.email} isOpen={downloadCSVModal.isOpen} onClose={downloadCSVModal.closeModal} />} 
         </main>
       </div>
       {/* Sticky Action Buttons */}
@@ -1672,11 +1675,11 @@ export default function Dashboard2Page({
               </svg>
               <span className="text-sm sm:text-base font-semibold text-[#3B82F6]">Edit</span>
             </button>
-            <button onClick={()=>{
+            <button onClick={() => {
               setSuccessMessage(false);
               saveProgressModal.openModal()
-              }
-              } className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-2 sm:px-3 py-2 border border-[#E5E7EB] bg-[#F9FAFB] rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors">
+            }
+            } className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-2 sm:px-3 py-2 border border-[#E5E7EB] bg-[#F9FAFB] rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors">
               <svg
                 width="20"
                 height="20"

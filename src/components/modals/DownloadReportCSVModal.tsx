@@ -1,27 +1,69 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Modal } from "../ui/modal";
+import { CSVLink } from "react-csv";
 
 interface DownloadReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedEmail: string;
+  CSVData: any;
+  saveProgess: (val: string, type: number) => Promise<void>;
 }
-
-export default function DownloadReportCSVModal({ isOpen, onClose, selectedEmail }: DownloadReportModalProps) {
+type objectType = {
+  [key: string | number]: any
+}
+export default function DownloadReportCSVModal({ saveProgess, CSVData, isOpen, onClose, selectedEmail }: DownloadReportModalProps) {
   const [email, setEmail] = useState("");
+  const [csvData2, setCSVData] = useState<Array<objectType>>([]);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const linkRef = useRef<any>(null);
 
-  useEffect(()=>{
+  const downloadCSV = () => {
+    Object.keys(CSVData).forEach((executionLayerKey) => {
+      const section = CSVData[executionLayerKey];
+
+      Object.keys(section).forEach((categoryKey) => {
+        const items = section[categoryKey];
+
+        if (Array.isArray(items)) {
+          items.forEach((item) => {
+            let stepData: any[] = [];
+
+            item.steps?.forEach((step: objectType) => {
+              stepData.push({
+                "Item Name": item["Item Name"],
+                "Step Text": step.text,
+                "Step Completed": step.completed ? "Yes" : "No",
+                "Step Skipped": step.skipped ? "Yes" : "No",
+                "Step Optional": step.optional ? "Yes" : "No",
+                "Step Notes": step.note ?? "",
+              });
+            });
+            setCSVData((prev) => [
+              ...prev,
+              ...stepData
+            ]);
+          });
+        }
+      });
+    });
+  }
+  useEffect(() => {
     setEmail(selectedEmail);
-  },[selectedEmail]);
+  }, [selectedEmail]);
+
+  useEffect(() => { downloadCSV() }, [CSVData]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle download report logic here
-    console.log("Downloading report for:", email);
+    setIsDownloading(true);
+    await saveProgess(email, 2);
+    linkRef?.current?.link?.click();
+    setIsDownloading(false);
     onClose();
   };
 
@@ -102,12 +144,19 @@ export default function DownloadReportCSVModal({ isOpen, onClose, selectedEmail 
               required
             />
 
-            <button
+             <button disabled={isDownloading} className="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base rounded-lg transition-colors whitespace-nowrap"
               type="submit"
-              className="w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base rounded-lg transition-colors whitespace-nowrap"
+            >
+              {isDownloading ? "Downloading..." : "Download CSV"}
+            </button>
+              <CSVLink className="hidden"
+              data={csvData2}
+              ref={linkRef}
             >
               Download CSV
-            </button>
+            </CSVLink>
+            
+
           </form>
         </div>
       </Modal>

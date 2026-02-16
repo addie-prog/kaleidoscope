@@ -32,7 +32,6 @@ export default function SessionTable() {
     });
     const { data, nextPageToken } = await res.json();
 
-    console.log("data", data)
     setLoading(false);
     setLoadData(false);
     if (data && data?.length > 0) {
@@ -53,9 +52,7 @@ export default function SessionTable() {
     getSessions("");
   }, []);
 
-  useEffect(() => {
-    console.log("offset", offset)
-  }, [offset])
+ 
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">

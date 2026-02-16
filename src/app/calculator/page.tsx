@@ -81,18 +81,16 @@ export default function BudgetTool({
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex  items-center justify-center sm:py-8 py-7">
+          <div className="flex  items-center justify-center sm:h-[70px] h-[60px]">
 
-            <Image
+            <img
+          
               onClick={() => setStep(1)}
-              src="/logo.svg"
-              width={100}
-              height={100}
+              src="/kaleido_Logo.png"
               alt="The Kaleidoscope Project"
-              className="h-6 w-auto"
+              className="sm:w-[400px] w-[300px]"
             />
-          </div>
+          
         </div>
       </header>
       {loader ? 
@@ -128,7 +126,6 @@ export default function BudgetTool({
       }
       
 
-      {/* {step === 3 && <ReportStep onBack={(value: number) => setStep(value)} reportData={reportData} selectedValues={selectedValues} />} */}
     </div>
   );
 }

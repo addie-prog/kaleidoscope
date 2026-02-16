@@ -88,7 +88,7 @@ export default function SaveProgressModal({
         {/* Description */}
         {!successMessage ? (
           <p className="text-sm text-gray-600 text-center leading-7 mb-8 px-4">
-           {linkSent ? "Your project is already linked to this email. You can save your changes or resend the access link."   : "Enter your email to save your project. We&apos;ll send you a magic link to access it anytime."} 
+           {linkSent ? "Your project is already linked to this email. You can save your changes or resend the access link."   : "Enter your email to save your project. We'll send you a magic link to access it anytime."} 
           </p>
         ) : (
           <p className="text-sm text-gray-600 text-center leading-6 max-w-sm mx-auto">
