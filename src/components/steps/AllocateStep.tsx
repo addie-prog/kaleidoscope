@@ -374,7 +374,7 @@ export default function AllocatePage({ reportID, projectData, onNext, selectedVa
         interation_data: interactionData ? cleanedInteractionData : "",
         userNote: selectedValues?.notes ? selectedValues?.notes : null,
         email: selectedValues?.email ? selectedValues?.email : null,
-        projectId: existProjectId ? "" : projectId,
+        projectId: existProjectId ? existProjectId : projectId,
         existProjectId
       })
     });
@@ -391,33 +391,30 @@ export default function AllocatePage({ reportID, projectData, onNext, selectedVa
     setLoader(false);
   }
 
-  // const createInteraction = async (newReportData: any) => {
-  //   const res = await fetch("/api/user-session/store-interaction", {
-  //     method: 'POST',
-  //     headers: {
-  //       'Accept': 'application/json',
-  //       'Content-Type': 'application/json'
-  //     },
-  //     body: JSON.stringify({
-  //       reportName: [localStorage
-  //         .getItem("reportId")
-  //         ?.split(",")
-  //         .pop()],
-  //       principleBudget: newReportData?.map((item: any) => item?.principleBudget),
-  //       principlePercentage: newReportData?.map((item: any) => item?.principlePercentage),
-  //       itemName: newReportData?.map((item: any) => item?.itemRecordId),
-  //       executionId: newReportData?.map((item: any) => item?.layerId),
-  //       principleId: newReportData?.map((item: any) => item?.principleId),
-  //       interactionStatus: "Added to Budget",
-  //       userNotes: selectedValues?.notes ?? "",
-  //       allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget)
-  //     })
-  //   });
-  //   const data = await res.json();
+  const createInteraction = async (newReportData: any) => {
+    const res = await fetch("/api/user-session/store-interaction", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        reportName: [reportID ? reportID : projectData?.["Report ID"]],
+        principleBudget: newReportData?.map((item: any) => item?.principleBudget),
+        principlePercentage: newReportData?.map((item: any) => item?.principlePercentage),
+        itemName: newReportData?.map((item: any) => item?.itemRecordId),
+        executionId: newReportData?.map((item: any) => item?.layerId),
+        principleId: newReportData?.map((item: any) => item?.principleId),
+        interactionStatus: "Added to Budget",
+        userNotes: selectedValues?.notes ?? "",
+        allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget)
+      })
+    });
+    const data = await res.json();
 
 
 
-  // }
+  }
 
   const categoryOrder: Record<string, number> = {
     must_have: 1,
@@ -546,6 +543,7 @@ export default function AllocatePage({ reportID, projectData, onNext, selectedVa
       });
     });
     userNotes(selectedValues?.notes);
+    // createInteraction(newReportData);
     createProject(newReportData);
   }
 
