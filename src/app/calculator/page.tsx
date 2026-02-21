@@ -3,7 +3,6 @@
 import { use, useEffect, useState } from "react";
 import BudgetStep from "@/components/steps/BudgetStep";
 import AllocateStep from "@/components/steps/AllocateStep";
-import Image from "next/image";
 
 type objectType = {
   [key: string | number]: any
@@ -124,8 +123,7 @@ export default function BudgetTool({
       )}
       </>
       }
-      
-
+    
     </div>
   );
 }

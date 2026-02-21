@@ -391,30 +391,7 @@ export default function AllocatePage({ reportID, projectData, onNext, selectedVa
     setLoader(false);
   }
 
-  const createInteraction = async (newReportData: any) => {
-    const res = await fetch("/api/user-session/store-interaction", {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        reportName: [reportID ? reportID : projectData?.["Report ID"]],
-        principleBudget: newReportData?.map((item: any) => item?.principleBudget),
-        principlePercentage: newReportData?.map((item: any) => item?.principlePercentage),
-        itemName: newReportData?.map((item: any) => item?.itemRecordId),
-        executionId: newReportData?.map((item: any) => item?.layerId),
-        principleId: newReportData?.map((item: any) => item?.principleId),
-        interactionStatus: "Added to Budget",
-        userNotes: selectedValues?.notes ?? "",
-        allocatedCost: newReportData?.map((item1: any) => item1?.layerBudget)
-      })
-    });
-    const data = await res.json();
 
-
-
-  }
 
   const categoryOrder: Record<string, number> = {
     must_have: 1,
@@ -427,36 +404,9 @@ export default function AllocatePage({ reportID, projectData, onNext, selectedVa
     const budgetTiers = tiers ? JSON.parse(tiers) : [];
     let data: any;
 
-    // const layersWithTier =
-    //   principles
-    //     ?.filter(pf => pf.checked)
-    //     ?.flatMap(p =>
-    //       p.layers
-    //         ?.filter(lf => lf.checked)
-    //         ?.map(layer => {
-    //           const layerBudget = Number(layer.budget || 0);
-
-    //           const matchedTier = budgetTiers.find(
-    //             (tier: any) =>
-    //               layerBudget >= Number(tier["Budget Min"]) &&
-    //               layerBudget <= Number(tier["Budget Max"])
-    //           )?.["Tier ID"];
-
-    //           return {
-    //             layerId: layer.id,
-    //             budgetTier: matchedTier
-    //           };
-    //         })
-    //     );
     setLoader(true);
     const res = await fetch("/api/items");
-    // body: JSON.stringify({
-    //   layers: layersWithTier,
-    //   category: selectedValues?.category,
-
-    // })
-
-
+    
     try {
       data = await res.json();
     } catch (e: any) {
@@ -543,7 +493,6 @@ export default function AllocatePage({ reportID, projectData, onNext, selectedVa
       });
     });
     userNotes(selectedValues?.notes);
-    // createInteraction(newReportData);
     createProject(newReportData);
   }
 

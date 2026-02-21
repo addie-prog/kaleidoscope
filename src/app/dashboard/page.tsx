@@ -11,7 +11,6 @@ import { Doughnut } from 'react-chartjs-2';
 import '@/lib/chartjs';
 import getBudgetTier from "@/lib/budgetTiers";
 import { CopyLinkModal } from "@/components/modals/copyModal";
-import { CSVLink, CSVDownload } from "react-csv";
 
 type objectType = {
   [key: string | number]: any

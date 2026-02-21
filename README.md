@@ -43,6 +43,11 @@ Create a `.env.local` file on the root directory.
 
 Example `.env.local`
 ```bash
+
+# Vercel Storage
+SERVER_URL=https://xxxxxxxxxxxxx.blob.vercel-storage.com
+BLOB_READ_WRITE_TOKEN=xxxxxxxxxxxxx
+
 # Admin panel 
 ADMIN_NAME=xxxxxxxxxxxxx
 ADMIN_EMAIL=AdminLoginEmail
@@ -53,6 +58,9 @@ NEXTAUTH_SECRET=xxxxxxxxxxxxx
 FIREBASE_PROJECT_ID=xxxxxxxxxxxxx
 FIREBASE_CLIENT_EMAIL=xxxxxxxxxxxxx
 FIREBASE_private_key="-----BEGIN PRIVATE KEY----------END PRIVATE KEY-----\n"
+
+# Server base URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 #### Important Notes
