@@ -542,7 +542,7 @@ export default function ReportPage() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {card["steps"].map((step: objectType, index1: number) => (
+                                                {card["steps"]?.length > 0 ? card["steps"]?.map((step: objectType, index1: number) => (
                                                     <tr key={index1} className="border-b border-gray-100">
                                                         <td className="px-2 py-3 text-sm text-gray-700 leading-[15px]">
                                                             {step.text}
@@ -580,7 +580,7 @@ export default function ReportPage() {
                                                             {step.note ? step.note : "-"}
                                                         </td>
                                                     </tr>
-                                                ))}
+                                                )) : <tr><td colSpan={3} className="text-center py-3">No Step Found</td></tr>}
                                             </tbody>
                                         </table>
                                         {/* Table */}

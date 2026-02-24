@@ -340,7 +340,6 @@ export default function AllocatePage({ reportID, projectData, onNext, selectedVa
 
     }
 
-
     const existProjectId = project ? project : "";
     const projectId = `${Math.floor(Date.now() / 1000)}_${crypto.randomUUID().slice(0, 3)}`;
     const res = await fetch("/api/user-session/store-project", {

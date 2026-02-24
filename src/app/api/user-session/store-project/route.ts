@@ -63,10 +63,11 @@ export async function POST(request: Request) {
     // Created At if new document
     if (!isExisting) {
       fields["Created At"] = Timestamp.now();
+       await docRef.set(fields);
+    }else{
+      await docRef.update(fields);
     }
 
-    //  Upsert using merge
-    await docRef.set(fields, { merge: true });
 
     // Fetch updated document
     const updatedDoc = await docRef.get();

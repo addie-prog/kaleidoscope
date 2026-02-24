@@ -280,7 +280,8 @@ export default function Dashboard2Page({
           step_notes: result?.step_notes
         }
       }
-      if (projectData["interation_data"] != undefined && (projectData["interation_data"]?.checked_card_ids?.length != 0 || projectData["interation_data"]?.checked_step_ids?.length != 0 || projectData["interation_data"]?.skipped_step_ids?.length != 0 || Object.values(projectData["interation_data"]?.step_notes)?.length != 0)) {
+      if (projectData["interation_data"] != undefined && Object.keys(projectData["interation_data"])?.length !=0 && (projectData["interation_data"]?.checked_card_ids?.length != 0 || projectData["interation_data"]?.checked_step_ids?.length != 0 || projectData["interation_data"]?.skipped_step_ids?.length != 0 || Object.values(projectData["interation_data"]?.step_notes)?.length != 0)) {
+       
         pinteration_data = {
           checked_card_ids: projectData["interation_data"]?.checked_card_ids,
           checked_step_ids: projectData["interation_data"]?.checked_step_ids,
@@ -288,7 +289,6 @@ export default function Dashboard2Page({
           step_notes: projectData["interation_data"]?.step_notes
         }
       }
-
       if (JSON.stringify(interation_data) != JSON.stringify(pinteration_data)) {
         setPending(true);
       } else {
