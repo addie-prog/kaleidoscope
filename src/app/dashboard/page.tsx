@@ -30,6 +30,13 @@ interface ActionStep {
   skipped: boolean;
   note: string;
 }
+
+const categoryOrder: Record<string, number> = {
+    must_have: 1,
+    should_have: 2,
+    skip: 3,
+  };
+  
 export default function Dashboard2Page({
   searchParams,
 }: {
@@ -254,7 +261,7 @@ export default function Dashboard2Page({
           checked_step_ids: [] as string[],
           step_notes: {} as Record<string, string>
         }
-      );
+      )
   }
 
   useEffect(() => {
@@ -835,8 +842,12 @@ export default function Dashboard2Page({
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto no-scrollbar bg-white p-5 pt-0 pb-32 sm:pb-28">
             {!loader && currentCards && currentCards?.[activeSubTab] && Object.keys(currentCards?.[activeSubTab])?.length > 0 ?
-              Object.entries(currentCards?.[activeSubTab])
-                .map(([categoryKey, cards]: any) =>
+              Object.entries(currentCards?.[activeSubTab])?.sort(([categoryA], [categoryB]) => {
+                  const ca = categoryOrder[categoryA] ?? Infinity;
+                  const cb = categoryOrder[categoryB] ?? Infinity;
+                  return ca - cb;
+                })
+                ?.map(([categoryKey, cards]: any) =>
                   <div key={categoryKey}>
                     {
                       (categoryKey == "skip"

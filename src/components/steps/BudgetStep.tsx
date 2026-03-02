@@ -267,19 +267,8 @@ export default function BudgetTool({ latestReportID, projectData, project, selec
         if (data && data?.success && data?.id) {
 
             const newId = data?.id;
-            console.log("newId",newId);
-            // const existing = localStorage.getItem("reportId");
             latestReportID(newId);
-            // if (existing) {
-            //     const ids = existing.split(",");
-
-            //     if (!ids.includes(newId)) {
-            //         ids.push(newId);
-            //         localStorage.setItem("reportId", ids.join(","));
-            //     }
-            // } else {
-            //     localStorage.setItem("reportId", newId);
-            // }
+           
             storeSession(2,newId);
         }
 

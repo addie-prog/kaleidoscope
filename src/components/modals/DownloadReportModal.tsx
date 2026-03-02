@@ -16,14 +16,14 @@ interface DownloadReportModalProps {
 }
 
 export default function DownloadReportModal({ linkSent, saveProgess, successMessage, isOpen, onClose, selectedEmail, downloadPDf, pdfLoader }: DownloadReportModalProps) {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState<string>("");
   const [isSending, setIsSending] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const [type, setType] = useState<number>(1);
 
   useEffect(() => {
-    setEmail(selectedEmail);
+    setEmail(selectedEmail ?? "");
   }, [selectedEmail]);
 
   if (!isOpen) return null;
